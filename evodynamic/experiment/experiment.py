@@ -3,6 +3,7 @@
 import tensorflow as tf
 import numpy as np
 import evodynamic.cells as cells
+import evodynamic.utils as utils
 
 class Experiment(object):
   def __init__(self, dt: float = 1.0) -> None:
@@ -36,6 +37,7 @@ class Experiment(object):
       for monitor_key in self.monitors:
         self.monitors[monitor_key] = np.vstack((self.monitors[monitor_key],\
           self.session.run(self.cell_groups[monitor_key[0]].states[monitor_key[1]])))
+      utils.progressbar(step+1, timesteps)
 
   def run_step(self):
     for group_key in self.cell_groups:
