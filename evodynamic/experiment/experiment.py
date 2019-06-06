@@ -13,7 +13,7 @@ class Experiment(object):
     self.cell_groups = {}
     self.connections = {}
     self.monitors = {}
-    self.session = tf.InteractiveSession()
+    self.session = tf.Session()
 
   def add_group_cells(self,name, amount):
     g_cells = cells.Cells(amount)
