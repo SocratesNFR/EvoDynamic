@@ -128,7 +128,10 @@ benchmark/
 figures/
 
 # Generated images
-*.png
+examples/*.png
+evodynamic/*.png
+/*.png
+
 
 # Generated numpy saving files
 *.npz
