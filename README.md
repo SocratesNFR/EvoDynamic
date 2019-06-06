@@ -1,6 +1,8 @@
 # EvoDynamic
 EvoDynamic seeks to evolve and develop suitable discrete dynamic models of self-organizing systems based on local interactions.
 
+<img alt="EvoDynamic project plan" src="docs/images/EvoDynamic_single_slide.png"/>
+
 Installing EvoDynamic:
 ```
 git clone https://github.com/SocratesNFR/EvoDynamic.git
