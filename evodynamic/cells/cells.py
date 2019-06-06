@@ -7,8 +7,8 @@ class Cells(object):
   """
   Class for Cells
   """
-  def __init__(self, amout: int):
-    self.amount = amout
+  def __init__(self, amount: int):
+    self.amount = amount
     self.states = {}
     self.update_ops = []
     self.internal_connections = []

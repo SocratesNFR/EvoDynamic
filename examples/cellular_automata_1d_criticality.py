@@ -4,9 +4,10 @@ import evodynamic.experiment as experiment
 import evodynamic.connection.cellular_automata as ca
 import evodynamic.cells.activation as act
 import numpy as np
+import time
 
-width = 100
-timesteps = 1000
+width = 1000
+timesteps = 10000
 
 exp = experiment.Experiment()
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
@@ -14,7 +15,8 @@ neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
 g_ca.add_binary_state(state_name='g_ca_bin')
 g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
-                                           center_idx=center_idx)
+                                           center_idx=center_idx,
+                                           is_wrapped_ca=True)
 
 g_ca.add_internal_connection(state_name='g_ca_bin', connection=g_ca_bin_conn,\
                              activation_func=act.rule_binary_ca_1d_width3_func,\
@@ -24,12 +26,16 @@ g_ca.add_internal_connection(state_name='g_ca_bin', connection=g_ca_bin_conn,\
 #                             activation_func=act.rule_binary_ca_1d_width3_func,\
 #                             fargs=(10,))
 
-exp.add_monitor("g_ca", "g_ca_bin")
+exp.add_monitor("g_ca", "g_ca_bin", timesteps)
 
 exp.initialize_cells()
 
-exp.run(timesteps=timesteps-1)
+start = time.time()
+
+exp.run(timesteps=timesteps)
 ca_result = exp.get_monitor("g_ca", "g_ca_bin")
+
+print("Execution time:", time.time()-start)
 
 exp.close()
 
@@ -102,5 +108,3 @@ plot_distribution(avalanche_d_1_bc, "Avalanche duration | Elementary CA rule 110
 #plot_distribution(avalanche_c_1_bc, "Avalanche count | Elementary CA rule 30 | v=1 | N=10^3 | t=10^4")
 
 np.savez("dict_avalanche_bincount.npz", avalanche_s_0_bc, avalanche_d_0_bc, avalanche_s_1_bc, avalanche_d_1_bc)
-
-

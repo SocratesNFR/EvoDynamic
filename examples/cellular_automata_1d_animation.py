@@ -7,7 +7,7 @@ import numpy as np
 
 width = 100
 height_fig = 200
-timesteps = 25000
+timesteps = 400
 
 exp = experiment.Experiment()
 g_ca = exp.add_group_cells(name="g_ca", amount=width)

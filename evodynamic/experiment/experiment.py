@@ -1,9 +1,10 @@
 """ Experiment """
 
 import tensorflow as tf
-import numpy as np
 import evodynamic.cells as cells
 import evodynamic.utils as utils
+from . import monitor
+
 
 class Experiment(object):
   def __init__(self, dt: float = 1.0) -> None:
@@ -23,62 +24,47 @@ class Experiment(object):
     self.session.run(tf.global_variables_initializer())
 
     for monitor_key in self.monitors:
-      self.monitors[monitor_key] =\
-        self.get_group_cells_state(monitor_key[0], monitor_key[1])
+      self.monitors[monitor_key].initialize()
 
   def close(self):
     self.session.close()
 
   def run(self,timesteps: int = 10):
-    for step in range(timesteps):
+    for step in range(timesteps-1):
       for group_key in self.cell_groups:
         self.session.run(self.cell_groups[group_key].internal_connections)
 
       for monitor_key in self.monitors:
-        self.monitors[monitor_key] = np.vstack((self.monitors[monitor_key],\
-          self.session.run(self.cell_groups[monitor_key[0]].states[monitor_key[1]])))
-      utils.progressbar(step+1, timesteps)
+        self.monitors[monitor_key].record()
+
+      utils.progressbar(step+1, timesteps-1)
 
   def run_step(self):
     for group_key in self.cell_groups:
       self.session.run(self.cell_groups[group_key].internal_connections)
 
     for monitor_key in self.monitors:
-      self.monitors[monitor_key] = np.vstack((self.monitors[monitor_key],\
-        self.session.run(self.cell_groups[monitor_key[0]].states[monitor_key[1]])))
+      self.monitors[monitor_key].record()
+
+  def check_group_cells_state(self, group_cells_name, state_name):
+    group_cells_name_exists = group_cells_name in self.cell_groups
+    assert group_cells_name_exists, "Error: group_cells_name for group_cells does not exist."
+
+    state_name_exists = state_name in self.cell_groups[group_cells_name].states
+    assert state_name_exists, "Error: state_name for state does not exist."
 
   def get_group_cells_state(self, group_cells_name, state_name):
-    group_cells_name_exists = group_cells_name in self.cell_groups
-    if group_cells_name_exists:
-      state_name_exists = state_name in self.cell_groups[group_cells_name].states
-      if state_name_exists:
-        state = self.cell_groups[group_cells_name].states[state_name]
-      else:
-        print("Warning: state_name for state does not exist.")
-    else:
-      print("Warning: group_cells_name for group_cells does not exist.")
-    return self.session.run(state)
+    self.check_group_cells_state(group_cells_name, state_name)
 
-  def add_monitor(self, group_cells_name, state_name):
-    group_cells_name_exists = group_cells_name in self.cell_groups
-    if group_cells_name_exists:
-      state_name_exists = state_name in self.cell_groups[group_cells_name].states
-      if state_name_exists:
-        self.monitors[(group_cells_name,state_name)] = None
-      else:
-        print("Warning: state_name for state does not exist.")
-    else:
-      print("Warning: group_cells_name for group_cells does not exist.")
+    return self.session.run(self.cell_groups[group_cells_name].states[state_name])
+
+  def add_monitor(self, group_cells_name, state_name, timesteps=None):
+    self.check_group_cells_state(group_cells_name, state_name)
+
+    self.monitors[(group_cells_name,state_name)] =\
+      monitor.Monitor(self, group_cells_name, state_name, duration=timesteps)
 
   def get_monitor(self, group_cells_name, state_name):
-    group_cells_name_exists = group_cells_name in self.cell_groups
-    if group_cells_name_exists:
-      state_name_exists = state_name in self.cell_groups[group_cells_name].states
-      if state_name_exists:
-        monitor = self.monitors[(group_cells_name,state_name)]
-      else:
-        print("Warning: state_name for state does not exist.")
-    else:
-      print("Warning: group_cells_name for group_cells does not exist.")
+    self.check_group_cells_state(group_cells_name, state_name)
 
-    return monitor
+    return self.monitors[(group_cells_name,state_name)].get()
