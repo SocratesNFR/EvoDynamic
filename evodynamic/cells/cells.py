@@ -2,13 +2,20 @@
 
 import tensorflow as tf
 import numpy as np
+from functools import reduce
+from operator import mul
+from typing import Tuple, Optional
 
 class Cells(object):
   """
   Class for Cells
   """
-  def __init__(self, amount: int):
+  def __init__(self, amount: int, virtual_shape: Optional[Tuple[int]] = None):
     self.amount = amount
+    self.virtual_shape = (self.amount,) if virtual_shape is None else virtual_shape
+    assert self.amount == reduce(mul, self.virtual_shape),\
+      "'amount' and 'virtual_shape' do not match"
+
     self.states = {}
     self.update_ops = []
     self.internal_connections = []
@@ -50,6 +57,9 @@ class Cells(object):
     else:
       print("Warning: state_name for state does not exist.")
     return state_name_exists
+
+  def get_shaped_indices(self):
+    return np.arange(self.amount)#.reshape()
 
   def add_internal_connection(self,state_name,connection,activation_func=None,\
                               fargs=None):

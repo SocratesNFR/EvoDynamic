@@ -6,8 +6,8 @@ import evodynamic.cells.activation as act
 import numpy as np
 import time
 
-width = 1000
-timesteps = 10000
+width = 100
+timesteps = 1000
 
 exp = experiment.Experiment()
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
