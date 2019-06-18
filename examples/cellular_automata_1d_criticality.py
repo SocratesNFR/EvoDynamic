@@ -3,7 +3,9 @@
 import evodynamic.experiment as experiment
 import evodynamic.connection.cellular_automata as ca
 import evodynamic.cells.activation as act
+import evodynamic.connection as connection
 import numpy as np
+from sklearn.linear_model import LinearRegression
 import time
 
 width = 100
@@ -12,19 +14,22 @@ timesteps = 1000
 exp = experiment.Experiment()
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
 neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
-g_ca.add_binary_state(state_name='g_ca_bin')
+g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin')
 g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx,
                                            is_wrapped_ca=True)
 
-g_ca.add_internal_connection(state_name='g_ca_bin', connection=g_ca_bin_conn,\
-                             activation_func=act.rule_binary_ca_1d_width3_func,\
-                             fargs=(110,))
+#g_ca.add_internal_connection(state_name='g_ca_bin', connection=g_ca_bin_conn,\
+#                            activation_func=act.rule_binary_ca_1d_width3_func,\
+#                             fargs=(110,))
 
 #g_ca.add_internal_connection(state_name='g_ca_bin', connection=g_ca_bin_conn,\
 #                             activation_func=act.rule_binary_ca_1d_width3_func,\
 #                             fargs=(10,))
+
+
+exp.add_connections("g_ca_conn", connection.WeightedConnection(g_ca_bin,g_ca_bin,act.rule_binary_ca_1d_width3_func,g_ca_bin_conn, fargs_list=[(110,), (10,)]))
 
 exp.add_monitor("g_ca", "g_ca_bin", timesteps)
 
@@ -100,11 +105,33 @@ avalanche_s_1_bc = np.bincount(avalanche_s_1)[1:]
 avalanche_d_1_bc = np.bincount(avalanche_d_1)[1:]
 #avalanche_c_1_bc = np.bincount(avalanche_c_1)[1:]
 
-plot_distribution(avalanche_s_0_bc, "Avalanche size | Elementary CA rule 110 | v=0 | N=10^3 | t=10^4")
-plot_distribution(avalanche_d_0_bc, "Avalanche duration | Elementary CA rule 110 | v=0 | N=10^3 | t=10^4")
-#plot_distribution(avalanche_c_0_bc, "Avalanche count | Elementary CA rule 30 | v=0 | N=10^3 | t=10^4")
-plot_distribution(avalanche_s_1_bc, "Avalanche size | Elementary CA rule 110 | v=1 | N=10^3 | t=10^4")
-plot_distribution(avalanche_d_1_bc, "Avalanche duration | Elementary CA rule 110 | v=1 | N=10^3 | t=10^4")
-#plot_distribution(avalanche_c_1_bc, "Avalanche count | Elementary CA rule 30 | v=1 | N=10^3 | t=10^4")
+plot_distribution(avalanche_s_0_bc, "Avalanche size | Elementary CA rule 110+10 | v=0 | N=10^4 | t=10^5")
+plot_distribution(avalanche_d_0_bc, "Avalanche duration | Elementary CA rule 110+10 | v=0 | N=10^4 | t=10^5")
+#plot_distribution(avalanche_c_0_bc, "Avalanche count | Elementary CA rule 30 | v=0 | N=10^4 | t=10^5")
+plot_distribution(avalanche_s_1_bc, "Avalanche size | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
+plot_distribution(avalanche_d_1_bc, "Avalanche duration | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
+#plot_distribution(avalanche_c_1_bc, "Avalanche count | Elementary CA rule 30 | v=1 | N=10^4 | t=10^5")
+
+
+log_avalanche_s_0_bc = np.log10(avalanche_s_0_bc)
+log_avalanche_d_0_bc = np.log10(avalanche_d_0_bc)
+log_avalanche_s_1_bc = np.log10(avalanche_s_1_bc)
+log_avalanche_d_1_bc = np.log10(avalanche_d_1_bc)
+
+log_avalanche_s_0_bc = np.where(np.isfinite(log_avalanche_s_0_bc), log_avalanche_s_0_bc, 0)
+log_avalanche_d_0_bc = np.where(np.isfinite(log_avalanche_d_0_bc), log_avalanche_d_0_bc, 0)
+log_avalanche_s_1_bc = np.where(np.isfinite(log_avalanche_s_1_bc), log_avalanche_s_1_bc, 0)
+log_avalanche_d_1_bc = np.where(np.isfinite(log_avalanche_d_1_bc), log_avalanche_d_1_bc, 0)
+
+fit_avalanche_s_0_bc = LinearRegression().fit(np.arange(1,len(avalanche_s_0_bc)+1).reshape(-1,1), log_avalanche_s_0_bc)
+fit_avalanche_d_0_bc = LinearRegression().fit(np.arange(1,len(avalanche_d_0_bc)+1).reshape(-1,1), log_avalanche_d_0_bc)
+fit_avalanche_s_1_bc = LinearRegression().fit(np.arange(1,len(avalanche_s_1_bc)+1).reshape(-1,1), log_avalanche_s_1_bc)
+fit_avalanche_d_1_bc = LinearRegression().fit(np.arange(1,len(avalanche_d_1_bc)+1).reshape(-1,1), log_avalanche_d_1_bc)
+
+print(fit_avalanche_s_0_bc.score(np.arange(1,len(avalanche_s_0_bc)+1).reshape(-1,1), log_avalanche_s_0_bc))
+print(fit_avalanche_d_0_bc.score(np.arange(1,len(avalanche_d_0_bc)+1).reshape(-1,1), log_avalanche_d_0_bc))
+print(fit_avalanche_s_1_bc.score(np.arange(1,len(avalanche_s_1_bc)+1).reshape(-1,1), log_avalanche_s_1_bc))
+print(fit_avalanche_d_1_bc.score(np.arange(1,len(avalanche_d_1_bc)+1).reshape(-1,1), log_avalanche_d_1_bc))
+
 
 np.savez("dict_avalanche_bincount.npz", avalanche_s_0_bc, avalanche_d_0_bc, avalanche_s_1_bc, avalanche_d_1_bc)

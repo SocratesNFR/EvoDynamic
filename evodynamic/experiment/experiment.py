@@ -12,6 +12,7 @@ class Experiment(object):
     self.dt = dt
     self.cell_groups = {}
     self.connections = {}
+    self.connection_ops = []
     self.monitors = {}
     self.session = tf.Session()
 
@@ -31,6 +32,7 @@ class Experiment(object):
   def add_connections(self, name, connection):
     connection.set_experiment(self)
     self.connections[name] = connection
+    self.connection_ops.append(connection.list_ops)
     return connection
 
   def initialize_cells(self):
@@ -43,10 +45,9 @@ class Experiment(object):
     self.session.close()
 
   #TODO: def run(self,timesteps: int = 10, dataset, batch_size):
-  def run(self,timesteps: int = 10):
+  def run(self,timesteps: int = 10, feed_dict=None):
     for step in range(timesteps-1):
-      for conn_key in self.connections:
-        self.connections[conn_key].compute()
+      self.session.run(self.connection_ops, feed_dict=feed_dict)
 
       for group_key in self.cell_groups:
         self.session.run(self.cell_groups[group_key].internal_connections)
@@ -57,9 +58,9 @@ class Experiment(object):
       utils.progressbar(step+1, timesteps-1)
 
   #TODO: def run_step(self, input_dict):
-  def run_step(self):
+  def run_step(self, feed_dict=None):
     for conn_key in self.connections:
-      self.connections[conn_key].compute()
+      self.session.run(self.connection_ops, feed_dict=feed_dict)
 
     for group_key in self.cell_groups:
       self.session.run(self.cell_groups[group_key].internal_connections)
