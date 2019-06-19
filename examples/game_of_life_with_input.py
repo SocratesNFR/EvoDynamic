@@ -23,8 +23,8 @@ g_ca_bin_conn = ca.create_conn_matrix_ca2d('g_ca_bin_conn',width,height,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx)
 
-exp.add_connections("input_conn", connection.IndexConnection(input_ca,g_ca_bin,np.arange(input_size)))
-exp.add_connections("g_ca_conn", connection.WeightedConnection(g_ca_bin,g_ca_bin,act.game_of_life_func,g_ca_bin_conn))
+exp.add_connection("input_conn", connection.IndexConnection(input_ca,g_ca_bin,np.arange(input_size)))
+exp.add_connection("g_ca_conn", connection.WeightedConnection(g_ca_bin,g_ca_bin,act.game_of_life_func,g_ca_bin_conn))
 
 exp.initialize_cells()
 

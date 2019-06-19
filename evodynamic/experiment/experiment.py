@@ -29,7 +29,7 @@ class Experiment(object):
     self.cell_groups[name] = g_cells
     return g_cells
 
-  def add_connections(self, name, connection):
+  def add_connection(self, name, connection):
     connection.set_experiment(self)
     self.connections[name] = connection
     self.connection_ops.append(connection.list_ops)

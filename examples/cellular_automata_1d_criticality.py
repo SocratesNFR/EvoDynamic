@@ -8,8 +8,8 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 import time
 
-width = 100
-timesteps = 1000
+width = 1000
+timesteps = 10000
 
 exp = experiment.Experiment()
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
@@ -29,7 +29,7 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 #                             fargs=(10,))
 
 
-exp.add_connections("g_ca_conn", connection.WeightedConnection(g_ca_bin,g_ca_bin,act.rule_binary_ca_1d_width3_func,g_ca_bin_conn, fargs_list=[(110,), (10,)]))
+exp.add_connection("g_ca_conn", connection.WeightedConnection(g_ca_bin,g_ca_bin,act.rule_binary_ca_1d_width3_func,g_ca_bin_conn, fargs_list=[(90,)]))
 
 exp.add_monitor("g_ca", "g_ca_bin", timesteps)
 

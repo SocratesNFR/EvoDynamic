@@ -19,11 +19,11 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 
 g_ca.add_internal_connection(state_name='g_ca_bin', connection=g_ca_bin_conn,\
                              activation_func=act.rule_binary_ca_1d_width3_func,\
-                             fargs=(30,))
+                             fargs=(90,))
 
-g_ca.add_internal_connection(state_name='g_ca_bin', connection=g_ca_bin_conn,\
-                             activation_func=act.rule_binary_ca_1d_width3_func,\
-                             fargs=(10,))
+#g_ca.add_internal_connection(state_name='g_ca_bin', connection=g_ca_bin_conn,\
+#                             activation_func=act.rule_binary_ca_1d_width3_func,\
+#                             fargs=(10,))
 
 exp.add_monitor("g_ca", "g_ca_bin")
 
