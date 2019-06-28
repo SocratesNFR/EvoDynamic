@@ -28,12 +28,13 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 #                             activation_func=act.rule_binary_ca_1d_width3_func,\
 #                             fargs=(10,))
 
-fargs_list = [(a,) for a in [246, 131]]
+fargs_list = [([0.2992531667235731, 0.055125601105234484, 0.32609747643731385,\
+                0.0, 0.11885547205711025, 0.2375522459228787, 1.0, 0.4898738531053132],)]
 
 exp.add_connection("g_ca_conn",
-                   connection.WeightedConnection(g_ca_bin,g_ca_bin,
-                                                 act.rule_binary_ca_1d_width3_func,
-                                                 g_ca_bin_conn, fargs_list=fargs_list))
+                     connection.WeightedConnection(g_ca_bin,g_ca_bin,
+                                                   act.rule_binary_sca_1d_width3_func,
+                                                   g_ca_bin_conn, fargs_list=fargs_list))
 
 exp.add_monitor("g_ca", "g_ca_bin", timesteps)
 

@@ -18,12 +18,19 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx)
 
-fargs_list = [(a,) for a in [246, 131]]
+#fargs_list = [([0.8653582694285038, 0.07574324505979713, 0.0,\
+#                0.6701419392338681, 0.02243120000370638, 0.46365825379340864,\
+#                0.7473194740998363, 1.0],)]
+
+
+fargs_list = [([0.8653582694285038, 0.07574324505979713, 0.0,\
+                0.6701419392338681, 0.02243120000370638, 0.46365825379340864,\
+                0.7473194740998363, 1.0],)]
 
 exp.add_connection("g_ca_conn",
-                   connection.WeightedConnection(g_ca_bin,g_ca_bin,
-                                                 act.rule_binary_ca_1d_width3_func,
-                                                 g_ca_bin_conn, fargs_list=fargs_list))
+                     connection.WeightedConnection(g_ca_bin,g_ca_bin,
+                                                   act.rule_binary_sca_1d_width3_func,
+                                                   g_ca_bin_conn, fargs_list=fargs_list))
 
 exp.add_monitor("g_ca", "g_ca_bin")
 

@@ -1,4 +1,4 @@
-""" Evolving Cellular automata 1D - Self-organized criticality"""
+""" Evolving Stochastic Cellular automata 1D - Self-organized criticality"""
 
 import evodynamic.experiment as experiment
 import evodynamic.connection.cellular_automata as ca
@@ -109,15 +109,17 @@ def evaluate_result(ca_result):
       len(avalanche_s_1_bc)+len(avalanche_d_1_bc))
 
     norm_unique_states = ((np.unique(ca_result, axis=0).shape[0]) / ca_result.shape[1])
-
+    print("norm_max_avalanche", norm_unique_states)
+    print("norm_unique_states", norm_unique_states)
     fitness = np.mean(lin_err) + norm_coef(np.mean(coef))+norm_max_avalanche+norm_unique_states#+norm_diff(log_avalanche_s_0_bc)\
       #+norm_diff(log_avalanche_d_0_bc)+norm_diff(log_avalanche_s_1_bc)+norm_diff(log_avalanche_d_1_bc)
   print("Fitness", fitness)
   return fitness
 
 # genome is a list of integers between 0 and 255
-def evaluate_genome(genome=[110]):
-  gen_rule = [(r,) for r in genome]
+def evaluate_genome(genome=8*[0.5]):
+  print(genome)
+  gen_rule = [(genome,)]
   
   exp = experiment.Experiment()
   g_ca = exp.add_group_cells(name="g_ca", amount=width)
@@ -131,7 +133,7 @@ def evaluate_genome(genome=[110]):
 
   exp.add_connection("g_ca_conn",
                      connection.WeightedConnection(g_ca_bin,g_ca_bin,
-                                                   act.rule_binary_ca_1d_width3_func,
+                                                   act.rule_binary_sca_1d_width3_func,
                                                    g_ca_bin_conn, fargs_list=gen_rule))
 
   exp.add_monitor("g_ca", "g_ca_bin", timesteps)
@@ -150,7 +152,7 @@ def evaluate_genome(genome=[110]):
 
 start_total = time.time()
 
-best_genome = ga.evolve_rules(evaluate_genome)
+best_genome = ga.evolve_probability(evaluate_genome, pop_size=20, generation=20)
 
 print("TOTAL Execution time:", time.time()-start_total)
 
