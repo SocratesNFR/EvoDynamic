@@ -18,7 +18,16 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx)
 
-fargs_list = [(a,) for a in [246, 131]]
+#fargs_list = [(a,) for a in [246, 131]]
+
+#fargs_list = [(a,) for a in [54, 52, 144, 127, 30, 17, 159, 81, 75, 226, 222,\
+#              16, 191, 206, 14, 133, 237, 191, 204, 92, 98, 8, 55, 202, 169,\
+#              243, 221, 80, 102, 154, 186, 125, 2, 172, 237, 242, 184, 140, 208,\
+#              34, 248]]
+
+#[235, 36]
+fargs_list = [(a,) for a in [235, 36]]
+
 
 exp.add_connection("g_ca_conn",
                    connection.WeightedConnection(g_ca_bin,g_ca_bin,

@@ -136,3 +136,6 @@ evodynamic/*.png
 # Generated numpy saving files
 *.npz
 *.npy
+
+# Generated CSV
+*.csv
