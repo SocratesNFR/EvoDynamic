@@ -30,8 +30,8 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 #                             activation_func=act.rule_binary_ca_1d_width3_func,\
 #                             fargs=(10,))
 
-fargs_list = [([0.8653582694285038, 0.07574324505979713, 0.0, 0.6701419392338681,\
-                0.02243120000370638, 0.46365825379340864, 0.7473194740998363, 1.0],)]
+#fargs_list = [([0.8653582694285038, 0.07574324505979713, 0.0, 0.6701419392338681,\
+#                0.02243120000370638, 0.46365825379340864, 0.7473194740998363, 1.0],)]
 
 #fargs_list = [([0.8844229523381606, 0.16105272036927262, 0.531159153794522,\
 #                0.10896772965937962, 0.03419006259328916, 0.8514302121431078,\
@@ -56,6 +56,33 @@ fargs_list = [([0.8653582694285038, 0.07574324505979713, 0.0, 0.6701419392338681
 #fargs_list = [([0.8303410454869249, 0.34589954377429766, 0.4988012028059393,\
 #                0.44478909765219643, 0.9769661117891618, 0.9864324101565448,\
 #                0.4575131557070529, 0.7438277924949578],)]
+
+# KSdist v1
+#[0.7518912199241519, 0.192243726846539, 0.6793537704302968, 0.06805062402423168, 0.3057575544405007, 0.11942103440472951, 0.23006373677080105, 0.7406200653919119]
+#fargs_list = [([0.7518912199241519, 0.192243726846539, 0.6793537704302968,\
+#                0.06805062402423168, 0.3057575544405007, 0.11942103440472951,\
+#                0.23006373677080105, 0.7406200653919119],)]
+
+# Linscore v1
+#[0.0, 0.9070879604309787, 0.4188613893550347, 0.6079285957444898, 0.4934497457781474, 0.8392309854612579, 0.5567609207282824, 0.38955551925501153]
+#fargs_list = [([0.01570116563203865, 1.0, 0.4129675452152867, 0.3178612115220769,\
+#                0.31053896878385434, 0.8884505026807941, 0.0, 0.991648085846428],)]
+
+# Linscore v2
+#linscore_list [0.5834644439350247, 0.6479955928892266, 0.8540880866176728, 0.853869637021817]
+#coef_list [-1.2263008936316808, -1.405019428933119, -2.3196935735407744, -0.9373700954204931]
+#ksdist_list [0.2001904799894968, 0.0895541835088719, 0.7143133176377726, 0.4510843272713063]
+#norm_max_avalanche 2.7824999999999998
+#norm_linscore_res 7.944712633668041
+#norm_ksdist_res 8.816741451174154
+#norm_coef_res 0.1472095997881517
+#norm_unique_states 9.99
+#Fitness 29.681163684630345
+#Final fitness 29.681163684630345
+#[0.0, 0.3618682833991151, 0.9351331704391235, 0.8463312130982412, 0.0, 0.8151468734995813, 0.7855949972367493, 0.6894332222623756]
+fargs_list = [([0.0, 0.3618682833991151, 0.9351331704391235, 0.8463312130982412,\
+                0.0, 0.8151468734995813, 0.7855949972367493, 0.6894332222623756],)]
+
 
 
 exp.add_connection("g_ca_conn",
@@ -95,6 +122,9 @@ def powerlaw_stats(data):
   fit.plot_ccdf(color = "r", linewidth = 2, ax= ax)
   fit.power_law.plot_ccdf(color = "r", linestyle = "--", ax =ax)
 
+#def KSdist(theoretical_pdf, empirical_pdf):
+#  return np.max(np.abs(np.cumsum(theoretical_pdf) - np.cumsum(empirical_pdf)))
+
 def getdict_cluster_size(arr1d):
   cluster_dict = {}
   current_number = None
@@ -127,12 +157,18 @@ def getarray_avalanche_duration(x, value):
         list_avalance_duration.extend(getdict_cluster_size(x[:,i])[value])
   return np.array(list_avalance_duration)
 
+def norm_coef(coef):
+  return -0.1*np.mean(coef)
+
 def norm_alpha(alpha):
   return 0.1*np.mean(alpha)
 
+def norm_linscore(linscore):
+  return 5*np.max(linscore)+5*np.mean(linscore)
+
 # Normalize values from 0 to inf to be from 10 to 0
-def norm_ksdist(ksdist, smooth=0.1):
-  return np.exp(-smooth * (np.min(ksdist)+0.1*np.mean(ksdist)))
+def norm_ksdist(ksdist, smooth=1):
+  return 10*np.exp(-smooth * (np.min(ksdist)+0.1*np.mean(ksdist)))
 
 # Normalize values from -inf to inf to be from 0 to 1
 def norm_R(R, smooth=0.01):
@@ -153,36 +189,103 @@ def calculate_data_score(data):
 def evaluate_result(ca_result):
   avalanche_s_0 = getarray_avalanche_size(ca_result, 0)
   avalanche_d_0 = getarray_avalanche_duration(ca_result, 0)
+  avalanche_s_0_bc = np.bincount(avalanche_s_0)[1:] if len(avalanche_s_0) > 5 else []
+  avalanche_d_0_bc = np.bincount(avalanche_d_0)[1:] if len(avalanche_d_0) > 5 else []
+  
   avalanche_s_1 = getarray_avalanche_size(ca_result, 1)
   avalanche_d_1 = getarray_avalanche_duration(ca_result, 1)
+  avalanche_s_1_bc = np.bincount(avalanche_s_1)[1:] if len(avalanche_s_1) > 5 else []
+  avalanche_d_1_bc = np.bincount(avalanche_d_1)[1:] if len(avalanche_d_1) > 5 else []
 
-  fit_avalanche_s_0 = calculate_data_score(avalanche_s_0)
-  fit_avalanche_d_0 = calculate_data_score(avalanche_d_0)
-  fit_avalanche_s_1 = calculate_data_score(avalanche_s_1)
-  fit_avalanche_d_1 = calculate_data_score(avalanche_d_1)
+  avalanche_s_0_bc = avalanche_s_0_bc/sum(avalanche_s_0_bc)
+  avalanche_d_0_bc = avalanche_d_0_bc/sum(avalanche_d_0_bc)
+  avalanche_s_1_bc = avalanche_s_1_bc/sum(avalanche_s_1_bc)
+  avalanche_d_1_bc = avalanche_d_1_bc/sum(avalanche_d_1_bc)
 
-  alpha_list = [fit_avalanche_s_0[0], fit_avalanche_d_0[0], fit_avalanche_s_1[0],\
-                fit_avalanche_d_1[0]]
-  ksdist_list = [fit_avalanche_s_0[1], fit_avalanche_d_0[1], fit_avalanche_s_1[1],\
-                fit_avalanche_d_1[1]]
-  R_list = [fit_avalanche_s_0[2], fit_avalanche_d_0[2], fit_avalanche_s_1[2],\
-            fit_avalanche_d_1[2]]
+  mask_avalanche_s_0_bc = avalanche_s_0_bc > 0
+  mask_avalanche_d_0_bc = avalanche_d_0_bc > 0
+  mask_avalanche_s_1_bc = avalanche_s_1_bc > 0
+  mask_avalanche_d_1_bc = avalanche_d_1_bc > 0
+
+  log_avalanche_s_0_bc = np.log10(avalanche_s_0_bc)
+  log_avalanche_d_0_bc = np.log10(avalanche_d_0_bc)
+  log_avalanche_s_1_bc = np.log10(avalanche_s_1_bc)
+  log_avalanche_d_1_bc = np.log10(avalanche_d_1_bc)
   
-  print("alpha_list", alpha_list)
-  print("ksdist_list", ksdist_list)
-  print("R_list", R_list)
-  
-  norm_ksdist_res = norm_ksdist(ksdist_list)
-  norm_alpha_res = norm_alpha(alpha_list)
-  norm_R_res = norm_R(R_list)
-  norm_unique_states = ((np.unique(ca_result, axis=0).shape[0]) / ca_result.shape[1])
+  log_avalanche_s_0_bc = np.where(mask_avalanche_s_0_bc, log_avalanche_s_0_bc, 0)
+  log_avalanche_d_0_bc = np.where(mask_avalanche_d_0_bc, log_avalanche_d_0_bc, 0)
+  log_avalanche_s_1_bc = np.where(mask_avalanche_s_1_bc, log_avalanche_s_1_bc, 0)
+  log_avalanche_d_1_bc = np.where(mask_avalanche_d_1_bc, log_avalanche_d_1_bc, 0)
 
-  print("norm_ksdist_res", norm_ksdist_res)
-  print("norm_alpha_res", norm_alpha_res)
-  print("norm_R_res", norm_R_res)
-  print("norm_unique_states", norm_unique_states)
+  fitness = 0
 
-  fitness = norm_ksdist_res + norm_alpha_res + norm_R_res + norm_unique_states
+  if sum(mask_avalanche_s_0_bc[:10]) > 5 and sum(mask_avalanche_d_0_bc[:10]) > 5 and\
+    sum(mask_avalanche_s_1_bc[:10]) > 5 and sum(mask_avalanche_d_1_bc[:10]) > 5:
+
+    # Fit PDF using least square error
+    fit_avalanche_s_0_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_s_0_bc)+1)[mask_avalanche_s_0_bc]).reshape(-1,1), log_avalanche_s_0_bc[mask_avalanche_s_0_bc])
+    fit_avalanche_d_0_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_d_0_bc)+1)[mask_avalanche_d_0_bc]).reshape(-1,1), log_avalanche_d_0_bc[mask_avalanche_d_0_bc])
+    fit_avalanche_s_1_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_s_1_bc)+1)[mask_avalanche_s_1_bc]).reshape(-1,1), log_avalanche_s_1_bc[mask_avalanche_s_1_bc])
+    fit_avalanche_d_1_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_d_1_bc)+1)[mask_avalanche_d_1_bc]).reshape(-1,1), log_avalanche_d_1_bc[mask_avalanche_d_1_bc])
+
+    linscore_list = []
+    linscore_list.append(fit_avalanche_s_0_bc.score(np.log10(np.arange(1,len(avalanche_s_0_bc)+1)[mask_avalanche_s_0_bc]).reshape(-1,1), log_avalanche_s_0_bc[mask_avalanche_s_0_bc]))
+    linscore_list.append(fit_avalanche_d_0_bc.score(np.log10(np.arange(1,len(avalanche_d_0_bc)+1)[mask_avalanche_d_0_bc]).reshape(-1,1), log_avalanche_d_0_bc[mask_avalanche_d_0_bc]))
+    linscore_list.append(fit_avalanche_s_1_bc.score(np.log10(np.arange(1,len(avalanche_s_1_bc)+1)[mask_avalanche_s_1_bc]).reshape(-1,1), log_avalanche_s_1_bc[mask_avalanche_s_1_bc]))
+    linscore_list.append(fit_avalanche_d_1_bc.score(np.log10(np.arange(1,len(avalanche_d_1_bc)+1)[mask_avalanche_d_1_bc]).reshape(-1,1), log_avalanche_d_1_bc[mask_avalanche_d_1_bc]))
+
+    # Fit PDF using least square error
+    fit_avalanche_s_0_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_s_0_bc)+1)[mask_avalanche_s_0_bc]).reshape(-1,1), log_avalanche_s_0_bc[mask_avalanche_s_0_bc], sample_weight=[1 if idx < 10 else 0 for idx in np.arange(len(avalanche_s_0_bc))[mask_avalanche_s_0_bc]])
+    fit_avalanche_d_0_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_d_0_bc)+1)[mask_avalanche_d_0_bc]).reshape(-1,1), log_avalanche_d_0_bc[mask_avalanche_d_0_bc], sample_weight=[1 if idx < 10 else 0 for idx in np.arange(len(avalanche_d_0_bc))[mask_avalanche_d_0_bc]])
+    fit_avalanche_s_1_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_s_1_bc)+1)[mask_avalanche_s_1_bc]).reshape(-1,1), log_avalanche_s_1_bc[mask_avalanche_s_1_bc], sample_weight=[1 if idx < 10 else 0 for idx in np.arange(len(avalanche_s_1_bc))[mask_avalanche_s_1_bc]])
+    fit_avalanche_d_1_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_d_1_bc)+1)[mask_avalanche_d_1_bc]).reshape(-1,1), log_avalanche_d_1_bc[mask_avalanche_d_1_bc], sample_weight=[1 if idx < 10 else 0 for idx in np.arange(len(avalanche_d_1_bc))[mask_avalanche_d_1_bc]])
+
+    theor_avalanche_s_0_bc = np.power(10,fit_avalanche_s_0_bc.predict(np.log10(np.arange(1,len(avalanche_s_0_bc)+1).reshape(-1,1))))
+    theor_avalanche_d_0_bc = np.power(10,fit_avalanche_d_0_bc.predict(np.log10(np.arange(1,len(avalanche_d_0_bc)+1).reshape(-1,1))))
+    theor_avalanche_s_1_bc = np.power(10,fit_avalanche_s_1_bc.predict(np.log10(np.arange(1,len(avalanche_s_1_bc)+1).reshape(-1,1))))
+    theor_avalanche_d_1_bc = np.power(10,fit_avalanche_d_1_bc.predict(np.log10(np.arange(1,len(avalanche_d_1_bc)+1).reshape(-1,1))))
+
+    ksdist_list = []
+    ksdist_list.append(KSdist(theor_avalanche_s_0_bc, avalanche_s_0_bc))
+    ksdist_list.append(KSdist(theor_avalanche_d_0_bc, avalanche_d_0_bc))
+    ksdist_list.append(KSdist(theor_avalanche_s_1_bc, avalanche_s_1_bc))
+    ksdist_list.append(KSdist(theor_avalanche_d_1_bc, avalanche_d_1_bc))
+
+    coef_list = []
+    coef_list.append(fit_avalanche_s_0_bc.coef_[0])
+    coef_list.append(fit_avalanche_d_0_bc.coef_[0])
+    coef_list.append(fit_avalanche_s_1_bc.coef_[0])
+    coef_list.append(fit_avalanche_d_1_bc.coef_[0])
+    #print(coef)
+
+    norm_max_avalanche = 10*np.mean([sum(mask_avalanche_s_0_bc)/width,sum(mask_avalanche_d_0_bc)/timesteps,\
+      sum(mask_avalanche_s_1_bc)/width,sum(mask_avalanche_d_1_bc)/timesteps])
+
+    print("linscore_list", linscore_list)
+    print("coef_list", coef_list)
+    print("ksdist_list", ksdist_list)
+
+    norm_linscore_res = norm_linscore(linscore_list)
+    norm_ksdist_res = norm_ksdist(ksdist_list)
+    norm_coef_res = norm_coef(coef_list)
+    norm_unique_states = 10*((np.unique(ca_result, axis=0).shape[0]) / ca_result.shape[1])
+
+
+    print("norm_max_avalanche", norm_max_avalanche)
+    print("norm_linscore_res", norm_linscore_res)
+    print("norm_ksdist_res", norm_ksdist_res)
+    print("norm_coef_res", norm_coef_res)
+    print("norm_unique_states", norm_unique_states)
+
+    plot_distribution(avalanche_s_0_bc, fit_avalanche_s_0_bc, "Avalanche size | Elementary CA rule 110+10 | v=0 | N=10^4 | t=10^5")
+    plot_distribution(avalanche_d_0_bc, fit_avalanche_d_0_bc, "Avalanche duration | Elementary CA rule 110+10 | v=0 | N=10^4 | t=10^5")
+
+    plot_distribution(avalanche_s_1_bc, fit_avalanche_s_1_bc, "Avalanche size | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
+    plot_distribution(avalanche_d_1_bc, fit_avalanche_d_1_bc, "Avalanche duration | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
+
+
+    fitness = norm_ksdist_res + norm_coef_res + norm_unique_states + norm_max_avalanche + norm_linscore_res
+
   print("Fitness", fitness)
   return fitness
 
