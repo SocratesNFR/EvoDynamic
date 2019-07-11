@@ -89,9 +89,10 @@ def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255])
     fitness_list = list(new_fitness_list)
     generation_best_genome_idx = max(pop_indices, key=lambda idx: fitness_list[idx])
     if fitness_list[generation_best_genome_idx] > best_genome_fitness:
-      best_genome = pop_list[generation_best_genome_idx]
+      best_genome = list(pop_list[generation_best_genome_idx])
       best_genome_fitness = fitness_list[generation_best_genome_idx]
-      print("best_genome_fitness", best_genome_fitness)
+      print("PARTIAL best_genome", best_genome)
+      print("PARTIAL best_genome_fitness", best_genome_fitness)
 
   print("best_genome", best_genome)
   print("best_genome_fitness", best_genome_fitness)
@@ -160,9 +161,10 @@ def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8)
     fitness_list = list(new_fitness_list)
     generation_best_genome_idx = max(pop_indices, key=lambda idx: fitness_list[idx])
     if fitness_list[generation_best_genome_idx] > best_genome_fitness:
-      best_genome = pop_list[generation_best_genome_idx]
+      best_genome = list(pop_list[generation_best_genome_idx])
       best_genome_fitness = fitness_list[generation_best_genome_idx]
-      print("best_genome_fitness", best_genome_fitness)
+      print("PARTIAL best_genome", best_genome)
+      print("PARTIAL best_genome_fitness", best_genome_fitness)
 
   print("best_genome", best_genome)
   print("best_genome_fitness", best_genome_fitness)
