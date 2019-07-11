@@ -148,7 +148,7 @@ def norm_alpha(alpha):
   return 0.1*np.mean(alpha)
 
 def norm_linscore(linscore):
-  return 5*np.max(linscore)+5*np.mean(linscore)
+  return 10*np.mean(linscore)#5*np.max(linscore)+5*np.mean(linscore)
 
 # Normalize values from 0 to inf to be from 10 to 0
 def norm_ksdist(ksdist, smooth=1):
@@ -170,7 +170,7 @@ def calculate_data_score(data):
 
   return alpha, ksdist, R
 
-def evaluate_result(ca_result):
+def evaluate_result(ca_result, filename=None):
   avalanche_s_0 = getarray_avalanche_size(ca_result, 0)
   avalanche_d_0 = getarray_avalanche_duration(ca_result, 0)
   avalanche_s_0_bc = np.bincount(avalanche_s_0)[1:] if len(avalanche_s_0) > 5 else []
@@ -202,6 +202,11 @@ def evaluate_result(ca_result):
   log_avalanche_d_1_bc = np.where(mask_avalanche_d_1_bc, log_avalanche_d_1_bc, 0)
 
   fitness = 0
+  norm_max_avalanche = 0
+  norm_linscore_res = 0
+  norm_ksdist_res = 0
+  norm_coef_res = 0
+  norm_unique_states = 0
 
   if sum(mask_avalanche_s_0_bc[:10]) > 5 and sum(mask_avalanche_d_0_bc[:10]) > 5 and\
     sum(mask_avalanche_s_1_bc[:10]) > 5 and sum(mask_avalanche_d_1_bc[:10]) > 5:
@@ -261,17 +266,18 @@ def evaluate_result(ca_result):
     print("norm_coef_res", norm_coef_res)
     print("norm_unique_states", norm_unique_states)
 
-    plot_distribution(avalanche_s_0_bc, fit_avalanche_s_0_bc, "Avalanche size | Elementary CA rule 110+10 | v=0 | N=10^4 | t=10^5")
-    plot_distribution(avalanche_d_0_bc, fit_avalanche_d_0_bc, "Avalanche duration | Elementary CA rule 110+10 | v=0 | N=10^4 | t=10^5")
-
-    plot_distribution(avalanche_s_1_bc, fit_avalanche_s_1_bc, "Avalanche size | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
-    plot_distribution(avalanche_d_1_bc, fit_avalanche_d_1_bc, "Avalanche duration | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
-
-
     fitness = norm_ksdist_res + norm_coef_res + norm_unique_states + norm_max_avalanche + norm_linscore_res
 
+  val_dict = {}
+  val_dict["norm_ksdist_res"] = norm_ksdist_res
+  val_dict["norm_coef_res"] = norm_coef_res
+  val_dict["norm_unique_states"] = norm_unique_states
+  val_dict["norm_max_avalanche"] = norm_max_avalanche
+  val_dict["norm_linscore_res"] = norm_linscore_res
+  val_dict["fitness"] = fitness
+
   print("Fitness", fitness)
-  return fitness
+  return fitness, val_dict
 
 def plot_distribution(distribution, fitobj=None, title=""):
   plt.figure()

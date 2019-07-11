@@ -80,10 +80,27 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 #Fitness 29.681163684630345
 #Final fitness 29.681163684630345
 #[0.0, 0.3618682833991151, 0.9351331704391235, 0.8463312130982412, 0.0, 0.8151468734995813, 0.7855949972367493, 0.6894332222623756]
-fargs_list = [([0.0, 0.3618682833991151, 0.9351331704391235, 0.8463312130982412,\
-                0.0, 0.8151468734995813, 0.7855949972367493, 0.6894332222623756],)]
+#fargs_list = [([0.0, 0.3618682833991151, 0.9351331704391235, 0.8463312130982412,\
+#                0.0, 0.8151468734995813, 0.7855949972367493, 0.6894332222623756],)]
+
+#linscore_list [0.9164520198544741, 0.8868933805871793, 0.8480382252601746, 0.8267218257758018]
+#coef_list [-4.476084903287097, -2.2566231833058588, -1.2619591602903448, -0.6985067410895673]
+#ksdist_list [2.3368092214409217, 0.5813113549969555, 0.28539671172691405, 0.8673187275394576]
+#norm_max_avalanche 0.32
+#norm_linscore_res 8.929891913619407
+#norm_ksdist_res 6.789772805674682
+#norm_coef_res 0.21732934969932172
+#norm_unique_states 10.0
+#Fitness 26.25699406899341
+#Final fitness 26.25699406899341
+#[0.0, 0.9937308709227934, 0.2964750339744071, 0.9753097081692617, 0.62667286680341, 0.2656724804580005, 0.9534392401759685, 0.8035371440156405]
+#fargs_list = [([0.0, 0.9937308709227934, 0.2964750339744071, 0.9753097081692617,\
+#                0.62667286680341, 0.2656724804580005, 0.9534392401759685, 0.8035371440156405],)]
 
 
+#[0.6623156552951929, 0.30103005432095725, 0.07498195810784192, 0.0808450415545039, 0.0, 0.013194635331741367, 0.548389977412498, 0.01861153275710714]
+fargs_list = [([0.0, 0.9937308709227934, 0.2964750339744071, 0.9753097081692617,\
+                0.62667286680341, 0.2656724804580005, 0.9534392401759685, 0.8035371440156405],)]
 
 exp.add_connection("g_ca_conn",
                      connection.WeightedConnection(g_ca_bin,g_ca_bin,
@@ -164,7 +181,7 @@ def norm_alpha(alpha):
   return 0.1*np.mean(alpha)
 
 def norm_linscore(linscore):
-  return 5*np.max(linscore)+5*np.mean(linscore)
+  return 10*np.mean(linscore)#5*np.max(linscore)+5*np.mean(linscore)
 
 # Normalize values from 0 to inf to be from 10 to 0
 def norm_ksdist(ksdist, smooth=1):
@@ -186,7 +203,7 @@ def calculate_data_score(data):
 
   return alpha, ksdist, R
 
-def evaluate_result(ca_result):
+def evaluate_result(ca_result, filename=None):
   avalanche_s_0 = getarray_avalanche_size(ca_result, 0)
   avalanche_d_0 = getarray_avalanche_duration(ca_result, 0)
   avalanche_s_0_bc = np.bincount(avalanche_s_0)[1:] if len(avalanche_s_0) > 5 else []
@@ -218,6 +235,11 @@ def evaluate_result(ca_result):
   log_avalanche_d_1_bc = np.where(mask_avalanche_d_1_bc, log_avalanche_d_1_bc, 0)
 
   fitness = 0
+  norm_max_avalanche = 0
+  norm_linscore_res = 0
+  norm_ksdist_res = 0
+  norm_coef_res = 0
+  norm_unique_states = 0
 
   if sum(mask_avalanche_s_0_bc[:10]) > 5 and sum(mask_avalanche_d_0_bc[:10]) > 5 and\
     sum(mask_avalanche_s_1_bc[:10]) > 5 and sum(mask_avalanche_d_1_bc[:10]) > 5:
@@ -277,17 +299,18 @@ def evaluate_result(ca_result):
     print("norm_coef_res", norm_coef_res)
     print("norm_unique_states", norm_unique_states)
 
-    plot_distribution(avalanche_s_0_bc, fit_avalanche_s_0_bc, "Avalanche size | Elementary CA rule 110+10 | v=0 | N=10^4 | t=10^5")
-    plot_distribution(avalanche_d_0_bc, fit_avalanche_d_0_bc, "Avalanche duration | Elementary CA rule 110+10 | v=0 | N=10^4 | t=10^5")
-
-    plot_distribution(avalanche_s_1_bc, fit_avalanche_s_1_bc, "Avalanche size | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
-    plot_distribution(avalanche_d_1_bc, fit_avalanche_d_1_bc, "Avalanche duration | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
-
-
     fitness = norm_ksdist_res + norm_coef_res + norm_unique_states + norm_max_avalanche + norm_linscore_res
 
+  val_dict = {}
+  val_dict["norm_ksdist_res"] = norm_ksdist_res
+  val_dict["norm_coef_res"] = norm_coef_res
+  val_dict["norm_unique_states"] = norm_unique_states
+  val_dict["norm_max_avalanche"] = norm_max_avalanche
+  val_dict["norm_linscore_res"] = norm_linscore_res
+  val_dict["fitness"] = fitness
+
   print("Fitness", fitness)
-  return fitness
+  return fitness, val_dict
 
 def plot_distribution(distribution, fitobj=None, title=""):
   plt.figure()
@@ -385,7 +408,5 @@ evaluate_result(ca_result)
 
 
 print("Total time:", time.time()-start)
-
-
 
 np.savez("dict_avalanche_bincount.npz", avalanche_s_0_bc, avalanche_d_0_bc, avalanche_s_1_bc, avalanche_d_1_bc)

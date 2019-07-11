@@ -9,6 +9,9 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 import time
 import powerlaw
+import csv
+import os
+import sys
 
 width = 1000
 timesteps = 1000
@@ -55,7 +58,7 @@ def norm_alpha(alpha):
   return 0.1*np.mean(alpha)
 
 def norm_linscore(linscore):
-  return 5*np.max(linscore)+5*np.mean(linscore)
+  return 10*np.mean(linscore)#5*np.max(linscore)+5*np.mean(linscore)
 
 # Normalize values from 0 to inf to be from 10 to 0
 def norm_ksdist(ksdist, smooth=1):
@@ -77,7 +80,7 @@ def calculate_data_score(data):
 
   return alpha, ksdist, R
 
-def evaluate_result(ca_result):
+def evaluate_result(ca_result, filename=None):
   avalanche_s_0 = getarray_avalanche_size(ca_result, 0)
   avalanche_d_0 = getarray_avalanche_duration(ca_result, 0)
   avalanche_s_0_bc = np.bincount(avalanche_s_0)[1:] if len(avalanche_s_0) > 5 else []
@@ -109,6 +112,11 @@ def evaluate_result(ca_result):
   log_avalanche_d_1_bc = np.where(mask_avalanche_d_1_bc, log_avalanche_d_1_bc, 0)
 
   fitness = 0
+  norm_max_avalanche = 0
+  norm_linscore_res = 0
+  norm_ksdist_res = 0
+  norm_coef_res = 0
+  norm_unique_states = 0
 
   if sum(mask_avalanche_s_0_bc[:10]) > 5 and sum(mask_avalanche_d_0_bc[:10]) > 5 and\
     sum(mask_avalanche_s_1_bc[:10]) > 5 and sum(mask_avalanche_d_1_bc[:10]) > 5:
@@ -170,11 +178,19 @@ def evaluate_result(ca_result):
 
     fitness = norm_ksdist_res + norm_coef_res + norm_unique_states + norm_max_avalanche + norm_linscore_res
 
+  val_dict = {}
+  val_dict["norm_ksdist_res"] = norm_ksdist_res
+  val_dict["norm_coef_res"] = norm_coef_res
+  val_dict["norm_unique_states"] = norm_unique_states
+  val_dict["norm_max_avalanche"] = norm_max_avalanche
+  val_dict["norm_linscore_res"] = norm_linscore_res
+  val_dict["fitness"] = fitness
+
   print("Fitness", fitness)
-  return fitness
+  return fitness, val_dict
 
 # genome is a list of float numbers between 0 and 1
-def evaluate_genome(genome=8*[0.5]):
+def evaluate_genome(genome=8*[0.5], filename=None):
   print(genome)
   gen_rule = [(genome,)]
   
@@ -205,7 +221,22 @@ def evaluate_genome(genome=8*[0.5]):
   print("Execution time:", time.time()-start)
 
   exp.close()
-  return evaluate_result(exp.get_monitor("g_ca", "g_ca_bin"))
+
+  fitness, val_dict = evaluate_result(exp.get_monitor("g_ca", "g_ca_bin"))
+
+  if isinstance(filename, str):
+    if ".csv" in filename:
+      with open(filename, "a", newline="") as f:
+        wr = csv.writer(f, delimiter=";")
+        if os.stat(filename).st_size == 0:
+          wr.writerow(["genome", "fitness", "norm_ksdist_res", "norm_coef_res", "norm_unique_states",\
+                        "norm_max_avalanche", "norm_linscore_res"])
+
+        wr.writerow([str(list(genome)), val_dict["fitness"], val_dict["norm_ksdist_res"],\
+                     val_dict["norm_coef_res"], val_dict["norm_unique_states"],\
+                     val_dict["norm_max_avalanche"],val_dict["norm_linscore_res"]])
+
+  return fitness
 
 start_total = time.time()
 
@@ -214,8 +245,5 @@ best_genome = ga.evolve_probability(evaluate_genome, pop_size=10, generation=10)
 print("TOTAL Execution time:", time.time()-start_total)
 
 print(best_genome)
-print("Final fitness", evaluate_genome(best_genome))
-print("Final fitness", evaluate_genome(best_genome))
-print("Final fitness", evaluate_genome(best_genome))
-print("Final fitness", evaluate_genome(best_genome))
 
+print("Final fitness", evaluate_genome(best_genome, sys.argv[1]))
