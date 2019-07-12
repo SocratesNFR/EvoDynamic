@@ -2,7 +2,8 @@
 
 import numpy as np
 import random
-
+import time
+import csv
 # Generate random genomes
 # Evaluate genomes
 # Select genomes and reproduce them
@@ -11,6 +12,13 @@ import random
 
 def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255]):
   assert pop_size%2==0, "Error: pop_size must be even!"
+  timestr = time.strftime("%Y%m%d-%H%M%S")
+
+  filehistory = open("evo_rules_"+timestr+".txt", "w")
+  
+  wr = csv.writer(filehistory, delimiter=";")
+  wr.writerow(["generation", "fitness", "val_dict", "genome"])
+
 
   prob_crossover = 0.8
   prob_exchange = 0.5
@@ -26,6 +34,7 @@ def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255])
     fitness_score, val_dict = evaluate_genome(genome)
     fitness_list.append(fitness_score)
     val_dict_list.append(val_dict)
+    wr.writerow(["0", str(fitness_score), str(val_dict), str(genome)])
 
   best_genome_idx = max(pop_indices, key=lambda idx: fitness_list[idx])
   best_genome = list(pop_list[best_genome_idx])
@@ -93,6 +102,9 @@ def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255])
       new_val_dict_list.append(val_dict1)
       new_val_dict_list.append(val_dict2)
 
+      wr.writerow([str(gen+1), str(fitness_genome1), str(val_dict1), str(genome1)])
+      wr.writerow([str(gen+1), str(fitness_genome2), str(val_dict2), str(genome2)])
+
     pop_list = list(new_pop_list)
     fitness_list = list(new_fitness_list)
     val_dict_list = list(new_val_dict_list)
@@ -122,6 +134,12 @@ def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255])
 
 def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8):
   assert pop_size%2==0, "Error: pop_size must be even!"
+  timestr = time.strftime("%Y%m%d-%H%M%S")
+  
+  filehistory = open("evo_prob_"+timestr+".txt", "w")
+
+  wr = csv.writer(filehistory, delimiter=";")
+  wr.writerow(["generation", "fitness", "val_dict", "genome"])
 
   prob_crossover = 0.8
   prob_exchange = 0.5
@@ -135,6 +153,7 @@ def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8)
     fitness_score, val_dict = evaluate_genome(genome)
     fitness_list.append(fitness_score)
     val_dict_list.append(val_dict)
+    wr.writerow(["0", str(fitness_score), str(val_dict), str(genome)])
 
   best_genome_idx = max(pop_indices, key=lambda idx: fitness_list[idx])
   best_genome = list(pop_list[best_genome_idx])
@@ -186,6 +205,9 @@ def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8)
       new_val_dict_list.append(val_dict1)
       new_val_dict_list.append(val_dict2)
 
+      wr.writerow([str(gen+1), str(fitness_genome1), str(val_dict1), str(genome1)])
+      wr.writerow([str(gen+1), str(fitness_genome2), str(val_dict2), str(genome2)])
+
     pop_list = list(new_pop_list)
     fitness_list = list(new_fitness_list)
     val_dict_list = list(new_val_dict_list)
@@ -208,7 +230,7 @@ def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8)
   print("best_genome", best_genome)
   print("best_genome_fitness", best_genome_fitness)
   print("best_val_dict", best_val_dict)
-
+  filehistory.close()
   return best_genome
 
 
