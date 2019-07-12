@@ -8,7 +8,7 @@ from evodynamic.evolution import ga
 import numpy as np
 from sklearn.linear_model import LinearRegression
 import time
-import powerlaw
+#import powerlaw
 import csv
 import os
 import sys
@@ -68,17 +68,17 @@ def norm_ksdist(ksdist, smooth=1):
 def norm_R(R, smooth=0.01):
   return 10 / (1+np.exp(-smooth * (np.max(R)+0.1*np.mean(R))))
 
-def calculate_data_score(data):
-  fit = powerlaw.Fit(data, xmin =1, discrete= True)
-  alpha = fit.power_law.alpha
-  ksdist = fit.power_law.D
-  R_exp, p_exp = fit.distribution_compare('power_law', 'exponential', normalized_ratio=True)
-  R_exp = R_exp if p_exp < 0.1 else 0
-  R_log, p_log = fit.distribution_compare('power_law', 'lognormal', normalized_ratio=True)
-  R_log = R_log if p_log < 0.1 else 0
-  R = R_exp+R_log
-
-  return alpha, ksdist, R
+#def calculate_data_score(data):
+#  fit = powerlaw.Fit(data, xmin =1, discrete= True)
+#  alpha = fit.power_law.alpha
+#  ksdist = fit.power_law.D
+#  R_exp, p_exp = fit.distribution_compare('power_law', 'exponential', normalized_ratio=True)
+#  R_exp = R_exp if p_exp < 0.1 else 0
+#  R_log, p_log = fit.distribution_compare('power_law', 'lognormal', normalized_ratio=True)
+#  R_log = R_log if p_log < 0.1 else 0
+#  R = R_exp+R_log
+#
+#  return alpha, ksdist, R
 
 def evaluate_result(ca_result, filename=None):
   avalanche_s_0 = getarray_avalanche_size(ca_result, 0)
@@ -240,7 +240,7 @@ def evaluate_genome(genome=8*[0.5], filename=None):
 
 start_total = time.time()
 
-best_genome = ga.evolve_probability(evaluate_genome, pop_size=10, generation=4)
+best_genome = ga.evolve_probability(evaluate_genome, pop_size=40, generation=100)
 
 print("TOTAL Execution time:", time.time()-start_total)
 
