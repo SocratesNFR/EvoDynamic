@@ -237,7 +237,7 @@ def evaluate_genome(genome=[110], filename = None):
                      val_dict["norm_max_avalanche"],val_dict["norm_linscore_res"]])
   
   
-  return fitness
+  return fitness, val_dict
 
 start_total = time.time()
 
