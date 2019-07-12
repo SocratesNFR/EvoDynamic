@@ -236,11 +236,11 @@ def evaluate_genome(genome=8*[0.5], filename=None):
                      val_dict["norm_coef_res"], val_dict["norm_unique_states"],\
                      val_dict["norm_max_avalanche"],val_dict["norm_linscore_res"]])
 
-  return fitness
+  return fitness, val_dict
 
 start_total = time.time()
 
-best_genome = ga.evolve_probability(evaluate_genome, pop_size=10, generation=10)
+best_genome = ga.evolve_probability(evaluate_genome, pop_size=10, generation=4)
 
 print("TOTAL Execution time:", time.time()-start_total)
 

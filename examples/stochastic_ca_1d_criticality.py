@@ -99,8 +99,11 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 
 
 #[0.6623156552951929, 0.30103005432095725, 0.07498195810784192, 0.0808450415545039, 0.0, 0.013194635331741367, 0.548389977412498, 0.01861153275710714]
-fargs_list = [([0.0, 0.9937308709227934, 0.2964750339744071, 0.9753097081692617,\
-                0.62667286680341, 0.2656724804580005, 0.9534392401759685, 0.8035371440156405],)]
+#fargs_list = [([0.0, 0.9937308709227934, 0.2964750339744071, 0.9753097081692617,\
+#                0.62667286680341, 0.2656724804580005, 0.9534392401759685, 0.8035371440156405],)]
+
+#[0.15656175465810424, 0.06005294539446833, 0.23307154218166642, 0.0, 0.9821925852517683, 0.29263927279695406, 0.0003079802734834852, 0.0]
+fargs_list = [( [0.8757717638388886, 0.19934136774646904, 0.6624520750036998, 0.9573892488269038, 0.32501468984510795, 0.028285161625626887, 0.6259861595081254, 0.6136435671320088],)]
 
 exp.add_connection("g_ca_conn",
                      connection.WeightedConnection(g_ca_bin,g_ca_bin,
@@ -383,10 +386,10 @@ log_avalanche_d_1_bc = np.where(mask_avalanche_d_1_bc, log_avalanche_d_1_bc, 0)
 #plot_distribution(avalanche_s_1_bc, fit_avalanche_s_1_bc, "Avalanche size | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
 #plot_distribution(avalanche_d_1_bc, fit_avalanche_d_1_bc, "Avalanche duration | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
 
-#powerlaw_stats(avalanche_s_0)
-#powerlaw_stats(avalanche_d_0)
-#powerlaw_stats(avalanche_s_1)
-#powerlaw_stats(avalanche_d_1)
+powerlaw_stats(avalanche_s_0)
+powerlaw_stats(avalanche_d_0)
+powerlaw_stats(avalanche_s_1)
+powerlaw_stats(avalanche_d_1)
 
 evaluate_result(ca_result)
 

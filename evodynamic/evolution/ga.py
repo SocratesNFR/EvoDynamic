@@ -21,16 +21,21 @@ def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255])
   pop_indices = list(range(pop_size))
   pop_list = [[np.random.randint(gene_range[0], gene_range[1]+1) for gene in range(np.random.randint(1,5))] for pop in range(pop_size)]
   fitness_list = []
+  val_dict_list = []
   for genome in pop_list:
-    fitness_list.append(evaluate_genome(genome))
+    fitness_score, val_dict = evaluate_genome(genome)
+    fitness_list.append(fitness_score)
+    val_dict_list.append(val_dict)
 
   best_genome_idx = max(pop_indices, key=lambda idx: fitness_list[idx])
-  best_genome = pop_list[best_genome_idx]
+  best_genome = list(pop_list[best_genome_idx])
   best_genome_fitness = fitness_list[best_genome_idx]
+  best_val_dict = dict(val_dict_list[best_genome_idx])
 
   for gen in range(generation):
     new_pop_list = []
     new_fitness_list = []
+    new_val_dict_list = []
     for _ in range(pop_size//2):
       # Tournament selection
       group1 = random.sample(pop_indices, 2)
@@ -79,23 +84,39 @@ def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255])
       new_pop_list.append(genome2)
 
       # Evaluate new genomes
-      fitness_genome1 = evaluate_genome(genome1)
-      fitness_genome2 = evaluate_genome(genome2)
+      fitness_genome1, val_dict1 = evaluate_genome(genome1)
+      fitness_genome2, val_dict2 = evaluate_genome(genome2)
 
       new_fitness_list.append(fitness_genome1)
       new_fitness_list.append(fitness_genome2)
+      
+      new_val_dict_list.append(val_dict1)
+      new_val_dict_list.append(val_dict2)
 
     pop_list = list(new_pop_list)
     fitness_list = list(new_fitness_list)
+    val_dict_list = list(new_val_dict_list)
     generation_best_genome_idx = max(pop_indices, key=lambda idx: fitness_list[idx])
+    
+#    for ii, pf in enumerate(zip(fitness_list, pop_list)):
+#      print("GENERATION", ii, pf[0], pf[1])
+    
     if fitness_list[generation_best_genome_idx] > best_genome_fitness:
       best_genome = list(pop_list[generation_best_genome_idx])
       best_genome_fitness = fitness_list[generation_best_genome_idx]
+      best_val_dict = dict(val_dict_list[generation_best_genome_idx])
+
+      print("PARTIAL generation_best_genome_idx", generation_best_genome_idx)
       print("PARTIAL best_genome", best_genome)
+      print("PARTIAL new_pop_list[generation_best_genome_idx]", new_pop_list[generation_best_genome_idx])
       print("PARTIAL best_genome_fitness", best_genome_fitness)
+      print("PARTIAL new_fitness_list[idx]", new_fitness_list[generation_best_genome_idx])
+      print("PARTIAL new_pop_list[generation_best_genome_idx]", new_pop_list[generation_best_genome_idx])
+      print("PARTIAL best_val_dict", best_val_dict)
 
   print("best_genome", best_genome)
   print("best_genome_fitness", best_genome_fitness)
+  print("best_val_dict", best_val_dict)
 
   return best_genome
 
@@ -109,16 +130,21 @@ def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8)
   pop_indices = list(range(pop_size))
   pop_list = [[np.random.rand() for gene in range(prob_size)] for pop in range(pop_size)]
   fitness_list = []
+  val_dict_list = []
   for genome in pop_list:
-    fitness_list.append(evaluate_genome(genome))
+    fitness_score, val_dict = evaluate_genome(genome)
+    fitness_list.append(fitness_score)
+    val_dict_list.append(val_dict)
 
   best_genome_idx = max(pop_indices, key=lambda idx: fitness_list[idx])
-  best_genome = pop_list[best_genome_idx]
+  best_genome = list(pop_list[best_genome_idx])
   best_genome_fitness = fitness_list[best_genome_idx]
+  best_val_dict = dict(val_dict_list[best_genome_idx])
 
   for gen in range(generation):
     new_pop_list = []
     new_fitness_list = []
+    new_val_dict_list = []
     for _ in range(pop_size//2):
       # Tournament selection
       group1 = random.sample(pop_indices, 2)
@@ -151,23 +177,37 @@ def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8)
       new_pop_list.append(genome2)
 
       # Evaluate new genomes
-      fitness_genome1 = evaluate_genome(genome1)
-      fitness_genome2 = evaluate_genome(genome2)
+      fitness_genome1, val_dict1 = evaluate_genome(genome1)
+      fitness_genome2, val_dict2 = evaluate_genome(genome2)
 
       new_fitness_list.append(fitness_genome1)
       new_fitness_list.append(fitness_genome2)
 
+      new_val_dict_list.append(val_dict1)
+      new_val_dict_list.append(val_dict2)
+
     pop_list = list(new_pop_list)
     fitness_list = list(new_fitness_list)
+    val_dict_list = list(new_val_dict_list)
     generation_best_genome_idx = max(pop_indices, key=lambda idx: fitness_list[idx])
+
+#    for ii, pf in enumerate(zip(fitness_list, pop_list)):
+#      print("GENERATION", ii, pf[0], pf[1])
+
     if fitness_list[generation_best_genome_idx] > best_genome_fitness:
       best_genome = list(pop_list[generation_best_genome_idx])
       best_genome_fitness = fitness_list[generation_best_genome_idx]
+      best_val_dict = dict(val_dict_list[generation_best_genome_idx])
+      print("PARTIAL generation_best_genome_idx", generation_best_genome_idx)
       print("PARTIAL best_genome", best_genome)
+      print("PARTIAL new_pop_list[generation_best_genome_idx]", new_pop_list[generation_best_genome_idx])
       print("PARTIAL best_genome_fitness", best_genome_fitness)
+      print("PARTIAL new_fitness_list[idx]", new_fitness_list[generation_best_genome_idx])
+      print("PARTIAL best_val_dict", best_val_dict)
 
   print("best_genome", best_genome)
   print("best_genome_fitness", best_genome_fitness)
+  print("best_val_dict", best_val_dict)
 
   return best_genome
 

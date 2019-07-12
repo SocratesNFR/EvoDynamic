@@ -241,7 +241,7 @@ def evaluate_genome(genome=[110], filename = None):
 
 start_total = time.time()
 
-best_genome = ga.evolve_rules(evaluate_genome, pop_size=10, generation=10)
+best_genome = ga.evolve_rules(evaluate_genome, pop_size=10, generation=4)
 
 print("TOTAL Execution time:", time.time()-start_total)
 
