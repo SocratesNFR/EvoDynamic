@@ -14,7 +14,7 @@ def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255])
   assert pop_size%2==0, "Error: pop_size must be even!"
   timestr = time.strftime("%Y%m%d-%H%M%S")
 
-  filehistory = open("evo_rules_"+timestr+".txt", "w")
+  filehistory = open("evo_rules_"+timestr+".txt", "w", newline="")
   
   wr = csv.writer(filehistory, delimiter=";")
   wr.writerow(["generation", "fitness", "val_dict", "genome"])
@@ -129,14 +129,14 @@ def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255])
   print("best_genome", best_genome)
   print("best_genome_fitness", best_genome_fitness)
   print("best_val_dict", best_val_dict)
-
+  filehistory.close()
   return best_genome
 
 def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8):
   assert pop_size%2==0, "Error: pop_size must be even!"
   timestr = time.strftime("%Y%m%d-%H%M%S")
   
-  filehistory = open("evo_prob_"+timestr+".txt", "w")
+  filehistory = open("evo_prob_"+timestr+".txt", "w", newline="")
 
   wr = csv.writer(filehistory, delimiter=";")
   wr.writerow(["generation", "fitness", "val_dict", "genome"])

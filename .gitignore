@@ -139,3 +139,6 @@ evodynamic/*.png
 
 # Generated CSV
 *.csv
+
+# Generated text files
+examples/*.txt

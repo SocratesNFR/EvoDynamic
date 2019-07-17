@@ -41,7 +41,7 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 #[235, 36]
 #fargs_list = [(a,) for a in [235, 36]]
 #fargs_list = [(a,) for a in [231, 240]]
-fargs_list = [(a,) for a in [110]]
+fargs_list = [(a,) for a in [9, 244, 103, 157, 171, 41, 20, 141, 35, 184, 58, 135, 63, 242, 129]]
 
 # Linscore fit 28.24: [164, 64]
 #fargs_list = [(a,) for a in [164, 64]]
@@ -158,6 +158,27 @@ def norm_ksdist(ksdist, smooth=1):
 def norm_R(R, smooth=0.01):
   return 10 / (1+np.exp(-smooth * (np.max(R)+0.1*np.mean(R))))
 
+def normalize_avalanche_pdf_size(mask_avalanche_s_0_bc, mask_avalanche_d_0_bc,\
+                                 mask_avalanche_s_1_bc, mask_avalanche_d_1_bc):
+  norm_avalanche_pdf_size_s_0 = sum(mask_avalanche_s_0_bc)/width
+  norm_avalanche_pdf_size_d_0 = sum(mask_avalanche_d_0_bc)/timesteps
+  norm_avalanche_pdf_size_s_1 = sum(mask_avalanche_s_1_bc)/width
+  norm_avalanche_pdf_size_d_1 = sum(mask_avalanche_d_1_bc)/timesteps
+  
+  mean_avalanche_pdf_size = np.mean([norm_avalanche_pdf_size_s_0,\
+                                    norm_avalanche_pdf_size_d_0,\
+                                    norm_avalanche_pdf_size_s_1,\
+                                    norm_avalanche_pdf_size_d_1])
+  max_avalanche_pdf_size = np.max([norm_avalanche_pdf_size_s_0,\
+                                   norm_avalanche_pdf_size_d_0,\
+                                   norm_avalanche_pdf_size_s_1,\
+                                   norm_avalanche_pdf_size_d_1])
+  
+  return 10*((2 / (1+np.exp(-10 *\
+                        (0.9*\
+                         max_avalanche_pdf_size+0.1*mean_avalanche_pdf_size))))\
+                        -1)
+
 def calculate_data_score(data):
   fit = powerlaw.Fit(data, xmin =1, discrete= True)
   alpha = fit.power_law.alpha
@@ -202,7 +223,7 @@ def evaluate_result(ca_result, filename=None):
   log_avalanche_d_1_bc = np.where(mask_avalanche_d_1_bc, log_avalanche_d_1_bc, 0)
 
   fitness = 0
-  norm_max_avalanche = 0
+  norm_avalanche_pdf_size = 0
   norm_linscore_res = 0
   norm_ksdist_res = 0
   norm_coef_res = 0
@@ -247,8 +268,10 @@ def evaluate_result(ca_result, filename=None):
     coef_list.append(fit_avalanche_d_1_bc.coef_[0])
     #print(coef)
 
-    norm_max_avalanche = 10*np.mean([sum(mask_avalanche_s_0_bc)/width,sum(mask_avalanche_d_0_bc)/timesteps,\
-      sum(mask_avalanche_s_1_bc)/width,sum(mask_avalanche_d_1_bc)/timesteps])
+    norm_avalanche_pdf_size = normalize_avalanche_pdf_size(mask_avalanche_s_0_bc,\
+                                                           mask_avalanche_d_0_bc,\
+                                                           mask_avalanche_s_1_bc,\
+                                                           mask_avalanche_d_1_bc)
 
     print("linscore_list", linscore_list)
     print("coef_list", coef_list)
@@ -260,19 +283,19 @@ def evaluate_result(ca_result, filename=None):
     norm_unique_states = 10*((np.unique(ca_result, axis=0).shape[0]) / ca_result.shape[1])
 
 
-    print("norm_max_avalanche", norm_max_avalanche)
+    print("norm_avalanche_pdf_size", norm_avalanche_pdf_size)
     print("norm_linscore_res", norm_linscore_res)
     print("norm_ksdist_res", norm_ksdist_res)
     print("norm_coef_res", norm_coef_res)
     print("norm_unique_states", norm_unique_states)
 
-    fitness = norm_ksdist_res + norm_coef_res + norm_unique_states + norm_max_avalanche + norm_linscore_res
+    fitness = norm_ksdist_res + norm_coef_res + norm_unique_states + norm_avalanche_pdf_size + norm_linscore_res
 
   val_dict = {}
   val_dict["norm_ksdist_res"] = norm_ksdist_res
   val_dict["norm_coef_res"] = norm_coef_res
   val_dict["norm_unique_states"] = norm_unique_states
-  val_dict["norm_max_avalanche"] = norm_max_avalanche
+  val_dict["norm_avalanche_pdf_size"] = norm_avalanche_pdf_size
   val_dict["norm_linscore_res"] = norm_linscore_res
   val_dict["fitness"] = fitness
 
