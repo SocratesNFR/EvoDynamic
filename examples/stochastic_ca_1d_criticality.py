@@ -103,7 +103,12 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 #                0.62667286680341, 0.2656724804580005, 0.9534392401759685, 0.8035371440156405],)]
 
 #[0.15656175465810424, 0.06005294539446833, 0.23307154218166642, 0.0, 0.9821925852517683, 0.29263927279695406, 0.0003079802734834852, 0.0]
-fargs_list = [( [0.20816122800022097, 0.1385341421452102, 0.09153137263033118, 0.930736275987346, 0.2928800975971657, 0.7996633473980056, 0.6793744562238914, 0.9303204324475582],)]
+#fargs_list = [( [0.6695150517058139, 0.0, 0.05783047192817291, 0.3871565430045979, 0.057218256631022694, 0.856777290665224, 0.7700785670605159, 1.0],)]
+
+#[0.10300948029035227, 0.5367869451270947, 0.2167946269388179, 0.3934686667827154, 0.6798368229670028, 0.17545801387723042, 0.724778917324477, 1.0]
+fargs_list = [( [0.10300948029035227, 0.5367869451270947, 0.2167946269388179,\
+                 0.3934686667827154, 0.6798368229670028, 0.17545801387723042,\
+                 0.724778917324477, 1.0],)]
 
 exp.add_connection("g_ca_conn",
                      connection.WeightedConnection(g_ca_bin,g_ca_bin,
@@ -126,7 +131,22 @@ exp.close()
 def KSdist(theoretical_pdf, empirical_pdf):
   return np.max(np.abs(np.cumsum(theoretical_pdf) - np.cumsum(empirical_pdf)))
 
-def powerlaw_stats(data):
+def goodness_of_fit(fit, data, gen_data=1000, data_samples=10000):
+  theoretical_distribution = powerlaw.Power_Law(xmin=1,\
+                                                parameters=[fit.power_law.alpha],\
+                                                discrete=True)
+  simulated_ksdist_list = []
+  for _ in range(gen_data):
+    simulated_data=theoretical_distribution.generate_random(data_samples)
+    simulated_ksdist = powerlaw.power_law_ks_distance(simulated_data,\
+                                                      fit.power_law.alpha,\
+                                                      xmin=1, discrete=True)
+    simulated_ksdist_list.append(simulated_ksdist)
+
+  return sum(np.array(simulated_ksdist_list) > fit.power_law.D) / gen_data
+
+
+def powerlaw_stats(data, fname=""):
   fit = powerlaw.Fit(data, xmin =1, discrete= True)
   print()
   print("alpha", fit.power_law.alpha)
@@ -135,15 +155,31 @@ def powerlaw_stats(data):
   print("KSdist", fit.power_law.D)
   print("fit.distribution_compare('power_law', 'exponential')", fit.distribution_compare('power_law', 'exponential', normalized_ratio=True))
   print("fit.distribution_compare('power_law', 'lognormal')", fit.distribution_compare('power_law', 'lognormal', normalized_ratio=True))
+  gof = goodness_of_fit(fit, data)
+  print("goodness_of_fit(fit, data)", gof)
   print()
   fig, ax = plt.subplots()
-  fit.plot_pdf(color = "b", linewidth =2, ax =ax)
-  fit.power_law.plot_pdf(color = "b", linestyle = "--", ax =ax)
-  fit.plot_ccdf(color = "r", linewidth = 2, ax= ax)
-  fit.power_law.plot_ccdf(color = "r", linestyle = "--", ax =ax)
 
-#def KSdist(theoretical_pdf, empirical_pdf):
-#  return np.max(np.abs(np.cumsum(theoretical_pdf) - np.cumsum(empirical_pdf)))
+
+#  pdf = np.bincount(data)
+#  pdf = pdf / sum(pdf)
+#  #pdf[pdf == 0] = np.nan
+#  x = np.linspace(1,len(pdf),len(pdf))
+#  ax.scatter(x[pdf > 0], pdf[pdf > 0], "-", label="Empirical")
+
+  fit.plot_pdf(color = "b", linewidth =2, ax =ax, label="Avalanche (samples=%d)"% len(data))
+  fit.power_law.plot_pdf(color = "k", linestyle = "--", ax =ax, label=r"Fit ($\hat{\alpha}$="+"%.1f, $p$-value=%.1f)" % (fit.power_law.alpha, gof))
+
+  ax.legend()
+  ax.set_xlabel("$x$")
+  ax.set_ylabel("$P(x)$")
+  if fname:
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    plt.savefig(fname+timestr+".svg", format="svg")
+
+#  fit.plot_ccdf(color = "r", linewidth = 2, ax= ax)
+#  fit.power_law.plot_ccdf(color = "r", linestyle = "--", ax =ax)
+
 
 def getdict_cluster_size(arr1d):
   cluster_dict = {}
@@ -409,10 +445,10 @@ log_avalanche_d_1_bc = np.where(mask_avalanche_d_1_bc, log_avalanche_d_1_bc, 0)
 #plot_distribution(avalanche_s_1_bc, fit_avalanche_s_1_bc, "Avalanche size | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
 #plot_distribution(avalanche_d_1_bc, fit_avalanche_d_1_bc, "Avalanche duration | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
 
-powerlaw_stats(avalanche_s_0)
-powerlaw_stats(avalanche_d_0)
-powerlaw_stats(avalanche_s_1)
-powerlaw_stats(avalanche_d_1)
+powerlaw_stats(avalanche_s_0, "avalanche_s_0_")
+powerlaw_stats(avalanche_d_0, "avalanche_d_0_")
+powerlaw_stats(avalanche_s_1, "avalanche_s_1_")
+powerlaw_stats(avalanche_d_1, "avalanche_d_1_")
 
 evaluate_result(ca_result)
 

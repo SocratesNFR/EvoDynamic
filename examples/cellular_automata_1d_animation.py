@@ -5,6 +5,7 @@ import evodynamic.connection.cellular_automata as ca
 import evodynamic.cells.activation as act
 import evodynamic.connection as connection
 import numpy as np
+import time
 
 width = 100
 height_fig = 200
@@ -26,7 +27,8 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 #              34, 248]]
 
 #[235, 36]
-fargs_list = [(a,) for a in [235, 36]]
+#fargs_list = [(a,) for a in [235, 36]]
+fargs_list = [(a,) for a in [110]]
 
 
 exp.add_connection("g_ca_conn",
@@ -70,5 +72,11 @@ def updatefig(*args):
 ani = animation.FuncAnimation(fig, updatefig, frames=timesteps-2,\
                               interval=100, blit=False, repeat=False)
 
-plt.show()
+#plt.show()
+
+# Set up formatting for the movie files
+Writer = animation.writers['ffmpeg']
+writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
+ani.save('rule110_'+time.strftime("%Y%m%d-%H%M%S")+'.mp4', writer=writer)
+
 plt.connect('close_event', exp.close())

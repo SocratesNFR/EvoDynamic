@@ -131,7 +131,9 @@ figures/
 examples/*.png
 evodynamic/*.png
 /*.png
-
+*.eps
+*.pdf
+*.svg
 
 # Generated numpy saving files
 *.npz
@@ -142,3 +144,6 @@ evodynamic/*.png
 
 # Generated text files
 examples/*.txt
+
+# Generated animation
+*.mp4

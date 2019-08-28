@@ -5,6 +5,7 @@ import evodynamic.connection.cellular_automata as ca
 import evodynamic.cells.activation as act
 import evodynamic.connection as connection
 import numpy as np
+import time
 from PIL import Image
 
 width = 100
@@ -23,7 +24,10 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 #              243, 221, 80, 102, 154, 186, 125, 2, 172, 237, 242, 184, 140, 208,\
 #              34, 248]]
 
-fargs_list = [(a,) for a in [235, 36]]
+#fargs_list = [(a,) for a in [182, 124]]
+
+#[142, 60, 186, 149, 229, 91, 61, 124]
+fargs_list = [(a,) for a in [142, 60, 186, 149, 229, 91, 61, 124]]
 
 
 exp.add_connection("g_ca_conn",
@@ -39,4 +43,5 @@ exp.run(timesteps=timesteps)
 ca_result = np.invert(exp.get_monitor("g_ca", "g_ca_bin").astype(np.bool)).astype(np.uint8)*255
 
 img = Image.fromarray(ca_result).resize((5*width,5*timesteps), Image.NEAREST)
-img.save("teste_ca1d.png")
+timestr = time.strftime("%Y%m%d-%H%M%S")
+img.save("evolved_deterministic_ca_"+timestr+".png")

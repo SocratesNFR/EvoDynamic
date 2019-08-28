@@ -41,13 +41,34 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 #[235, 36]
 #fargs_list = [(a,) for a in [235, 36]]
 #fargs_list = [(a,) for a in [231, 240]]
-fargs_list = [(a,) for a in [9, 244, 103, 157, 171, 41, 20, 141, 35, 184, 58, 135, 63, 242, 129]]
+
 
 # Linscore fit 28.24: [164, 64]
 #fargs_list = [(a,) for a in [164, 64]]
 
 # Linscor final fit 23.09: [164, 64]
 #fargs_list = [(a,) for a in [169, 93, 134]]
+
+
+
+#fargs_list = [(a,) for a in [110]]
+fargs_list = [(a,) for a in [147]]
+
+# 17 July 2019 17:59 Fitness: 29.59
+#[72, 226]
+#fargs_list = [(a,) for a in [72, 226]]
+
+# 17 July 2019 17:59 Fitness: 29.33
+#[141, 124]
+#fargs_list = [(a,) for a in [141, 124]]
+
+
+# 19 July 2019 16:35
+#fargs_list = [(a,) for a in [182, 124]]
+
+
+#[142, 60, 186, 149, 229, 91, 61, 124]
+#fargs_list = [(a,) for a in [142, 60, 186, 149, 229, 91, 61, 124]]
 
 
 exp.add_connection("g_ca_conn",
@@ -85,8 +106,8 @@ def powerlaw_stats(data):
   fig, ax = plt.subplots()
   fit.plot_pdf(color = "b", linewidth =2, ax =ax)
   fit.power_law.plot_pdf(color = "b", linestyle = "--", ax =ax)
-  fit.plot_ccdf(color = "r", linewidth = 2, ax= ax)
-  fit.power_law.plot_ccdf(color = "r", linestyle = "--", ax =ax)
+#  fit.plot_ccdf(color = "r", linewidth = 2, ax= ax)
+#  fit.power_law.plot_ccdf(color = "r", linestyle = "--", ax =ax)
 #  fit.plot_cdf(color = "g", linewidth = 2, ax= ax)
 #  fit.power_law.plot_cdf(color = "g", linestyle = "--", ax =ax)
 
@@ -152,7 +173,7 @@ def norm_linscore(linscore):
 
 # Normalize values from 0 to inf to be from 10 to 0
 def norm_ksdist(ksdist, smooth=1):
-  return 10*np.exp(-smooth * (np.min(ksdist)+0.1*np.mean(ksdist)))
+  return 10*np.exp(-smooth * (0.9*np.min(ksdist)+0.1*np.mean(ksdist)))
 
 # Normalize values from -inf to inf to be from 0 to 1
 def norm_R(R, smooth=0.01):
@@ -375,10 +396,10 @@ avalanche_d_1 = getarray_avalanche_duration(ca_result, 1)
 
 evaluate_result(ca_result)
 
-#powerlaw_stats(avalanche_s_0)
-#powerlaw_stats(avalanche_d_0)
-#powerlaw_stats(avalanche_s_1)
-#powerlaw_stats(avalanche_d_1)
+powerlaw_stats(avalanche_s_0)
+powerlaw_stats(avalanche_d_0)
+powerlaw_stats(avalanche_s_1)
+powerlaw_stats(avalanche_d_1)
 #
 #fit_avalanche_s_0_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_s_0_bc)+1)[mask_avalanche_s_0_bc]).reshape(-1,1), log_avalanche_s_0_bc[mask_avalanche_s_0_bc])
 #fit_avalanche_d_0_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_d_0_bc)+1)[mask_avalanche_d_0_bc]).reshape(-1,1), log_avalanche_d_0_bc[mask_avalanche_d_0_bc])

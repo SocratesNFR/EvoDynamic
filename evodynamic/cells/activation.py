@@ -77,22 +77,22 @@ def rule_binary_sca_1d_width3_func(pattern, previous_state, prob_list):
 
   prob_new_state_1 = tf.less_equal(tf.random.uniform(shape_previous_state),\
                                                prob_list[1])
-  
+
   prob_new_state_2 = tf.less_equal(tf.random.uniform(shape_previous_state),\
                                                prob_list[2])
-  
+
   prob_new_state_3 = tf.less_equal(tf.random.uniform(shape_previous_state),\
                                                prob_list[3])
-  
+
   prob_new_state_4 = tf.less_equal(tf.random.uniform(shape_previous_state),\
                                                prob_list[4])
-  
+
   prob_new_state_5 = tf.less_equal(tf.random.uniform(shape_previous_state),\
                                                prob_list[5])
-  
+
   prob_new_state_6 = tf.less_equal(tf.random.uniform(shape_previous_state),\
                                                prob_list[6])
-  
+
   prob_new_state_7 = tf.less_equal(tf.random.uniform(shape_previous_state),\
                                                prob_list[7])
 
