@@ -1,7 +1,6 @@
 """ Activation functions for Cells """
 
 import tensorflow as tf
-import numpy as np
 
 def game_of_life_func(count_neighbors, previous_state):
   born_cells_op = tf.equal(count_neighbors, 3)

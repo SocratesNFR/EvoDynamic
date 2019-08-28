@@ -90,3 +90,9 @@ class Experiment(object):
     self.check_group_cells_state(group_cells_name, state_name)
 
     return self.monitors[(group_cells_name,state_name)].get()
+
+  def get_connection(self, conn_name):
+    conn_name_exists = conn_name in self.connections
+    assert conn_name_exists, "Error: conn_name for connections does not exist."
+
+    return self.connections[conn_name]
