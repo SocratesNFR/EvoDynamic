@@ -1,13 +1,14 @@
-""" Simple animation of Echo State Network """
+""" Simple animation of Echo State Network with custom sparse connection matrix """
 
 import tensorflow as tf
 import numpy as np
 import evodynamic.experiment as experiment
-import evodynamic.connection.random as conn_random
+import evodynamic.connection.custom as conn_custom
 import evodynamic.connection as connection
 import evodynamic.cells.activation as act
 import evodynamic.cells as cells
 import networkx as nx
+#import time
 
 width = 100
 input_size = width // 10
@@ -18,7 +19,15 @@ input_esn = exp.add_input(tf.float64, [input_size], "input_esn")
 
 g_esn = exp.add_cells(name="g_esn", g_cells=cells.Cells(width))
 g_esn_real = g_esn.add_real_state(state_name='g_esn_bin')
-g_esn_real_conn = conn_random.create_gaussian_matrix('g_ca_bin_conn',width, sparsity=0.95, is_sparse=True)
+
+indices = [[i,(i+1)%width] for i in range(width)]
+values = [1.5]*width
+dense_shape = [width, width]
+
+g_esn_real_conn = conn_custom.create_custom_sparse_matrix('g_ca_bin_conn',
+                                                          indices,
+                                                          values,
+                                                          dense_shape)
 
 exp.add_connection("input_conn", connection.IndexConnection(input_esn,g_esn_real,np.arange(input_size)))
 
@@ -64,7 +73,7 @@ def updatefig(*args):
 
   ax.clear()
 
-  exp.run_step(feed_dict={input_esn: np.random.randint(2, size=(input_size,))})
+  exp.run_step(feed_dict={input_esn: 1-2*np.random.randint(2, size=(input_size,))})
 
   current_state = exp.get_group_cells_state("g_esn", "g_esn_bin")
 

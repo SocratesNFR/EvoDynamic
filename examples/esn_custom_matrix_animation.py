@@ -1,9 +1,9 @@
-""" Simple animation of Echo State Network """
+""" Simple animation of Echo State Network with custom connection matrix"""
 
 import tensorflow as tf
 import numpy as np
 import evodynamic.experiment as experiment
-import evodynamic.connection.random as conn_random
+import evodynamic.connection.custom as conn_custom
 import evodynamic.connection as connection
 import evodynamic.cells.activation as act
 import evodynamic.cells as cells
@@ -18,7 +18,13 @@ input_esn = exp.add_input(tf.float64, [input_size], "input_esn")
 
 g_esn = exp.add_cells(name="g_esn", g_cells=cells.Cells(width))
 g_esn_real = g_esn.add_real_state(state_name='g_esn_bin')
-g_esn_real_conn = conn_random.create_gaussian_matrix('g_ca_bin_conn',width, sparsity=0.95, is_sparse=True)
+
+# Generete custom connection matrix
+conn_matrix = np.random.normal(loc=0.0, scale=0.4, size=(width, width))
+conn_matrix[np.round(conn_matrix) == 0.0] = 0.0
+
+
+g_esn_real_conn = conn_custom.create_custom_matrix('g_ca_bin_conn',conn_matrix)
 
 exp.add_connection("input_conn", connection.IndexConnection(input_esn,g_esn_real,np.arange(input_size)))
 
@@ -31,8 +37,16 @@ exp.initialize_cells()
 
 weight_matrix = exp.session.run(exp.get_connection("g_esn_conn").w)
 
+def adjacency2indices_values(adjacency_matrix):
+  indices = np.argwhere(adjacency_matrix != 0)
+  values = adjacency_matrix[np.where(adjacency_matrix != 0)]
+
+  return indices, values
+
+indices, values = adjacency2indices_values(weight_matrix)
+
 G = nx.DiGraph()
-G.add_edges_from(weight_matrix[0])
+G.add_edges_from(indices)
 
 pos_dict = {}
 for i in range(width):
