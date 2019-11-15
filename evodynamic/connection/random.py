@@ -22,8 +22,6 @@ def create_gaussian_matrix(name, width, mean=0.0, std=1.0, sparsity=None, is_spa
           if sparsity < np.random.random():
             indices.append([i,j])
             values.append(np.random.normal(loc=mean, scale=std))
-    #print(indices)
-    #print(values)
     initial = tf.cast(tf.SparseTensor(indices=indices, values=values,\
                                       dense_shape=[nodes, nodes]), tf.float64)
   else:
