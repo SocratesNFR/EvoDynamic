@@ -13,7 +13,7 @@ timesteps = 400
 exp = experiment.Experiment()
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
 neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
-g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin')
+g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin', init="central")
 g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx)
@@ -23,9 +23,9 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 #                0.7473194740998363, 1.0],)]
 
 
-fargs_list = [([0.8653582694285038, 0.07574324505979713, 0.0,\
-                0.6701419392338681, 0.02243120000370638, 0.46365825379340864,\
-                0.7473194740998363, 1.0],)]
+fargs_list = [([0.10300948029035227, 0.5367869451270947, 0.2167946269388179,\
+                0.3934686667827154, 0.6798368229670028, 0.17545801387723042,\
+                0.724778917324477, 1.0],)]
 
 exp.add_connection("g_ca_conn",
                      connection.WeightedConnection(g_ca_bin,g_ca_bin,

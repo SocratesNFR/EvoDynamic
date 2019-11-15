@@ -44,4 +44,4 @@ ca_result = np.invert(exp.get_monitor("g_ca", "g_ca_bin").astype(np.bool)).astyp
 
 img = Image.fromarray(ca_result).resize((5*width,5*timesteps), Image.NEAREST)
 timestr = time.strftime("%Y%m%d-%H%M%S")
-img.save("evolved_deterministic_ca_"+timestr+".png")
+img.save("results/evolved_deterministic_ca_"+timestr+".png")

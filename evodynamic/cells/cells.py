@@ -22,13 +22,23 @@ class Cells(object):
     self.external_state_name = ""
 
   def add_binary_state(self, state_name, init="random"):
-    assert init == "random" or init == "central", "init must be 'random' or 'central'."
+#    assert init in ["random","central","zeros","ones","reversecentral"],\
+#      "init must be 'random', 'central', 'reversecentral', 'zeros', or 'ones'."
 
     if init == "random":
       initial = np.random.randint(2, size=self.amount).astype(np.float64)
     elif init == "central":
       initial = np.zeros(self.amount).astype(np.float64)
       initial[int(self.amount//2)] = 1
+    elif init == "zeros":
+      initial = np.zeros(self.amount).astype(np.float64)
+    elif init == "ones":
+      initial = np.ones(self.amount).astype(np.float64)
+    elif init == "reversecentral":
+      initial = np.ones(self.amount).astype(np.float64)
+      initial[int(self.amount//2)] = 0
+    else:
+      initial = init.reshape(-1).astype(np.float64)
 
     var = tf.get_variable(state_name, initializer=initial)
     if len(self.states) == 0:
@@ -45,7 +55,8 @@ class Cells(object):
     return var
 
   def add_real_state(self, state_name, stddev = .1):
-    initial = tf.truncated_normal([self.amount], stddev=stddev)
+    initial = tf.truncated_normal([self.amount], stddev=stddev,
+                                  dtype=tf.dtypes.float64)
     var = tf.get_variable(state_name, initializer=initial)
     self.states[state_name] = var
     return var

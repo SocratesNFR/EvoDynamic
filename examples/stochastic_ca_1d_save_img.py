@@ -14,7 +14,7 @@ timesteps = 400
 exp = experiment.Experiment()
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
 neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
-g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin')
+g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin', init="zeros")
 g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx,
@@ -98,8 +98,9 @@ print("Execution time:", time.time()-start)
 
 exp.close()
 
-ca_result = np.invert(exp.get_monitor("g_ca", "g_ca_bin").astype(np.bool)).astype(np.uint8)*255
+#ca_result = np.invert(exp.get_monitor("g_ca", "g_ca_bin").astype(np.bool)).astype(np.uint8)*255
+ca_result = exp.get_monitor("g_ca", "g_ca_bin").astype(np.uint8)*255
 
 img = Image.fromarray(ca_result).resize((5*width,5*timesteps), Image.NEAREST)
 timestr = time.strftime("%Y%m%d-%H%M%S")
-img.save("evolved_stochastic_ca_"+timestr+".png")
+img.save("results/evolved_stochastic_ca_zeros_"+timestr+".png")

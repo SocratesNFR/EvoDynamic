@@ -137,3 +137,8 @@ def rule_binary_sca_1d_width3_func(pattern, previous_state, prob_list):
 
   # Return update_7_op
   return tf.where(pattern_7_op, new_state_pattern_7, update_6_op)
+
+def sigmoid(x, args):
+  return tf.sigmoid(x)
+
+

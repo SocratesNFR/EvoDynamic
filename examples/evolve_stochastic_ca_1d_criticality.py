@@ -8,7 +8,7 @@ from evodynamic.evolution import ga
 import numpy as np
 from sklearn.linear_model import LinearRegression
 import time
-#import powerlaw
+import powerlaw
 import csv
 import os
 import sys
@@ -52,21 +52,18 @@ def getarray_avalanche_duration(x, value):
   return np.array(list_avalance_duration)
 
 def norm_coef(coef):
-  return -0.1*np.mean(coef)
-
-def norm_alpha(alpha):
-  return 0.1*np.mean(alpha)
+  return -np.mean(coef)
 
 def norm_linscore(linscore):
-  return 10*np.mean(linscore)#5*np.max(linscore)+5*np.mean(linscore)
+  return np.mean(linscore)#5*np.max(linscore)+5*np.mean(linscore)
 
 # Normalize values from 0 to inf to be from 10 to 0
 def norm_ksdist(ksdist, smooth=1):
-  return 10*np.exp(-smooth * (0.9*np.min(ksdist)+0.1*np.mean(ksdist)))
+  return np.exp(-smooth * (0.9*np.min(ksdist)+0.1*np.mean(ksdist)))
 
 # Normalize values from -inf to inf to be from 0 to 1
 def norm_R(R, smooth=0.01):
-  return 10 / (1+np.exp(-smooth * (0.9*np.max(R)+0.1*np.mean(R))))
+  return 1. / (1.+np.exp(-smooth * (0.9*np.max(R)+0.1*np.mean(R))))
 
 def normalize_avalanche_pdf_size(mask_avalanche_s_0_bc, mask_avalanche_d_0_bc,\
                                  mask_avalanche_s_1_bc, mask_avalanche_d_1_bc):
@@ -74,7 +71,7 @@ def normalize_avalanche_pdf_size(mask_avalanche_s_0_bc, mask_avalanche_d_0_bc,\
   norm_avalanche_pdf_size_d_0 = sum(mask_avalanche_d_0_bc)/timesteps
   norm_avalanche_pdf_size_s_1 = sum(mask_avalanche_s_1_bc)/width
   norm_avalanche_pdf_size_d_1 = sum(mask_avalanche_d_1_bc)/timesteps
-  
+
   mean_avalanche_pdf_size = np.mean([norm_avalanche_pdf_size_s_0,\
                                     norm_avalanche_pdf_size_d_0,\
                                     norm_avalanche_pdf_size_s_1,\
@@ -83,11 +80,12 @@ def normalize_avalanche_pdf_size(mask_avalanche_s_0_bc, mask_avalanche_d_0_bc,\
                                    norm_avalanche_pdf_size_d_0,\
                                    norm_avalanche_pdf_size_s_1,\
                                    norm_avalanche_pdf_size_d_1])
-  
-  return 10*((2 / (1+np.exp(-10 *\
-                        (0.9*\
-                         max_avalanche_pdf_size+0.1*mean_avalanche_pdf_size))))\
-                        -1)
+
+  return np.tanh(5*(0.9*max_avalanche_pdf_size+0.1*mean_avalanche_pdf_size))
+#  return ((2 / (1+np.exp(-10 *\
+#                        (0.9*\
+#                         max_avalanche_pdf_size+0.1*mean_avalanche_pdf_size))))\
+#                        -1)
 
 #def calculate_data_score(data):
 #  fit = powerlaw.Fit(data, xmin =1, discrete= True)
@@ -101,12 +99,26 @@ def normalize_avalanche_pdf_size(mask_avalanche_s_0_bc, mask_avalanche_d_0_bc,\
 #
 #  return alpha, ksdist, R
 
+def sigmoid(x, smooth=0.05):
+  return 1. / (1. + np.exp(-x*smooth))
+
+def norm_comparison_ratio(R_list):
+  return sigmoid(0.9*np.max(R_list) + 0.1*np.mean(R_list))
+
+def calculate_comparison_ratio(data):
+  fit = powerlaw.Fit(data, xmin =1, discrete= True)
+  R_exp, p_exp = fit.distribution_compare('power_law', 'exponential', normalized_ratio=True)
+  R = R_exp if p_exp < 0.1 else 0
+
+  return R
+
+
 def evaluate_result(ca_result, filename=None):
   avalanche_s_0 = getarray_avalanche_size(ca_result, 0)
   avalanche_d_0 = getarray_avalanche_duration(ca_result, 0)
   avalanche_s_0_bc = np.bincount(avalanche_s_0)[1:] if len(avalanche_s_0) > 5 else []
   avalanche_d_0_bc = np.bincount(avalanche_d_0)[1:] if len(avalanche_d_0) > 5 else []
-  
+
   avalanche_s_1 = getarray_avalanche_size(ca_result, 1)
   avalanche_d_1 = getarray_avalanche_duration(ca_result, 1)
   avalanche_s_1_bc = np.bincount(avalanche_s_1)[1:] if len(avalanche_s_1) > 5 else []
@@ -126,7 +138,7 @@ def evaluate_result(ca_result, filename=None):
   log_avalanche_d_0_bc = np.log10(avalanche_d_0_bc)
   log_avalanche_s_1_bc = np.log10(avalanche_s_1_bc)
   log_avalanche_d_1_bc = np.log10(avalanche_d_1_bc)
-  
+
   log_avalanche_s_0_bc = np.where(mask_avalanche_s_0_bc, log_avalanche_s_0_bc, 0)
   log_avalanche_d_0_bc = np.where(mask_avalanche_d_0_bc, log_avalanche_d_0_bc, 0)
   log_avalanche_s_1_bc = np.where(mask_avalanche_s_1_bc, log_avalanche_s_1_bc, 0)
@@ -138,6 +150,7 @@ def evaluate_result(ca_result, filename=None):
   norm_ksdist_res = 0
   norm_coef_res = 0
   norm_unique_states = 0
+  norm_R_res = 0
 
   if sum(mask_avalanche_s_0_bc[:10]) > 5 and sum(mask_avalanche_d_0_bc[:10]) > 5 and\
     sum(mask_avalanche_s_1_bc[:10]) > 5 and sum(mask_avalanche_d_1_bc[:10]) > 5:
@@ -178,6 +191,13 @@ def evaluate_result(ca_result, filename=None):
     coef_list.append(fit_avalanche_d_1_bc.coef_[0])
     #print(coef)
 
+
+    R_list = []
+    R_list.append(calculate_comparison_ratio(avalanche_s_0_bc))
+    R_list.append(calculate_comparison_ratio(avalanche_d_0_bc))
+    R_list.append(calculate_comparison_ratio(avalanche_s_1_bc))
+    R_list.append(calculate_comparison_ratio(avalanche_d_1_bc))
+
     norm_avalanche_pdf_size = normalize_avalanche_pdf_size(mask_avalanche_s_0_bc,\
                                                            mask_avalanche_d_0_bc,\
                                                            mask_avalanche_s_1_bc,\
@@ -186,20 +206,23 @@ def evaluate_result(ca_result, filename=None):
     print("linscore_list", linscore_list)
     print("coef_list", coef_list)
     print("ksdist_list", ksdist_list)
+    print("R_list", R_list)
 
     norm_linscore_res = norm_linscore(linscore_list)
     norm_ksdist_res = norm_ksdist(ksdist_list)
     norm_coef_res = norm_coef(coef_list)
-    norm_unique_states = 10*((np.unique(ca_result, axis=0).shape[0]) / ca_result.shape[1])
-
+    norm_unique_states = ((np.unique(ca_result, axis=0).shape[0]) / ca_result.shape[1])
+    norm_R_res = norm_comparison_ratio(R_list)
 
     print("norm_avalanche_pdf_size", norm_avalanche_pdf_size)
     print("norm_linscore_res", norm_linscore_res)
     print("norm_ksdist_res", norm_ksdist_res)
     print("norm_coef_res", norm_coef_res)
     print("norm_unique_states", norm_unique_states)
+    print("norm_R_res", norm_R_res)
 
-    fitness = norm_ksdist_res + norm_coef_res + norm_unique_states + norm_avalanche_pdf_size + norm_linscore_res
+    #fitness = norm_ksdist_res + norm_coef_res + norm_unique_states + norm_avalanche_pdf_size + norm_linscore_res
+    fitness = norm_ksdist_res**2 + norm_unique_states + norm_avalanche_pdf_size + norm_linscore_res**2 + norm_R_res**2
 
   val_dict = {}
   val_dict["norm_ksdist_res"] = norm_ksdist_res
@@ -207,6 +230,7 @@ def evaluate_result(ca_result, filename=None):
   val_dict["norm_unique_states"] = norm_unique_states
   val_dict["norm_avalanche_pdf_size"] = norm_avalanche_pdf_size
   val_dict["norm_linscore_res"] = norm_linscore_res
+  val_dict["norm_R_res"] = norm_R_res
   val_dict["fitness"] = fitness
 
   print("Fitness", fitness)
@@ -216,7 +240,7 @@ def evaluate_result(ca_result, filename=None):
 def evaluate_genome(genome=8*[0.5], filename=None):
   print(genome)
   gen_rule = [(genome,)]
-  
+
   exp = experiment.Experiment()
   g_ca = exp.add_group_cells(name="g_ca", amount=width)
   neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
@@ -249,15 +273,16 @@ def evaluate_genome(genome=8*[0.5], filename=None):
 
   if isinstance(filename, str):
     if ".csv" in filename:
-      with open(filename, "a", newline="") as f:
+      with open(filename, "a+", newline="") as f:
         wr = csv.writer(f, delimiter=";")
         if os.stat(filename).st_size == 0:
           wr.writerow(["genome", "fitness", "norm_ksdist_res", "norm_coef_res", "norm_unique_states",\
-                        "norm_avalanche_pdf_size", "norm_linscore_res"])
+                        "norm_avalanche_pdf_size", "norm_linscore_res", "norm_R_res"])
 
         wr.writerow([str(list(genome)), val_dict["fitness"], val_dict["norm_ksdist_res"],\
                      val_dict["norm_coef_res"], val_dict["norm_unique_states"],\
-                     val_dict["norm_avalanche_pdf_size"],val_dict["norm_linscore_res"]])
+                     val_dict["norm_avalanche_pdf_size"],val_dict["norm_linscore_res"],\
+                     val_dict["norm_R_res"]])
 
   return fitness, val_dict
 
