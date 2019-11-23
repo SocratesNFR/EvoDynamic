@@ -1,7 +1,7 @@
 """ Evolving Stochastic Cellular automata 1D - Self-organized criticality"""
 
 import evodynamic.experiment as experiment
-import evodynamic.connection.cellular_automata as ca
+import evodynamic.connection.random_boolean_net as rbn
 import evodynamic.cells.activation as act
 import evodynamic.connection as connection
 from evodynamic.evolution import ga
@@ -243,13 +243,8 @@ def evaluate_genome(genome=8*[0.5], filename=None):
 
   exp = experiment.Experiment()
   g_ca = exp.add_group_cells(name="g_ca", amount=width)
-  neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
   g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin')
-  g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
-                                             neighbors=neighbors,\
-                                             center_idx=center_idx,
-                                             is_wrapped_ca=True)
-
+  g_ca_bin_conn = rbn.create_conn_matrix('g_ca_bin_conn', width)
 
   exp.add_connection("g_ca_conn",
                      connection.WeightedConnection(g_ca_bin,g_ca_bin,
@@ -288,10 +283,10 @@ def evaluate_genome(genome=8*[0.5], filename=None):
 
 start_total = time.time()
 
-best_genome = ga.evolve_probability(evaluate_genome, pop_size=40, generation=100)
+best_genome = ga.evolve_probability(evaluate_genome, pop_size=40, generation=10)
 
 print("TOTAL Execution time:", time.time()-start_total)
 
 print(best_genome)
 
-print("Final fitness", evaluate_genome(best_genome, sys.argv[1]))
+print("Final fitness", evaluate_genome(best_genome, sys.argv[1] if (len(sys.argv) > 1) else "out.csv"))

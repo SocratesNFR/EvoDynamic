@@ -1,7 +1,7 @@
 """ Evolving Stochastic Cellular automata 1D - Self-organized criticality"""
 
 import evodynamic.experiment as experiment
-import evodynamic.connection.cellular_automata as ca
+import evodynamic.connection.random as random_net
 import evodynamic.cells.activation as act
 import evodynamic.connection as connection
 from evodynamic.evolution import ga
@@ -243,12 +243,13 @@ def evaluate_genome(genome=8*[0.5], filename=None):
 
   exp = experiment.Experiment()
   g_ca = exp.add_group_cells(name="g_ca", amount=width)
-  neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
+  #neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
   g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin')
-  g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
-                                             neighbors=neighbors,\
-                                             center_idx=center_idx,
-                                             is_wrapped_ca=True)
+  g_ca_bin_conn = random_net.create_gaussian_matrix('g_ca_bin_conn',width,\
+                                                    mean=0.0,\
+                                                    std=1.0,\
+                                                    sparsity=None,\
+                                                    is_sparse=False)
 
 
   exp.add_connection("g_ca_conn",
