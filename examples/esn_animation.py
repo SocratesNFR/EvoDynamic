@@ -24,7 +24,7 @@ exp.add_connection("input_conn", connection.IndexConnection(input_esn,g_esn_real
 
 exp.add_connection("g_esn_conn",
                    connection.WeightedConnection(g_esn_real,
-                                                 g_esn_real,act.sigmoid,
+                                                 g_esn_real,act.stochastic_sigmoid,
                                                  g_esn_real_conn))
 
 exp.initialize_cells()

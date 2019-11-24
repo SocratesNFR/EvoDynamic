@@ -1,7 +1,7 @@
 """ Cellular automata 1D - Self-organized criticality"""
 
 import evodynamic.experiment as experiment
-import evodynamic.connection.cellular_automata as ca
+import evodynamic.connection.random as random_net
 import evodynamic.cells.activation as act
 import evodynamic.connection as connection
 import numpy as np
@@ -14,14 +14,10 @@ from PIL import Image
 width = 1000
 timesteps = 1000
 
-exp = experiment.Experiment()
-g_ca = exp.add_group_cells(name="g_ca", amount=width)
-neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
-g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin', init="random")
-g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
-                                           neighbors=neighbors,\
-                                           center_idx=center_idx,
-                                           is_wrapped_ca=True)
+def gene2mean(gene):
+  return (3.9*gene + 0.1)
+
+
 
 #g_ca.add_internal_connection(state_name='g_ca_bin', connection=g_ca_bin_conn,\
 #                            activation_func=act.rule_binary_ca_1d_width3_func,\
@@ -114,14 +110,26 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 
 #Fitness: 3.846355346428642
 #[0.7188914942166771, 0.19425675064515455, 1.0, 0.6811527268852052, 0.5058367175816952, 0.0, 0.9139853604352849, 0.2966160184876858]
-fargs_list = [( [0.7188914942166771, 0.19425675064515455, 1.0,\
-                 0.6811527268852052, 0.5058367175816952, 0.0,\
-                 0.9139853604352849, 0.2966160184876858],)]
+genome = 6*[0.5]
 
+exp = experiment.Experiment()
+g_ca = exp.add_group_cells(name="g_ca", amount=width)
+g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin')
+
+mean_pos =  gene2mean(genome[0])
+std_pos = 0.2*mean_pos*genome[1]
+mean_neg = gene2mean(genome[2])
+std_neg = 0.2*mean_neg*genome[3]
+
+g_ca_bin_conn = random_net.create_esn_matrix('g_ca_bin_conn', width,\
+                                             mean_pos=mean_pos, std_pos=std_pos,\
+                                             mean_neg=mean_neg, std_neg=std_neg,\
+                                             pos_neg_prop=genome[4],\
+                                             sparsity=genome[5], is_sparse=genome[5]<0.9)
 exp.add_connection("g_ca_conn",
                      connection.WeightedConnection(g_ca_bin,g_ca_bin,
-                                                   act.rule_binary_sca_1d_width3_func,
-                                                   g_ca_bin_conn, fargs_list=fargs_list))
+                                                   act.stochastic_sigmoid,
+                                                   g_ca_bin_conn))
 
 exp.add_monitor("g_ca", "g_ca_bin", timesteps)
 

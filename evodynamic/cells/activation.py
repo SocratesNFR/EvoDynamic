@@ -141,4 +141,10 @@ def rule_binary_sca_1d_width3_func(pattern, previous_state, prob_list):
 def sigmoid(x, args):
   return tf.sigmoid(x)
 
-
+def stochastic_sigmoid(x, args):
+  shape_x = tf.shape(x)
+  prob = tf.sigmoid(x)
+  prob_mask = tf.less_equal(tf.random.uniform(shape_x, dtype=tf.float64), prob)
+  return tf.where(prob_mask,\
+                 tf.ones(shape_x, dtype=tf.float64),\
+                 tf.zeros(shape_x, dtype=tf.float64))

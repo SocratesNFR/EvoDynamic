@@ -236,26 +236,34 @@ def evaluate_result(ca_result, filename=None):
   print("Fitness", fitness)
   return fitness, val_dict
 
+def gene2mean(gene):
+  return (3.9*gene + 0.1)
+
 # genome is a list of float numbers between 0 and 1
-def evaluate_genome(genome=8*[0.5], filename=None):
+def evaluate_genome(genome=6*[0.5], filename=None):
   print(genome)
-  gen_rule = [(genome,)]
+#  gen_rule = [(genome,)]
 
   exp = experiment.Experiment()
   g_ca = exp.add_group_cells(name="g_ca", amount=width)
-  #neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
   g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin')
-  g_ca_bin_conn = random_net.create_gaussian_matrix('g_ca_bin_conn',width,\
-                                                    mean=0.0,\
-                                                    std=1.0,\
-                                                    sparsity=None,\
-                                                    is_sparse=False)
+
+  mean_pos =  gene2mean(genome[0])
+  std_pos = 0.2*mean_pos*genome[1]
+  mean_neg = gene2mean(genome[2])
+  std_neg = 0.2*mean_neg*genome[3]
+
+  g_ca_bin_conn = random_net.create_esn_matrix('g_ca_bin_conn', width,\
+                                               mean_pos=mean_pos, std_pos=std_pos,\
+                                               mean_neg=mean_neg, std_neg=std_neg,\
+                                               pos_neg_prop=genome[4],\
+                                               sparsity=genome[5], is_sparse=genome[5]<0.9)
 
 
   exp.add_connection("g_ca_conn",
                      connection.WeightedConnection(g_ca_bin,g_ca_bin,
-                                                   act.rule_binary_sca_1d_width3_func,
-                                                   g_ca_bin_conn, fargs_list=gen_rule))
+                                                   act.stochastic_sigmoid,
+                                                   g_ca_bin_conn))
 
   exp.add_monitor("g_ca", "g_ca_bin", timesteps)
 
