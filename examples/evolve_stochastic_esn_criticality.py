@@ -297,7 +297,7 @@ def evaluate_genome(genome=6*[0.5], filename=None):
 
 start_total = time.time()
 
-best_genome = ga.evolve_probability(evaluate_genome, pop_size=40, generation=100)
+best_genome = ga.evolve_probability(evaluate_genome, pop_size=40, generation=100, prob_size=6)
 
 print("TOTAL Execution time:", time.time()-start_total)
 
