@@ -10,7 +10,7 @@ import evodynamic.cells as cells
 import networkx as nx
 import time
 
-width = 100
+width = 16
 input_size = width // 10
 
 exp = experiment.Experiment()
@@ -71,7 +71,7 @@ def updatefig(*args):
   current_state = exp.get_group_cells_state("g_rbn", "g_rbn_bin")
 
   node_color = ["black" if current_state[node]==0 else "gray" for node in G]
-  
+
   nx.draw(G.reverse(), node_color = node_color, pos=pos_new,
           connectionstyle="arc3, rad=0.1")
 

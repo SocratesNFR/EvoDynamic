@@ -26,9 +26,9 @@ def gene2mean(gene):
 [0.6329753155561739, 0.42446594118115083, 0.17148584466007016, 0.41175050290182297, 0.9718969137177149, 0.9975765895762231, 0.5509480489363724, 0.561692652101913]
 
 """
-genome = [0.6329753155561739, 0.42446594118115083, 0.17148584466007016,\
-          0.41175050290182297, 0.9718969137177149, 0.9975765895762231,\
-          0.5509480489363724, 0.561692652101913]
+#genome = [0.6329753155561739, 0.42446594118115083, 0.17148584466007016,\
+#          0.41175050290182297, 0.9718969137177149, 0.9975765895762231,\
+#          0.5509480489363724, 0.561692652101913]
 
 """
 best_val_dict {'norm_ksdist_res': 0.8693636555659972,
@@ -39,6 +39,49 @@ best_val_dict {'norm_ksdist_res': 0.8693636555659972,
 """
 #genome = [0.6329753155561739, 1.0, 0.17148584466007016, 0.8851963026730629,\
 #          0.9718969137177149, 0.8048281494054954, 0.0, 1.0]
+
+
+"""
+1;4.188026280969901;{'norm_ksdist_res': 0.9218915639401829,
+'norm_coef_res': 2.4433984522016163, 'norm_unique_states': 1.0,
+'norm_avalanche_pdf_size': 0.9841810036989544, 'norm_linscore_res': 0.8622489870322572,
+'norm_R_res': 0.6104879059687166, 'fitness': 4.188026280969901};
+[0.1898735014209043, 0.3912974216407099, 0.30919330518231114, 0.7920508111982324, 0.7840822497189402, 0.9822578134839557]
+"""
+#genome = [0.1898735014209043, 0.3912974216407099, 0.30919330518231114, 0.7920508111982324, 0.7840822497189402, 0.9822578134839557]
+
+"""
+Best 1
+100;4.197644869703749;{'norm_ksdist_res': 0.9205040751799484,
+'norm_coef_res': 3.1315151681437987, 'norm_unique_states': 1.0,
+'norm_avalanche_pdf_size': 0.9508071403430646, 'norm_linscore_res': 0.8874801707337622,
+'norm_R_res': 0.6118889234921658, 'fitness': 4.197644869703749};
+[0.15946336044758833, 0.6081316834471261, 0.24086695738964867, 0.11565943400260854, 0.49890960538224005, 0.6048572551787906]
+
+"""
+#genome = [0.15946336044758833, 0.6081316834471261, 0.24086695738964867, 0.11565943400260854, 0.49890960538224005, 0.6048572551787906]
+
+
+"""
+Best 3
+100;4.190054893634441;{'norm_ksdist_res': 0.9148928461675688,
+'norm_coef_res': 3.0861992849160536, 'norm_unique_states': 1.0,
+'norm_avalanche_pdf_size': 0.934702178096927, 'norm_linscore_res': 0.8943095771286728,
+'norm_R_res': 0.618534175824854, 'fitness': 4.190054893634441};
+[0.15946336044758833, 0.6081316834471261, 0.24086695738964867, 0.11565943400260854, 0.49890960538224005, 0.6048572551787906]
+"""
+#genome = [0.15946336044758833, 0.6081316834471261, 0.24086695738964867, 0.11565943400260854, 0.49890960538224005, 0.6048572551787906]
+
+"""
+Best 2
+31;4.190105541983604;{'norm_ksdist_res': 0.9031427733809161,
+'norm_coef_res': 2.3184216750371673, 'norm_unique_states': 1.0,
+'norm_avalanche_pdf_size': 0.9677300677207843, 'norm_linscore_res': 0.8909821609986808,
+'norm_R_res': 0.6128593939347675, 'fitness': 4.190105541983604};
+[1.0, 1.0, 0.0, 0.3896408651241224, 0.06493427884288086, 0.9639558067218343]
+"""
+genome = [1.0, 1.0, 0.0, 0.3896408651241224, 0.06493427884288086, 0.9639558067218343]
+
 
 exp = experiment.Experiment()
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
@@ -54,6 +97,14 @@ g_ca_bin_conn = random_net.create_esn_matrix('g_ca_bin_conn', width,\
                                              mean_neg=mean_neg, std_neg=std_neg,\
                                              pos_neg_prop=genome[4],\
                                              sparsity=genome[5], is_sparse=genome[5]<0.9)
+
+print("mean_pos", mean_pos)
+print("std_pos", std_pos)
+print("mean_neg", mean_neg)
+print("std_neg", std_neg)
+print("pos_neg_prop", genome[4])
+print("sparsity", genome[5])
+
 exp.add_connection("g_ca_conn",
                      connection.WeightedConnection(g_ca_bin,g_ca_bin,
                                                    act.stochastic_sigmoid,
@@ -75,11 +126,13 @@ exp.close()
 def KSdist(theoretical_pdf, empirical_pdf):
   return np.max(np.abs(np.cumsum(theoretical_pdf) - np.cumsum(empirical_pdf)))
 
-def goodness_of_fit(fit, data, gen_data=1000, data_samples=10000):
+def goodness_of_fit(fit, data, gen_data=10000, data_samples_lb=10000):
   theoretical_distribution = powerlaw.Power_Law(xmin=1,\
                                                 parameters=[fit.power_law.alpha],\
                                                 discrete=True)
   simulated_ksdist_list = []
+  data_samples = max(len(data), data_samples_lb)
+  print("GoF data_samples", data_samples)
   for _ in range(gen_data):
     simulated_data=theoretical_distribution.generate_random(data_samples)
     simulated_ksdist = powerlaw.power_law_ks_distance(simulated_data,\
@@ -112,7 +165,7 @@ def powerlaw_stats(data, fname=""):
 #  ax.scatter(x[pdf > 0], pdf[pdf > 0], "-", label="Empirical")
 
   fit.plot_pdf(color = "b", linewidth =2, ax =ax, label="Avalanche (samples=%d)"% len(data))
-  fit.power_law.plot_pdf(color = "k", linestyle = "--", ax =ax, label=r"Fit ($\hat{\alpha}$="+"%.1f, $p$-value=%.1f)" % (fit.power_law.alpha, gof))
+  fit.power_law.plot_pdf(color = "k", linestyle = "--", ax =ax, label=r"Fit ($\hat{\alpha}$="+"%.1f, $p$-value=%.2f)" % (fit.power_law.alpha, gof))
 
   ax.legend()
   ax.set_xlabel("$x$")

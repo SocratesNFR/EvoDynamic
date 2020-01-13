@@ -119,6 +119,7 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 #                 0.9139853604352849, 0.2966160184876858],)]
 
 """
+Best 2
 80;4.375510397876782;{'norm_ksdist_res': 0.9613162536023352,
 'norm_coef_res': 1.6377095314393233, 'norm_unique_states': 1.0,
 'norm_avalanche_pdf_size': 0.9659114597767141, 'norm_linscore_res': 0.8704469695084798,
@@ -128,6 +129,18 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 fargs_list = [( [0.39422172047670734, 0.09472197628905793,\
                  0.2394927250526252, 0.4084554505943707, 0.0,\
                  0.7302038703441202, 0.9150343715586952, 1.0],)]
+
+"""
+Best 1
+54;4.398951989537441;{'norm_ksdist_res': 0.933384523351728,
+'norm_coef_res': 3.137757362158494, 'norm_unique_states': 1.0,
+'norm_avalanche_pdf_size': 0.9901181544580899, 'norm_linscore_res': 0.8998951382623923,
+'norm_R_res': 0.7278159067785285, 'fitness': 4.398951989537441};
+[0.6874541343907156, 0.2838954295003201, 1.0, 0.07824728510310233, 0.0, 0.0, 0.0, 0.45114370600786]
+This is a bad one. P-value is zero
+"""
+#fargs_list = [( [0.6874541343907156, 0.2838954295003201, 1.0,\
+#                 0.07824728510310233, 0.0, 0.0, 0.0, 0.45114370600786],)]
 
 
 exp.add_connection("g_ca_conn",
@@ -151,16 +164,18 @@ exp.close()
 def KSdist(theoretical_pdf, empirical_pdf):
   return np.max(np.abs(np.cumsum(theoretical_pdf) - np.cumsum(empirical_pdf)))
 
-def goodness_of_fit(fit, data, gen_data=1000, data_samples=10000):
+def goodness_of_fit(fit, data, gen_data=1000, data_samples_lb=10000):
   theoretical_distribution = powerlaw.Power_Law(xmin=1,\
                                                 parameters=[fit.power_law.alpha],\
                                                 discrete=True)
   simulated_ksdist_list = []
+  data_samples = max(len(data), data_samples_lb)
+  print("GoF data_samples", data_samples)
   for _ in range(gen_data):
     simulated_data=theoretical_distribution.generate_random(data_samples)
     simulated_ksdist = powerlaw.power_law_ks_distance(simulated_data,\
                                                       fit.power_law.alpha,\
-                                                      xmin=1, discrete=True)
+                                                      xmin=1, xmax=1000, discrete=True)
     simulated_ksdist_list.append(simulated_ksdist)
 
   return sum(np.array(simulated_ksdist_list) > fit.power_law.D) / gen_data
@@ -188,7 +203,7 @@ def powerlaw_stats(data, fname=""):
 #  ax.scatter(x[pdf > 0], pdf[pdf > 0], "-", label="Empirical")
 
   fit.plot_pdf(color = "b", linewidth =2, ax =ax, label="Avalanche (samples=%d)"% len(data))
-  fit.power_law.plot_pdf(color = "k", linestyle = "--", ax =ax, label=r"Fit ($\hat{\alpha}$="+"%.1f, $p$-value=%.1f)" % (fit.power_law.alpha, gof))
+  fit.power_law.plot_pdf(color = "k", linestyle = "--", ax =ax, label=r"Fit ($\hat{\alpha}$="+"%.1f, $p$-value=%.2f)" % (fit.power_law.alpha, gof))
 
   ax.legend()
   ax.set_xlabel("$x$")

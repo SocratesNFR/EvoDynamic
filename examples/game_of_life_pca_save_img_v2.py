@@ -10,21 +10,19 @@ from sklearn.decomposition import PCA
 import os
 plt.rcParams.update({'font.size': 18})
 
-width = 7
-height = 7
-timesteps = 35
+width = 5
+height = 5
+timesteps = 25
 
 exp = experiment.Experiment()
 g_ca = exp.add_group_cells(name="g_ca", amount=width*height)
 neighbors, center_idx = ca.create_count_neighbors_ca2d(3,3)
 
-initial_state = np.array([7*[0],
-                          7*[0],
-                          [0,0,1,0,0,0,0],
-                          [0,0,0,1,1,0,0],
-                          [0,0,1,1,0,0,0],
-                          7*[0],
-                          7*[0]])
+initial_state = np.array([5*[0],
+                          [0,1,0,0,0],
+                          [0,0,1,1,0],
+                          [0,1,1,0,0],
+                          5*[0]])
 
 print(initial_state.shape)
 
@@ -74,7 +72,10 @@ for i in range(timesteps):
   axs[1].set_yticks([-1,0,1])
   axs[1].set_aspect("equal")
 
-  axs[0].imshow(1-ca_result[i].reshape((width,height)), cmap="gray")
+  #axs[0].imshow(1-ca_result[i].reshape((width,height)), cmap="gray")
+  #axs[0].grid(color="k", linewidth=1)
+  axs[0].pcolormesh(1-np.flipud(ca_result[i].reshape((width,height))), cmap="gray", edgecolors="lightgray", linewidths=1)
+  axs[0].set_aspect("equal")
   axs[1].plot(principal_comp[:i+1,0], principal_comp[:i+1,1], c="darkgray", zorder=0)
   axs[1].scatter(principal_comp[:i,0], principal_comp[:i,1], c="darkgray", marker="o", zorder=5)
   axs[1].scatter(principal_comp[i,0], principal_comp[i,1], s=150, c="k", marker="*", zorder=10)

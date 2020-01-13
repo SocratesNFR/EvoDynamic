@@ -8,7 +8,7 @@ import numpy as np
 import time
 from PIL import Image
 
-width = 100
+width = 16
 timesteps = 200
 
 exp = experiment.Experiment()
@@ -17,7 +17,7 @@ neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
 g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin')
 g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
-                                           center_idx=center_idx)
+                                           center_idx=center_idx, is_sparse=False)
 
 #fargs_list = [(a,) for a in [54, 52, 144, 127, 30, 17, 159, 81, 75, 226, 222,\
 #              16, 191, 206, 14, 133, 237, 191, 204, 92, 98, 8, 55, 202, 169,\
@@ -39,9 +39,11 @@ exp.add_monitor("g_ca", "g_ca_bin")
 
 exp.initialize_cells()
 
+conn = exp.session.run(g_ca_bin_conn)
+
 exp.run(timesteps=timesteps)
 ca_result = np.invert(exp.get_monitor("g_ca", "g_ca_bin").astype(np.bool)).astype(np.uint8)*255
 
 img = Image.fromarray(ca_result).resize((5*width,5*timesteps), Image.NEAREST)
 timestr = time.strftime("%Y%m%d-%H%M%S")
-img.save("results/evolved_deterministic_ca_"+timestr+".png")
+#img.save("results/evolved_deterministic_ca_"+timestr+".png")
