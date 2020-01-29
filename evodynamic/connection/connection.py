@@ -3,7 +3,7 @@
 import tensorflow as tf
 
 class BaseConnection(object):
-  def __init__(self, from_group, to_group, activation_func, name=None):
+  def __init__(self, from_group, to_group, activation_func):
     self.from_group = from_group
     self.to_group = to_group
     self.activation_func = activation_func
@@ -20,8 +20,8 @@ class BaseConnection(object):
     raise NotImplementedError
 
 class IndexConnection(BaseConnection):
-  def __init__(self, from_group, to_group, to_group_idx, activation_func=tf.scatter_update, name=None):
-    super().__init__(from_group, to_group, activation_func, name=name)
+  def __init__(self, from_group, to_group, to_group_idx, activation_func=tf.scatter_update):
+    super().__init__(from_group, to_group, activation_func)
     self.to_group_idx = tf.convert_to_tensor(to_group_idx, tf.int64) # Tensor of type int32 or int64
     self.list_ops = self.__get_ops()
 
