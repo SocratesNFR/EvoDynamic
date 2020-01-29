@@ -47,7 +47,8 @@ class Experiment(object):
   #TODO: def run(self,timesteps: int = 10, dataset, batch_size):
   def run(self,timesteps: int = 10, feed_dict=None):
     for step in range(timesteps-1):
-      self.session.run(self.connection_ops, feed_dict=feed_dict)
+      for conn_key in self.connections:
+        self.session.run(self.connection_ops, feed_dict=feed_dict)
 
       for group_key in self.cell_groups:
         self.session.run(self.cell_groups[group_key].internal_connections)
@@ -57,7 +58,6 @@ class Experiment(object):
 
       utils.progressbar(step+1, timesteps-1)
 
-  #TODO: def run_step(self, input_dict):
   def run_step(self, feed_dict=None):
     for conn_key in self.connections:
       self.session.run(self.connection_ops, feed_dict=feed_dict)

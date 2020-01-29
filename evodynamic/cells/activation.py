@@ -151,7 +151,7 @@ def stochastic_sigmoid(x, args):
 
 def _stochastic_prob(prob_mean, prob_std):
   prob_mean_mod = tf.math.log(tf.div_no_nan(prob_mean, 1-prob_mean))
-  sample_random_normal = tf.random.normal([], prob_mean_mod, prob_std)
+  sample_random_normal = tf.random.normal([], prob_mean_mod, prob_std, seed=1)
   prob = tf.divide(1, 1+tf.math.exp(-sample_random_normal))
   return prob
 

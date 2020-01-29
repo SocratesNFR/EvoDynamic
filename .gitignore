@@ -147,3 +147,6 @@ examples/*.txt
 
 # Generated animation
 *.mp4
+
+# Folders in examples
+examples/*/

@@ -26,6 +26,7 @@ class Cells(object):
 #      "init must be 'random', 'central', 'reversecentral', 'zeros', or 'ones'."
 
     if init == "random":
+      #np.random.seed(1)
       initial = np.random.randint(2, size=self.amount).astype(np.float64)
     elif init == "central":
       initial = np.zeros(self.amount).astype(np.float64)

@@ -2,6 +2,7 @@
 
 import tensorflow as tf
 import numpy as np
+from . import conn_utils
 
 # Based on https://github.com/nschaetti/EchoTorch/blob/master/echotorch/nn/ESNCell.py
 
@@ -119,3 +120,9 @@ def create_esn_matrix(name, width, mean_pos=0.0, std_pos=1.0,\
 
   return initial if is_sparse else tf.get_variable(name, initializer=initial)
 
+def create_xavier_connection(name, from_group_amount, to_group_amount):
+  return conn_utils.weight_variable_xavier_initialized([to_group_amount, from_group_amount], name=name)
+
+def create_truncated_normal_connection(name, from_group_amount, to_group_amount, stddev=0.02):
+  return conn_utils.weight_variable([to_group_amount, from_group_amount],
+                                    stddev=stddev, name=name)
