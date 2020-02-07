@@ -17,60 +17,6 @@ timesteps = 1000
 def gene2mean(gene):
   return (3.9*gene + 0.1)
 
-"""
-5;4.117935466142349;{'norm_ksdist_res': 0.8693636555659972,
-'norm_coef_res': 2.497134143709499, 'norm_unique_states': 1.0,
-'norm_avalanche_pdf_size': 0.9878321170491581,
-'norm_linscore_res': 0.8847558329936456, 'norm_R_res': 0.591517299457838,
-'fitness': 4.117935466142349};
-[0.6329753155561739, 0.42446594118115083, 0.17148584466007016, 0.41175050290182297, 0.9718969137177149, 0.9975765895762231, 0.5509480489363724, 0.561692652101913]
-
-"""
-#genome = [0.6329753155561739, 0.42446594118115083, 0.17148584466007016,\
-#          0.41175050290182297, 0.9718969137177149, 0.9975765895762231,\
-#          0.5509480489363724, 0.561692652101913]
-
-"""
-best_val_dict {'norm_ksdist_res': 0.8693636555659972,
-'norm_coef_res': 2.497134143709499, 'norm_unique_states': 1.0,
-'norm_avalanche_pdf_size': 0.9878321170491581,
-'norm_linscore_res': 0.8847558329936456, 'norm_R_res': 0.591517299457838,
-'fitness': 4.117935466142349}
-"""
-#genome = [0.6329753155561739, 1.0, 0.17148584466007016, 0.8851963026730629,\
-#          0.9718969137177149, 0.8048281494054954, 0.0, 1.0]
-
-
-"""
-1;4.188026280969901;{'norm_ksdist_res': 0.9218915639401829,
-'norm_coef_res': 2.4433984522016163, 'norm_unique_states': 1.0,
-'norm_avalanche_pdf_size': 0.9841810036989544, 'norm_linscore_res': 0.8622489870322572,
-'norm_R_res': 0.6104879059687166, 'fitness': 4.188026280969901};
-[0.1898735014209043, 0.3912974216407099, 0.30919330518231114, 0.7920508111982324, 0.7840822497189402, 0.9822578134839557]
-"""
-#genome = [0.1898735014209043, 0.3912974216407099, 0.30919330518231114, 0.7920508111982324, 0.7840822497189402, 0.9822578134839557]
-
-"""
-Best 1
-100;4.197644869703749;{'norm_ksdist_res': 0.9205040751799484,
-'norm_coef_res': 3.1315151681437987, 'norm_unique_states': 1.0,
-'norm_avalanche_pdf_size': 0.9508071403430646, 'norm_linscore_res': 0.8874801707337622,
-'norm_R_res': 0.6118889234921658, 'fitness': 4.197644869703749};
-[0.15946336044758833, 0.6081316834471261, 0.24086695738964867, 0.11565943400260854, 0.49890960538224005, 0.6048572551787906]
-
-"""
-#genome = [0.15946336044758833, 0.6081316834471261, 0.24086695738964867, 0.11565943400260854, 0.49890960538224005, 0.6048572551787906]
-
-
-"""
-Best 3
-100;4.190054893634441;{'norm_ksdist_res': 0.9148928461675688,
-'norm_coef_res': 3.0861992849160536, 'norm_unique_states': 1.0,
-'norm_avalanche_pdf_size': 0.934702178096927, 'norm_linscore_res': 0.8943095771286728,
-'norm_R_res': 0.618534175824854, 'fitness': 4.190054893634441};
-[0.15946336044758833, 0.6081316834471261, 0.24086695738964867, 0.11565943400260854, 0.49890960538224005, 0.6048572551787906]
-"""
-#genome = [0.15946336044758833, 0.6081316834471261, 0.24086695738964867, 0.11565943400260854, 0.49890960538224005, 0.6048572551787906]
 
 """
 Best 2
@@ -158,12 +104,6 @@ def powerlaw_stats(data, fname=""):
   fig, ax = plt.subplots()
 
 
-#  pdf = np.bincount(data)
-#  pdf = pdf / sum(pdf)
-#  #pdf[pdf == 0] = np.nan
-#  x = np.linspace(1,len(pdf),len(pdf))
-#  ax.scatter(x[pdf > 0], pdf[pdf > 0], "-", label="Empirical")
-
   fit.plot_pdf(color = "b", linewidth =2, ax =ax, label="Avalanche (samples=%d)"% len(data))
   fit.power_law.plot_pdf(color = "k", linestyle = "--", ax =ax, label=r"Fit ($\hat{\alpha}$="+"%.1f, $p$-value=%.2f)" % (fit.power_law.alpha, gof))
 
@@ -172,12 +112,7 @@ def powerlaw_stats(data, fname=""):
   ax.set_ylabel("$P(x)$")
   if fname:
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    #plt.savefig(fname+timestr+".svg", format="svg")
     plt.savefig("results/"+fname+timestr+".png", format="png")
-
-#  fit.plot_ccdf(color = "r", linewidth = 2, ax= ax)
-#  fit.power_law.plot_ccdf(color = "r", linestyle = "--", ax =ax)
-
 
 def getdict_cluster_size(arr1d):
   cluster_dict = {}
@@ -215,7 +150,7 @@ def norm_coef(coef):
   return -np.mean(coef)
 
 def norm_linscore(linscore):
-  return np.mean(linscore)#5*np.max(linscore)+5*np.mean(linscore)
+  return np.mean(linscore)
 
 # Normalize values from 0 to inf to be from 10 to 0
 def norm_ksdist(ksdist, smooth=1):
@@ -249,9 +184,8 @@ def calculate_data_score(data):
   ksdist = fit.power_law.D
   R_exp, p_exp = fit.distribution_compare('power_law', 'exponential', normalized_ratio=True)
   R_exp = R_exp if p_exp < 0.1 else 0
-#  R_log, p_log = fit.distribution_compare('power_law', 'lognormal', normalized_ratio=True)
-#  R_log = R_log if p_log < 0.1 else 0
-  R = R_exp#+R_log
+
+  R = R_exp
 
   return alpha, ksdist, R
 
@@ -455,31 +389,6 @@ log_avalanche_d_0_bc = np.where(mask_avalanche_d_0_bc, log_avalanche_d_0_bc, 0)
 log_avalanche_s_1_bc = np.where(mask_avalanche_s_1_bc, log_avalanche_s_1_bc, 0)
 log_avalanche_d_1_bc = np.where(mask_avalanche_d_1_bc, log_avalanche_d_1_bc, 0)
 
-#fit_avalanche_s_0_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_s_0_bc)+1)).reshape(-1,1), log_avalanche_s_0_bc, sample_weight=[1 if w<=10 else 0 for w in range(len(avalanche_s_0_bc))])
-#fit_avalanche_d_0_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_d_0_bc)+1)).reshape(-1,1), log_avalanche_d_0_bc, sample_weight=[1 if w<=10 else 0 for w in range(len(avalanche_d_0_bc))])
-#fit_avalanche_s_1_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_s_1_bc)+1)).reshape(-1,1), log_avalanche_s_1_bc, sample_weight=[1 if w<=10 else 0 for w in range(len(avalanche_s_1_bc))])
-#fit_avalanche_d_1_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_d_1_bc)+1)).reshape(-1,1), log_avalanche_d_1_bc, sample_weight=[1 if w<=10 else 0 for w in range(len(avalanche_d_1_bc))])
-#
-#print(fit_avalanche_s_0_bc.score(np.log10(np.arange(1,len(avalanche_s_0_bc)+1)).reshape(-1,1), log_avalanche_s_0_bc))
-#print(fit_avalanche_d_0_bc.score(np.log10(np.arange(1,len(avalanche_d_0_bc)+1)).reshape(-1,1), log_avalanche_d_0_bc))
-#print(fit_avalanche_s_1_bc.score(np.log10(np.arange(1,len(avalanche_s_1_bc)+1)).reshape(-1,1), log_avalanche_s_1_bc))
-#print(fit_avalanche_d_1_bc.score(np.log10(np.arange(1,len(avalanche_d_1_bc)+1)).reshape(-1,1), log_avalanche_d_1_bc))
-#print(np.unique(ca_result, axis=0).shape[0], timesteps)
-#print(fit_avalanche_s_0_bc.coef_, fit_avalanche_d_0_bc.coef_, fit_avalanche_s_1_bc.coef_, fit_avalanche_d_1_bc.coef_)
-#
-#print("KSdist")
-#print(KSdist(np.power(10,fit_avalanche_s_0_bc.predict(np.log10(np.arange(1,len(avalanche_s_0_bc)+1)).reshape(-1,1))), avalanche_s_0_bc))
-#print(KSdist(np.power(10,fit_avalanche_d_0_bc.predict(np.log10(np.arange(1,len(avalanche_d_0_bc)+1)).reshape(-1,1))), avalanche_d_0_bc))
-#print(KSdist(np.power(10,fit_avalanche_s_1_bc.predict(np.log10(np.arange(1,len(avalanche_s_1_bc)+1)).reshape(-1,1))), avalanche_s_1_bc))
-#print(KSdist(np.power(10,fit_avalanche_d_1_bc.predict(np.log10(np.arange(1,len(avalanche_d_1_bc)+1)).reshape(-1,1))), avalanche_d_1_bc))
-#
-#
-#plot_distribution(avalanche_s_0_bc, fit_avalanche_s_0_bc, "Avalanche size | Elementary CA rule 110+10 | v=0 | N=10^4 | t=10^5")
-#plot_distribution(avalanche_d_0_bc, fit_avalanche_d_0_bc, "Avalanche duration | Elementary CA rule 110+10 | v=0 | N=10^4 | t=10^5")
-#
-#plot_distribution(avalanche_s_1_bc, fit_avalanche_s_1_bc, "Avalanche size | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
-#plot_distribution(avalanche_d_1_bc, fit_avalanche_d_1_bc, "Avalanche duration | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
-
 powerlaw_stats(avalanche_s_0, "avalanche_s_0_")
 powerlaw_stats(avalanche_d_0, "avalanche_d_0_")
 powerlaw_stats(avalanche_s_1, "avalanche_s_1_")
@@ -487,22 +396,6 @@ powerlaw_stats(avalanche_d_1, "avalanche_d_1_")
 
 evaluate_result(ca_result)
 plot_ca_result(ca_result)
-
-#fit_avalanche_s_0_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_s_0_bc)+1)[mask_avalanche_s_0_bc]).reshape(-1,1), log_avalanche_s_0_bc[mask_avalanche_s_0_bc])
-#fit_avalanche_d_0_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_d_0_bc)+1)[mask_avalanche_d_0_bc]).reshape(-1,1), log_avalanche_d_0_bc[mask_avalanche_d_0_bc])
-#fit_avalanche_s_1_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_s_1_bc)+1)[mask_avalanche_s_1_bc]).reshape(-1,1), log_avalanche_s_1_bc[mask_avalanche_s_1_bc])
-#fit_avalanche_d_1_bc = LinearRegression().fit(np.log10(np.arange(1,len(avalanche_d_1_bc)+1)[mask_avalanche_d_1_bc]).reshape(-1,1), log_avalanche_d_1_bc[mask_avalanche_d_1_bc])
-#
-#print(fit_avalanche_s_0_bc.score(np.log10(np.arange(1,len(avalanche_s_0_bc)+1)[mask_avalanche_s_0_bc]).reshape(-1,1), log_avalanche_s_0_bc[mask_avalanche_s_0_bc]))
-#print(fit_avalanche_d_0_bc.score(np.log10(np.arange(1,len(avalanche_d_0_bc)+1)[mask_avalanche_d_0_bc]).reshape(-1,1), log_avalanche_d_0_bc[mask_avalanche_d_0_bc]))
-#print(fit_avalanche_s_1_bc.score(np.log10(np.arange(1,len(avalanche_s_1_bc)+1)[mask_avalanche_s_1_bc]).reshape(-1,1), log_avalanche_s_1_bc[mask_avalanche_s_1_bc]))
-#print(fit_avalanche_d_1_bc.score(np.log10(np.arange(1,len(avalanche_d_1_bc)+1)[mask_avalanche_d_1_bc]).reshape(-1,1), log_avalanche_d_1_bc[mask_avalanche_d_1_bc]))
-
-#plot_distribution(avalanche_s_0_bc, fit_avalanche_s_0_bc, "Avalanche size | Elementary CA rule 110+10 | v=0 | N=10^4 | t=10^5")
-#plot_distribution(avalanche_d_0_bc, fit_avalanche_d_0_bc, "Avalanche duration | Elementary CA rule 110+10 | v=0 | N=10^4 | t=10^5")
-#
-#plot_distribution(avalanche_s_1_bc, fit_avalanche_s_1_bc, "Avalanche size | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
-#plot_distribution(avalanche_d_1_bc, fit_avalanche_d_1_bc, "Avalanche duration | Elementary CA rule 110+10 | v=1 | N=10^4 | t=10^5")
 
 print("Total time:", time.time()-start)
 

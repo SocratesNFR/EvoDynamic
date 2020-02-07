@@ -80,10 +80,4 @@ ani = animation.FuncAnimation(fig, updatefig, frames=30, interval=2000, blit=Fal
 
 plt.show()
 
-# Set up formatting for the movie files
-#Writer = animation.writers['ffmpeg']
-#writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
-#ani.save('results/simple_esn_'+time.strftime("%Y%m%d-%H%M%S")+'.mp4', writer=writer)
-
-
 plt.connect('close_event', exp.close())

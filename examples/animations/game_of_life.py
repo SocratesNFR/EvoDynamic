@@ -3,7 +3,6 @@
 import evodynamic.experiment as experiment
 import evodynamic.connection.cellular_automata as ca
 import evodynamic.cells.activation as act
-import time
 
 width = 200
 height = 150
@@ -43,11 +42,6 @@ def updatefig(*args):
 
 ani = animation.FuncAnimation(fig, updatefig, frames=300, interval=100, blit=False)
 
-#plt.show()
-
-# Set up formatting for the movie files
-Writer = animation.writers['ffmpeg']
-writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
-ani.save('gameoflife_'+time.strftime("%Y%m%d-%H%M%S")+'.mp4', writer=writer)
+plt.show()
 
 plt.connect('close_event', exp.close())

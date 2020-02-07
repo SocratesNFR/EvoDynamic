@@ -74,7 +74,7 @@ def normalize_avalanche_pdf_size(mask_avalanche_s_0_bc, mask_avalanche_d_0_bc,\
   norm_avalanche_pdf_size_d_0 = sum(mask_avalanche_d_0_bc)/timesteps
   norm_avalanche_pdf_size_s_1 = sum(mask_avalanche_s_1_bc)/width
   norm_avalanche_pdf_size_d_1 = sum(mask_avalanche_d_1_bc)/timesteps
-  
+
   mean_avalanche_pdf_size = np.mean([norm_avalanche_pdf_size_s_0,\
                                     norm_avalanche_pdf_size_d_0,\
                                     norm_avalanche_pdf_size_s_1,\
@@ -83,30 +83,19 @@ def normalize_avalanche_pdf_size(mask_avalanche_s_0_bc, mask_avalanche_d_0_bc,\
                                    norm_avalanche_pdf_size_d_0,\
                                    norm_avalanche_pdf_size_s_1,\
                                    norm_avalanche_pdf_size_d_1])
-  
+
   return 10*((2 / (1+np.exp(-10 *\
                         (0.9*\
                          max_avalanche_pdf_size+0.1*mean_avalanche_pdf_size))))\
                         -1)
 
-#def calculate_data_score(data):
-#  fit = powerlaw.Fit(data, xmin =1, discrete= True)
-#  alpha = fit.power_law.alpha
-#  ksdist = fit.power_law.D
-#  R_exp, p_exp = fit.distribution_compare('power_law', 'exponential', normalized_ratio=True)
-#  R_exp = R_exp if p_exp < 0.1 else 0
-#  R_log, p_log = fit.distribution_compare('power_law', 'lognormal', normalized_ratio=True)
-#  R_log = R_log if p_log < 0.1 else 0
-#  R = R_exp+R_log
-#
-#  return alpha, ksdist, R
 
 def evaluate_result(ca_result, filename=None):
   avalanche_s_0 = getarray_avalanche_size(ca_result, 0)
   avalanche_d_0 = getarray_avalanche_duration(ca_result, 0)
   avalanche_s_0_bc = np.bincount(avalanche_s_0)[1:] if len(avalanche_s_0) > 5 else []
   avalanche_d_0_bc = np.bincount(avalanche_d_0)[1:] if len(avalanche_d_0) > 5 else []
-  
+
   avalanche_s_1 = getarray_avalanche_size(ca_result, 1)
   avalanche_d_1 = getarray_avalanche_duration(ca_result, 1)
   avalanche_s_1_bc = np.bincount(avalanche_s_1)[1:] if len(avalanche_s_1) > 5 else []
@@ -126,7 +115,7 @@ def evaluate_result(ca_result, filename=None):
   log_avalanche_d_0_bc = np.log10(avalanche_d_0_bc)
   log_avalanche_s_1_bc = np.log10(avalanche_s_1_bc)
   log_avalanche_d_1_bc = np.log10(avalanche_d_1_bc)
-  
+
   log_avalanche_s_0_bc = np.where(mask_avalanche_s_0_bc, log_avalanche_s_0_bc, 0)
   log_avalanche_d_0_bc = np.where(mask_avalanche_d_0_bc, log_avalanche_d_0_bc, 0)
   log_avalanche_s_1_bc = np.where(mask_avalanche_s_1_bc, log_avalanche_s_1_bc, 0)
@@ -244,7 +233,7 @@ def evaluate_genome(genome=[110], filename = None):
   print("Execution time:", time.time()-start)
 
   exp.close()
-  
+
   fitness, val_dict = evaluate_result(exp.get_monitor("g_ca", "g_ca_bin"))
 
   if isinstance(filename, str):
@@ -258,8 +247,8 @@ def evaluate_genome(genome=[110], filename = None):
         wr.writerow([str(list(genome)), val_dict["fitness"], val_dict["norm_ksdist_res"],\
                      val_dict["norm_coef_res"], val_dict["norm_unique_states"],\
                      val_dict["norm_avalanche_pdf_size"],val_dict["norm_linscore_res"]])
-  
-  
+
+
   return fitness, val_dict
 
 start_total = time.time()

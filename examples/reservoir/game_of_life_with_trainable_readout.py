@@ -8,7 +8,6 @@ import evodynamic.connection as connection
 import evodynamic.connection.random as randon_conn
 import evodynamic.cells.activation as act
 import evodynamic.cells as cells
-#from tensorflow.python.framework.ops import get_gradient_function
 
 width = 50
 height = 40

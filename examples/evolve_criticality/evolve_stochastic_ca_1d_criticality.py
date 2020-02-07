@@ -82,22 +82,6 @@ def normalize_avalanche_pdf_size(mask_avalanche_s_0_bc, mask_avalanche_d_0_bc,\
                                    norm_avalanche_pdf_size_d_1])
 
   return np.tanh(5*(0.9*max_avalanche_pdf_size+0.1*mean_avalanche_pdf_size))
-#  return ((2 / (1+np.exp(-10 *\
-#                        (0.9*\
-#                         max_avalanche_pdf_size+0.1*mean_avalanche_pdf_size))))\
-#                        -1)
-
-#def calculate_data_score(data):
-#  fit = powerlaw.Fit(data, xmin =1, discrete= True)
-#  alpha = fit.power_law.alpha
-#  ksdist = fit.power_law.D
-#  R_exp, p_exp = fit.distribution_compare('power_law', 'exponential', normalized_ratio=True)
-#  R_exp = R_exp if p_exp < 0.1 else 0
-#  R_log, p_log = fit.distribution_compare('power_law', 'lognormal', normalized_ratio=True)
-#  R_log = R_log if p_log < 0.1 else 0
-#  R = R_exp+R_log
-#
-#  return alpha, ksdist, R
 
 def sigmoid(x, smooth=0.01):
   return 1. / (1. + np.exp(-x*smooth))
@@ -263,7 +247,7 @@ def evaluate_genome(genome=8*[0.5], filename=None):
   start = time.time()
 
   exp.run(timesteps=timesteps)
-  #ca_result .append()
+
 
   print("Execution time:", time.time()-start)
 
