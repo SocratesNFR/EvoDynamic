@@ -40,7 +40,8 @@ def updatefig(*args):
     idx_anim += 1
     return im,# ttl
 
-ani = animation.FuncAnimation(fig, updatefig, interval=100, blit=False)
+ani = animation.FuncAnimation(fig, updatefig, frames=300, interval=100, blit=False)
 
 plt.show()
+
 plt.connect('close_event', exp.close())

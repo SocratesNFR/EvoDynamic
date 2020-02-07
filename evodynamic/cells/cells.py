@@ -2,26 +2,44 @@
 
 import tensorflow as tf
 import numpy as np
+from functools import reduce
+from operator import mul
+from typing import Tuple, Optional
 
 class Cells(object):
   """
   Class for Cells
   """
-  def __init__(self, amount: int):
+  def __init__(self, amount: int, virtual_shape: Optional[Tuple[int]] = None):
     self.amount = amount
+    self.virtual_shape = (self.amount,) if virtual_shape is None else virtual_shape
+    assert self.amount == reduce(mul, self.virtual_shape),\
+      "'amount' and 'virtual_shape' do not match"
+
     self.states = {}
     self.update_ops = []
     self.internal_connections = []
     self.external_state_name = ""
 
   def add_binary_state(self, state_name, init="random"):
-    assert init == "random" or init == "central", "init must be 'random' or 'central'."
+#    assert init in ["random","central","zeros","ones","reversecentral"],\
+#      "init must be 'random', 'central', 'reversecentral', 'zeros', or 'ones'."
 
     if init == "random":
+      #np.random.seed(1)
       initial = np.random.randint(2, size=self.amount).astype(np.float64)
     elif init == "central":
       initial = np.zeros(self.amount).astype(np.float64)
       initial[int(self.amount//2)] = 1
+    elif init == "zeros":
+      initial = np.zeros(self.amount).astype(np.float64)
+    elif init == "ones":
+      initial = np.ones(self.amount).astype(np.float64)
+    elif init == "reversecentral":
+      initial = np.ones(self.amount).astype(np.float64)
+      initial[int(self.amount//2)] = 0
+    else:
+      initial = init.reshape(-1).astype(np.float64)
 
     var = tf.get_variable(state_name, initializer=initial)
     if len(self.states) == 0:
@@ -38,7 +56,8 @@ class Cells(object):
     return var
 
   def add_real_state(self, state_name, stddev = .1):
-    initial = tf.truncated_normal([self.amount], stddev=stddev)
+    initial = tf.truncated_normal([self.amount], stddev=stddev,
+                                  dtype=tf.dtypes.float64)
     var = tf.get_variable(state_name, initializer=initial)
     self.states[state_name] = var
     return var
@@ -50,6 +69,9 @@ class Cells(object):
     else:
       print("Warning: state_name for state does not exist.")
     return state_name_exists
+
+  def get_shaped_indices(self):
+    return np.arange(self.amount)#.reshape()
 
   def add_internal_connection(self,state_name,connection,activation_func=None,\
                               fargs=None):

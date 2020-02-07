@@ -131,8 +131,26 @@ figures/
 examples/*.png
 evodynamic/*.png
 /*.png
-
+*.eps
+*.pdf
+*.svg
 
 # Generated numpy saving files
 *.npz
 *.npy
+
+# Generated CSV
+*.csv
+
+# Generated text files
+examples/*.txt
+
+# Generated animation
+*.mp4
+
+# Folders in examples
+examples/*/
+!examples/animations/
+!examples/custom_matrix/
+!examples/reservoir/
+!examples/evolve_criticality/
