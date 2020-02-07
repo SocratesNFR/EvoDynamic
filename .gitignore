@@ -150,3 +150,7 @@ examples/*.txt
 
 # Folders in examples
 examples/*/
+!examples/animations/
+!examples/custom_matrix/
+!examples/reservoir/
+!examples/evolve_criticality/
