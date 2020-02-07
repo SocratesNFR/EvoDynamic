@@ -9,6 +9,7 @@ class BaseConnection(object):
     self.activation_func = activation_func
     self.experiment = None
     self.list_ops = []
+    self.output = None
 
   def compute(self):
     raise NotImplementedError
@@ -34,7 +35,8 @@ class WeightedConnection(BaseConnection):
     super().__init__(from_group, to_group, activation_func)
     self.w = w
     self.fargs_list = fargs_list if fargs_list else [()]
-    self.list_ops = self.__get_ops()
+    self.list_ops = self.__get_ops()[0]
+    self.output = self.__get_ops()[1][-1]
 
   def compute(self):
     for fargs in self.fargs_list:
@@ -46,15 +48,17 @@ class WeightedConnection(BaseConnection):
                                   tf.transpose(tf.expand_dims(self.from_group,0)))
 
       if self.activation_func == None:
-        res_act_op = tf.assign(self.to_group, tf.squeeze(res_matmul_op))
+        res_act_op = tf.squeeze(res_matmul_op)
       else:
-        res_act_op = tf.assign(self.to_group,\
-                               self.activation_func(tf.squeeze(res_matmul_op),\
-                                               self.from_group, *fargs))
-      self.experiment.session.run(res_act_op)
+        res_act_op = self.activation_func(tf.squeeze(res_matmul_op),
+                                          self.from_group, *fargs)
+
+      res_assign_op = tf.assign(self.to_group, tf.squeeze(res_act_op))
+      self.experiment.session.run(res_assign_op)
 
   def __get_ops(self):
     list_ops = []
+    output_ops = []
     for fargs in self.fargs_list:
       if isinstance(self.w, tf.SparseTensor):
         res_matmul_op = tf.sparse.matmul(self.w,\
@@ -64,11 +68,13 @@ class WeightedConnection(BaseConnection):
                                   tf.transpose(tf.expand_dims(self.from_group,0)))
 
       if self.activation_func == None:
-        res_act_op = tf.assign(self.to_group, tf.squeeze(res_matmul_op))
+        res_act_op = tf.squeeze(res_matmul_op)
       else:
-        res_act_op = tf.assign(self.to_group,\
-                               self.activation_func(tf.squeeze(res_matmul_op),\
-                                               self.from_group, *fargs))
+        res_act_op = self.activation_func(tf.squeeze(res_matmul_op),\
+                                          self.from_group, *fargs)
 
-      list_ops.append(res_act_op)
-    return list_ops
+      res_assign_op = tf.assign(self.to_group, tf.squeeze(res_act_op))
+
+      list_ops.append(res_assign_op)
+      output_ops.append(res_act_op)
+    return list_ops, output_ops

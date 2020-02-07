@@ -5,16 +5,18 @@ from . import monitor
 from .. import cells
 from .. import utils
 
-
 class Experiment(object):
   def __init__(self, dt: float = 1.0) -> None:
     tf.reset_default_graph()
     self.dt = dt
     self.cell_groups = {}
     self.connections = {}
+    self.trainable_connections = {}
     self.connection_ops = []
+    self.train_ops = []
     self.monitors = {}
     self.session = tf.Session()
+
 
   def add_input(self, dtype, shape, name):
     input_placeholder = tf.placeholder(dtype, shape=shape, name=name)
@@ -35,11 +37,40 @@ class Experiment(object):
     self.connection_ops.append(connection.list_ops)
     return connection
 
+  #with tf.name_scope("trainable"):
+  def add_trainable_connection(self, name, connection):
+    self.add_connection(name, connection)
+    self.trainable_connections[name] = connection
+    return connection
+
   def initialize_cells(self):
     self.session.run(tf.global_variables_initializer())
 
     for monitor_key in self.monitors:
       self.monitors[monitor_key].initialize()
+
+  def set_training(self, loss, learning_rate, optimizer="adam"):
+
+    import tensorflow.contrib.slim as slim
+    model_vars = tf.trainable_variables()
+    print(model_vars)
+    slim.model_analyzer.analyze_vars(model_vars, print_info=True)
+    t_vars = []
+    for var in model_vars:
+      print(var.name)
+      for conn_key in self.trainable_connections:
+        print(conn_key, var.name)
+        if conn_key in var.name:
+          t_vars.append(var)
+
+    print("t_vars", t_vars)
+
+    if optimizer == "adam":
+      train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss, var_list=t_vars)
+    else:
+      print("set_training has set invalid optimizer")
+
+    self.train_ops.append(train_op)
 
   def close(self):
     self.session.close()
@@ -56,6 +87,8 @@ class Experiment(object):
       for monitor_key in self.monitors:
         self.monitors[monitor_key].record()
 
+      self.session.run(self.train_ops, feed_dict=feed_dict)
+
       utils.progressbar(step+1, timesteps-1)
 
   def run_step(self, feed_dict=None):
@@ -67,6 +100,8 @@ class Experiment(object):
 
     for monitor_key in self.monitors:
       self.monitors[monitor_key].record()
+
+    self.session.run(self.train_ops, feed_dict=feed_dict)
 
   def check_group_cells_state(self, group_cells_name, state_name):
     group_cells_name_exists = group_cells_name in self.cell_groups
