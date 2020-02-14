@@ -15,10 +15,12 @@ class Experiment(object):
     self.connection_ops = []
     self.train_ops = []
     self.monitors = {}
+    self.input_name_list = []
     self.session = tf.Session()
 
 
   def add_input(self, dtype, shape, name):
+    self.input_name_list.append(name)
     input_placeholder = tf.placeholder(dtype, shape=shape, name=name)
     return input_placeholder
 
@@ -37,7 +39,6 @@ class Experiment(object):
     self.connection_ops.append(connection.list_ops)
     return connection
 
-  #with tf.name_scope("trainable"):
   def add_trainable_connection(self, name, connection):
     self.add_connection(name, connection)
     self.trainable_connections[name] = connection
@@ -50,20 +51,12 @@ class Experiment(object):
       self.monitors[monitor_key].initialize()
 
   def set_training(self, loss, learning_rate, optimizer="adam"):
-
-    import tensorflow.contrib.slim as slim
     model_vars = tf.trainable_variables()
-    print(model_vars)
-    slim.model_analyzer.analyze_vars(model_vars, print_info=True)
     t_vars = []
     for var in model_vars:
-      print(var.name)
       for conn_key in self.trainable_connections:
-        print(conn_key, var.name)
         if conn_key in var.name:
           t_vars.append(var)
-
-    print("t_vars", t_vars)
 
     if optimizer == "adam":
       train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss, var_list=t_vars)
@@ -78,25 +71,20 @@ class Experiment(object):
   #TODO: def run(self,timesteps: int = 10, dataset, batch_size):
   def run(self,timesteps: int = 10, feed_dict=None):
     for step in range(timesteps-1):
-      for conn_key in self.connections:
-        self.session.run(self.connection_ops, feed_dict=feed_dict)
-
-      for group_key in self.cell_groups:
-        self.session.run(self.cell_groups[group_key].internal_connections)
-
-      for monitor_key in self.monitors:
-        self.monitors[monitor_key].record()
-
-      self.session.run(self.train_ops, feed_dict=feed_dict)
+      self.run_step(feed_dict=feed_dict)
+#      for conn_key in self.connections:
+#        self.session.run(self.connection_ops, feed_dict=feed_dict)
+#
+#      for monitor_key in self.monitors:
+#        self.monitors[monitor_key].record()
+#
+#      self.session.run(self.train_ops, feed_dict=feed_dict)
 
       utils.progressbar(step+1, timesteps-1)
 
   def run_step(self, feed_dict=None):
     for conn_key in self.connections:
       self.session.run(self.connection_ops, feed_dict=feed_dict)
-
-    for group_key in self.cell_groups:
-      self.session.run(self.cell_groups[group_key].internal_connections)
 
     for monitor_key in self.monitors:
       self.monitors[monitor_key].record()
