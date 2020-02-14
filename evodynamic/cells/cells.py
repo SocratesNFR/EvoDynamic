@@ -40,16 +40,12 @@ class Cells(object):
       initial = init.reshape(-1).astype(np.float64)
 
     var = tf.get_variable(state_name, initializer=initial)
-    if len(self.states) == 0:
-      self.external_state_state_name = state_name
     self.states[state_name] = var
     return var
 
   def add_n_state(self, state_name, n_state):
     initial = np.random.randint(n_state, size=self.amount).astype(np.float64)
     var = tf.get_variable(state_name, initializer=initial)
-    if len(self.states) == 0:
-      self.external_state_state_name = state_name
     self.states[state_name] = var
     return var
 
