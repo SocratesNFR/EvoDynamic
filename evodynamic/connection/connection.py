@@ -29,6 +29,21 @@ class IndexConnection(BaseConnection):
   def __get_ops(self):
     return [self.activation_func(self.to_group, self.to_group_idx, self.from_group)]
 
+class GatherIndexConnection(BaseConnection):
+  def __init__(self, from_group, to_group, to_group_idx):
+
+    def tf_gather_nd_update(to_group, to_group_idx, from_group):
+      g_op = tf.gather(from_group, to_group_idx)
+      return tf.assign(to_group,g_op)
+
+    super().__init__(from_group, to_group, tf_gather_nd_update)
+    self.to_group_idx = tf.convert_to_tensor(to_group_idx, tf.int64) # Tensor of type int32 or int64
+    self.list_ops = self.__get_ops()
+
+  def __get_ops(self):
+    return [self.activation_func(self.to_group, self.to_group_idx, self.from_group)]
+
+
 class WeightedConnection(BaseConnection):
   def __init__(self, from_group, to_group, activation_func, w, fargs_list=None):
     # fargs_list: List of Tuples

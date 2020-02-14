@@ -13,14 +13,12 @@ class Experiment(object):
     self.connections = {}
     self.trainable_connections = {}
     self.connection_ops = []
+    self.connection_ops_no_inputs = []
     self.train_ops = []
     self.monitors = {}
-    self.input_name_list = []
     self.session = tf.Session()
 
-
   def add_input(self, dtype, shape, name):
-    self.input_name_list.append(name)
     input_placeholder = tf.placeholder(dtype, shape=shape, name=name)
     return input_placeholder
 
@@ -37,6 +35,9 @@ class Experiment(object):
     connection.set_experiment(self)
     self.connections[name] = connection
     self.connection_ops.append(connection.list_ops)
+    if connection.from_group.op.type == 'Placeholder': # if not input
+      self.connection_ops_no_inputs.append(connection.list_ops)
+
     return connection
 
   def add_trainable_connection(self, name, connection):
@@ -72,13 +73,6 @@ class Experiment(object):
   def run(self,timesteps: int = 10, feed_dict=None):
     for step in range(timesteps-1):
       self.run_step(feed_dict=feed_dict)
-#      for conn_key in self.connections:
-#        self.session.run(self.connection_ops, feed_dict=feed_dict)
-#
-#      for monitor_key in self.monitors:
-#        self.monitors[monitor_key].record()
-#
-#      self.session.run(self.train_ops, feed_dict=feed_dict)
 
       utils.progressbar(step+1, timesteps-1)
 
