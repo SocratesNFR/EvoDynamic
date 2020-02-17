@@ -2,24 +2,31 @@
 
 import tensorflow as tf
 from . import monitor
+from . import memory
 from .. import cells
 from .. import utils
 
 class Experiment(object):
-  def __init__(self, dt: float = 1.0) -> None:
+  def __init__(self, dt: float = 1.0, input_delay=0, training_delay=0) -> None:
     tf.reset_default_graph()
     self.dt = dt
     self.cell_groups = {}
     self.connections = {}
     self.trainable_connections = {}
     self.connection_ops = []
+    self.input_name_list = []
+    self.connection_ops_no_inputs = []
     self.train_ops = []
     self.monitors = {}
     self.session = tf.Session()
-
+    self.memories = {}
+    self.step_counter = 0
+    self.input_delay = input_delay
+    self.training_delay = training_delay
 
   def add_input(self, dtype, shape, name):
     input_placeholder = tf.placeholder(dtype, shape=shape, name=name)
+    self.input_name_list.append(name)
     return input_placeholder
 
   def add_group_cells(self, name, amount):
@@ -31,13 +38,19 @@ class Experiment(object):
     self.cell_groups[name] = g_cells
     return g_cells
 
+  def add_state_memory(self, state, memory_size):
+    state_memory = memory.Memory(self,state,memory_size)
+    self.memories[state] = state_memory
+    return state_memory.get_op()
+
   def add_connection(self, name, connection):
     connection.set_experiment(self)
     self.connections[name] = connection
     self.connection_ops.append(connection.list_ops)
+    if not connection.from_group.name.split(":")[0] in self.input_name_list: # if not input
+      self.connection_ops_no_inputs.append(connection.list_ops)
     return connection
 
-  #with tf.name_scope("trainable"):
   def add_trainable_connection(self, name, connection):
     self.add_connection(name, connection)
     self.trainable_connections[name] = connection
@@ -45,25 +58,16 @@ class Experiment(object):
 
   def initialize_cells(self):
     self.session.run(tf.global_variables_initializer())
-
     for monitor_key in self.monitors:
       self.monitors[monitor_key].initialize()
 
   def set_training(self, loss, learning_rate, optimizer="adam"):
-
-    import tensorflow.contrib.slim as slim
     model_vars = tf.trainable_variables()
-    print(model_vars)
-    slim.model_analyzer.analyze_vars(model_vars, print_info=True)
     t_vars = []
     for var in model_vars:
-      print(var.name)
       for conn_key in self.trainable_connections:
-        print(conn_key, var.name)
         if conn_key in var.name:
           t_vars.append(var)
-
-    print("t_vars", t_vars)
 
     if optimizer == "adam":
       train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss, var_list=t_vars)
@@ -75,33 +79,26 @@ class Experiment(object):
   def close(self):
     self.session.close()
 
-  #TODO: def run(self,timesteps: int = 10, dataset, batch_size):
   def run(self,timesteps: int = 10, feed_dict=None):
     for step in range(timesteps-1):
-      for conn_key in self.connections:
-        self.session.run(self.connection_ops, feed_dict=feed_dict)
-
-      for group_key in self.cell_groups:
-        self.session.run(self.cell_groups[group_key].internal_connections)
-
-      for monitor_key in self.monitors:
-        self.monitors[monitor_key].record()
-
-      self.session.run(self.train_ops, feed_dict=feed_dict)
-
+      self.run_step(feed_dict=feed_dict)
       utils.progressbar(step+1, timesteps-1)
 
   def run_step(self, feed_dict=None):
-    for conn_key in self.connections:
+    self.step_counter += 1
+    if self.step_counter % (self.input_delay+1) == 0:
       self.session.run(self.connection_ops, feed_dict=feed_dict)
+    else:
+      self.session.run(self.connection_ops_no_inputs, feed_dict=feed_dict)
 
-    for group_key in self.cell_groups:
-      self.session.run(self.cell_groups[group_key].internal_connections)
+    for memory_key in self.memories:
+      self.memories[memory_key].update_state_memory()
 
     for monitor_key in self.monitors:
       self.monitors[monitor_key].record()
 
-    self.session.run(self.train_ops, feed_dict=feed_dict)
+    if self.step_counter % (self.training_delay+1) == self.training_delay:
+      self.session.run(self.train_ops, feed_dict=feed_dict)
 
   def check_group_cells_state(self, group_cells_name, state_name):
     group_cells_name_exists = group_cells_name in self.cell_groups

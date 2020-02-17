@@ -3,6 +3,7 @@
 import evodynamic.experiment as experiment
 import evodynamic.connection.cellular_automata as ca
 import evodynamic.cells.activation as act
+import evodynamic.connection as connection
 
 width = 200
 height = 150
@@ -10,13 +11,13 @@ height = 150
 exp = experiment.Experiment()
 g_ca = exp.add_group_cells(name="g_ca", amount=width*height)
 neighbors, center_idx = ca.create_count_neighbors_ca2d(3,3)
-g_ca.add_binary_state(state_name='g_ca_bin')
+g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin')
 g_ca_bin_conn = ca.create_conn_matrix_ca2d('g_ca_bin_conn',width,height,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx)
 
-g_ca.add_internal_connection(state_name='g_ca_bin', connection=g_ca_bin_conn,\
-                             activation_func=act.game_of_life_func)
+exp.add_connection("g_ca_conn", connection.WeightedConnection(g_ca_bin,g_ca_bin,
+                                                              act.game_of_life_func,g_ca_bin_conn))
 
 exp.initialize_cells()
 
