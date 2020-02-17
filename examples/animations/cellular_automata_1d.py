@@ -5,7 +5,6 @@ import evodynamic.connection.cellular_automata as ca
 import evodynamic.cells.activation as act
 import evodynamic.connection as connection
 import numpy as np
-import time
 
 width = 100
 height_fig = 200
