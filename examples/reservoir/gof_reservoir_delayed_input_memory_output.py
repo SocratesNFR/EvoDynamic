@@ -19,8 +19,9 @@ input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
 desired_output = exp.add_input(tf.float64, [height], "desired_output")
 
 g_ca = exp.add_cells(name="g_ca", g_cells=cells.Cells(width*height, virtual_shape=(width,height)))
-neighbors, center_idx = ca.create_count_neighbors_ca2d(3,3)
 g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin')
+
+neighbors, center_idx = ca.create_count_neighbors_ca2d(3,3)
 g_ca_bin_conn = ca.create_conn_matrix_ca2d('g_ca_bin_conn',width,height,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx)

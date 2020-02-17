@@ -87,11 +87,9 @@ class Experiment(object):
   def run_step(self, feed_dict=None):
     self.step_counter += 1
     if self.step_counter % (self.input_delay+1) == 0:
-      for conn_key in self.connections:
-        self.session.run(self.connection_ops, feed_dict=feed_dict)
+      self.session.run(self.connection_ops, feed_dict=feed_dict)
     else:
-      for conn_key in self.connections:
-        self.session.run(self.connection_ops_no_inputs, feed_dict=feed_dict)
+      self.session.run(self.connection_ops_no_inputs, feed_dict=feed_dict)
 
     for memory_key in self.memories:
       self.memories[memory_key].update_state_memory()
