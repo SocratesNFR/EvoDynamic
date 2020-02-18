@@ -150,7 +150,9 @@ examples/*.txt
 
 # Folders in examples
 examples/*/
-!examples/animations/
-!examples/custom_matrix/
-!examples/reservoir/
-!examples/evolve_criticality/
+examples/*/*
+!examples/animations/*.py
+!examples/custom_matrix/*.py
+!examples/reservoir/*.py
+!examples/evolve_criticality/*.py
+!examples/evolution/*.py
