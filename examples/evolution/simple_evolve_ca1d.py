@@ -13,7 +13,7 @@ timesteps = 1000
 
 # Fitness function. Number of white and black cells must be equal
 def evaluate_result(ca_result):
-  fitness = 1.-2.*abs(np.mean(ca_result)-0.5)
+  fitness = 1.-2.*abs(np.mean(ca_result)-0.5) # 1 = best score, 0 = worst score
   val_dict = {}
   val_dict["fitness"] = fitness
   return fitness, val_dict
