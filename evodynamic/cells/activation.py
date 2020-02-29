@@ -151,7 +151,8 @@ def stochastic_sigmoid(x, args):
 
 def _stochastic_prob(prob_mean, prob_std):
   prob_mean_mod = tf.math.log(tf.div_no_nan(prob_mean, 1-prob_mean))
-  sample_random_normal = tf.random.normal([], prob_mean_mod, prob_std, seed=1)
+  #sample_random_normal = tf.random.normal([], prob_mean_mod, prob_std, seed=1)
+  sample_random_normal = tf.random.normal([], prob_mean_mod, prob_std)
   prob = tf.divide(1, 1+tf.math.exp(-sample_random_normal))
   return prob
 
@@ -165,6 +166,7 @@ def stochastic_prob(prob_mean, prob_std):
 
 def rule_binary_soc_sca_1d_width3_func(pattern, previous_state, prob_list):
   shape_previous_state = tf.shape(previous_state)
+
   pattern_0_op = tf.equal(pattern, 0)
   pattern_1_op = tf.equal(pattern, 1)
   pattern_2_op = tf.equal(pattern, 2)
@@ -247,6 +249,10 @@ def rule_binary_soc_sca_1d_width3_func(pattern, previous_state, prob_list):
   update_4_op = tf.where(pattern_4_op, new_state_pattern_4, update_3_op)
   update_5_op = tf.where(pattern_5_op, new_state_pattern_5, update_4_op)
   update_6_op = tf.where(pattern_6_op, new_state_pattern_6, update_5_op)
+  update_7_op = tf.where(pattern_7_op, new_state_pattern_7, update_6_op)
 
-  # Return update_7_op
-  return tf.where(pattern_7_op, new_state_pattern_7, update_6_op)
+  #return update_7_op
+  new_state_op =  tf.cast(tf.less_equal(tf.random.uniform(shape_previous_state),\
+                                               0.5), tf.float64)
+
+  return tf.cond(tf.equal(tf.reduce_mean(previous_state), 1.0), lambda: new_state_op, lambda: update_7_op)
