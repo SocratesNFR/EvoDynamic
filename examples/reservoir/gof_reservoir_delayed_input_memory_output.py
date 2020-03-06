@@ -13,7 +13,7 @@ width = 100
 height = 80
 input_size = 5*width
 
-exp = experiment.Experiment(input_delay=5, training_delay=5)
+exp = experiment.Experiment(input_start=2,input_delay=1,training_start=6,training_delay=1)
 
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
 desired_output = exp.add_input(tf.float64, [height], "desired_output")
@@ -71,7 +71,7 @@ plt.title('Step: 0')
 
 def updatefig(*args):
     global idx_anim
-    exp.run_step(feed_dict={input_ca: np.random.randint(2, size=(input_size,)), desired_output: np.ones((height,))})
+    exp.run_step(feed_dict={input_ca: np.ones((input_size,)), desired_output: np.ones((height,))})
     arr = np.hstack((exp.get_group_cells_state("g_ca", "g_ca_bin").reshape((height,width)),
                  exp.get_group_cells_state("output_layer", "output_layer_real_state").reshape((height,1))))
     im.set_array(arr)

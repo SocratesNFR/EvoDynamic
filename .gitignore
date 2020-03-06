@@ -149,7 +149,6 @@ examples/*.txt
 *.mp4
 
 # Folders in examples
-examples/*/
 examples/*/*
 !examples/animations/*.py
 !examples/custom_matrix/*.py

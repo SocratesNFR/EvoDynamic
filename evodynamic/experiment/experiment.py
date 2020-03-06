@@ -7,7 +7,8 @@ from .. import cells
 from .. import utils
 
 class Experiment(object):
-  def __init__(self, dt: float = 1.0, input_delay=0, training_delay=0) -> None:
+  def __init__(self, dt: float = 1.0, input_start=0, input_delay=0,\
+               training_start=0, training_delay=0) -> None:
     tf.reset_default_graph()
     self.dt = dt
     self.cell_groups = {}
@@ -21,8 +22,12 @@ class Experiment(object):
     self.session = tf.Session()
     self.memories = {}
     self.step_counter = 0
+    self.input_start = input_start
     self.input_delay = input_delay
+    self.input_tracker = -1
+    self.training_start = training_start
     self.training_delay = training_delay
+    self.training_tracker = -1
 
   def add_input(self, dtype, shape, name):
     input_placeholder = tf.placeholder(dtype, shape=shape, name=name)
@@ -79,15 +84,21 @@ class Experiment(object):
   def close(self):
     self.session.close()
 
+  def is_input_step(self):
+    return ((self.step_counter-self.input_start) // (self.input_delay+1)) > self.input_tracker
+
+  def is_training_step(self):
+    return ((self.step_counter-self.training_start) // (self.training_delay+1)) > self.training_tracker
+
   def run(self,timesteps: int = 10, feed_dict=None):
     for step in range(timesteps-1):
       self.run_step(feed_dict=feed_dict)
       utils.progressbar(step+1, timesteps-1)
 
   def run_step(self, feed_dict=None):
-    self.step_counter += 1
-    if self.step_counter % (self.input_delay+1) == 0:
+    if self.is_input_step():
       self.session.run(self.connection_ops, feed_dict=feed_dict)
+      self.input_tracker += 1
     else:
       self.session.run(self.connection_ops_no_inputs, feed_dict=feed_dict)
 
@@ -97,8 +108,10 @@ class Experiment(object):
     for monitor_key in self.monitors:
       self.monitors[monitor_key].record()
 
-    if self.step_counter % (self.training_delay+1) == self.training_delay:
+    if self.is_training_step():
       self.session.run(self.train_ops, feed_dict=feed_dict)
+      self.training_tracker += 1
+    self.step_counter += 1
 
   def check_group_cells_state(self, group_cells_name, state_name):
     group_cells_name_exists = group_cells_name in self.cell_groups
