@@ -90,9 +90,31 @@ class Experiment(object):
   def is_training_step(self):
     return ((self.step_counter-self.training_start) // (self.training_delay+1)) > self.training_tracker
 
-  def run(self,timesteps: int = 10, feed_dict=None):
+  def run(self,timesteps: int = 10):
     for step in range(timesteps-1):
-      self.run_step(feed_dict=feed_dict)
+      self.run_step()
+      utils.progressbar(step+1, timesteps-1)
+
+  def run_with_input_list(self, timesteps: int, feed_dict_list):
+    feed_counter = 0
+    for step in range(timesteps-1):
+      if self.is_input_step() or self.is_training_step():
+        self.run_step(feed_dict=feed_dict_list[feed_counter])
+        feed_counter += 1
+      else:
+        self.run_step()
+      utils.progressbar(step+1, timesteps-1)
+
+  def run_with_input_generator(self, timesteps: int, generator):
+    for step in range(timesteps-1):
+      if self.is_input_step() or self.is_training_step():
+
+        feed_dict = list(generator())[-1]
+        #print("feed_dict generator", feed_dict)
+
+        self.run_step(feed_dict=feed_dict)
+      else:
+        self.run_step()
       utils.progressbar(step+1, timesteps-1)
 
   def run_step(self, feed_dict=None):

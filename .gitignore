@@ -155,3 +155,4 @@ examples/*/*
 !examples/reservoir/*.py
 !examples/evolve_criticality/*.py
 !examples/evolution/*.py
+!examples/simulation_plot/*.py
