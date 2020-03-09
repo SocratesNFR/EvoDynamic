@@ -16,7 +16,7 @@ class Experiment(object):
     self.trainable_connections = {}
     self.connection_ops = []
     self.input_name_list = []
-    self.connection_ops_no_inputs = []
+    self.input_ops = []
     self.train_ops = []
     self.monitors = {}
     self.session = tf.Session()
@@ -52,8 +52,10 @@ class Experiment(object):
     connection.set_experiment(self)
     self.connections[name] = connection
     self.connection_ops.append(connection.list_ops)
-    if not connection.from_group.name.split(":")[0] in self.input_name_list: # if not input
-      self.connection_ops_no_inputs.append(connection.list_ops)
+    if connection.from_group.name.split(":")[0] in self.input_name_list: # if input
+      self.input_ops.append(connection.list_ops)
+    else:
+      self.connection_ops.append(connection.list_ops)
     return connection
 
   def add_trainable_connection(self, name, connection):
@@ -62,6 +64,10 @@ class Experiment(object):
     return connection
 
   def initialize_cells(self):
+
+    with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS) ):
+      self.connection_ops
+
     self.session.run(tf.global_variables_initializer())
     for monitor_key in self.monitors:
       self.monitors[monitor_key].initialize()
@@ -109,7 +115,7 @@ class Experiment(object):
     for step in range(timesteps-1):
       if self.is_input_step() or self.is_training_step():
 
-        feed_dict = list(generator())[-1]
+        feed_dict = generator(self.step_counter)
         #print("feed_dict generator", feed_dict)
 
         self.run_step(feed_dict=feed_dict)
@@ -118,11 +124,13 @@ class Experiment(object):
       utils.progressbar(step+1, timesteps-1)
 
   def run_step(self, feed_dict=None):
+
     if self.is_input_step():
+      self.session.run(self.input_ops, feed_dict=feed_dict)
       self.session.run(self.connection_ops, feed_dict=feed_dict)
       self.input_tracker += 1
     else:
-      self.session.run(self.connection_ops_no_inputs, feed_dict=feed_dict)
+      self.session.run(self.connection_ops, feed_dict=feed_dict)
 
     for memory_key in self.memories:
       self.memories[memory_key].update_state_memory()

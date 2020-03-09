@@ -12,7 +12,7 @@ width = 100
 timesteps = 400
 input_size = width // 2
 
-exp = experiment.Experiment(input_start=5,input_delay=4)
+exp = experiment.Experiment(input_start=25,input_delay=24)
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
 neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
@@ -21,7 +21,7 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx)
 
-fargs_list = [(a,) for a in [30]]
+fargs_list = [(a,) for a in [204]]
 
 exp.add_connection("input_conn", connection.IndexConnection(input_ca,g_ca_bin,
                                                             np.arange(input_size)))
@@ -36,8 +36,8 @@ exp.add_monitor("g_ca", "g_ca_bin")
 
 exp.initialize_cells()
 
-def input_generator():
-  yield {input_ca: np.ones((input_size,))}
+def input_generator(step):
+  return {input_ca: np.zeros((input_size,)) if ((step // 10) % 2 == 0) else np.ones((input_size,))}
 
 exp.run_with_input_generator(timesteps, input_generator)
 

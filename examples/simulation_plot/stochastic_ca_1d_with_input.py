@@ -47,8 +47,8 @@ exp.add_monitor("g_ca", "g_ca_bin")
 
 exp.initialize_cells()
 
-def input_generator():
-  yield {input_ca: np.zeros((input_size,))}
+def input_generator(step):
+  return {input_ca: np.zeros((input_size,)) if ((step // 10) % 2 == 0) else np.ones((input_size,))}
 
 exp.run_with_input_generator(timesteps, input_generator)
 
