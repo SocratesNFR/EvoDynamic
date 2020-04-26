@@ -9,25 +9,60 @@ class BaseConnection(object):
     self.activation_func = activation_func
     self.experiment = None
     self.list_ops = []
+    self.assign_output = None
     self.output = None
+    self.is_input = from_group.op.type == "Placeholder"
 
   def compute(self):
     raise NotImplementedError
 
   def set_experiment(self, experiment):
-    self.experiment = experiment
+    raise NotImplementedError
 
   def __get_ops(self):
+    raise NotImplementedError
+
+  def __get_output(self):
     raise NotImplementedError
 
 class IndexConnection(BaseConnection):
   def __init__(self, from_group, to_group, to_group_idx, activation_func=tf.scatter_update):
     super().__init__(from_group, to_group, activation_func)
     self.to_group_idx = tf.convert_to_tensor(to_group_idx, tf.int64) # Tensor of type int32 or int64
-    self.list_ops = self.__get_ops()
+
+  def set_experiment(self, experiment):
+    self.experiment = experiment
+    for exp_conn in self.experiment.connection_list:
+      print("TEST CONNECTIONS")
+      print("exp_conn.to_group", exp_conn.to_group)
+      print("self.from_group", self.from_group)
+      if exp_conn.to_group == self.from_group:
+        print("TRUE exp_conn.to_group == self.from_group:")
+        self.from_group = exp_conn.assign_output
+
+    self.is_input = self.from_group.name.split(":")[0] in self.experiment.input_name_list
+    self.list_ops = self.__get_ops()[0]
+    self.assign_output = self.__get_output()[0]
+    self.output = self.__get_output()[1]
 
   def __get_ops(self):
-    return [self.activation_func(self.to_group, self.to_group_idx, self.from_group)]
+    if self.is_input:
+      ops = [tf.cond(self.experiment.has_input,
+                     true_fn=lambda: self.activation_func(self.to_group, self.to_group_idx, self.from_group),
+                     false_fn=lambda: self.to_group)]
+    else:
+      ops = [self.activation_func(self.to_group, self.to_group_idx, self.from_group)]
+    return ops, ops
+
+  def __get_output(self):
+    if self.is_input:
+      output = tf.cond(self.experiment.has_input,
+                       true_fn=lambda: self.activation_func(self.to_group, self.to_group_idx, self.from_group),
+                       false_fn=lambda: self.to_group)
+      #output = self.activation_func(self.to_group, self.to_group_idx, self.from_group)
+    else:
+      output = self.activation_func(self.to_group, self.to_group_idx, self.from_group)
+    return output, output
 
 class GatherIndexConnection(BaseConnection):
   def __init__(self, from_group, to_group, to_group_idx):
@@ -38,11 +73,31 @@ class GatherIndexConnection(BaseConnection):
 
     super().__init__(from_group, to_group, tf_gather_nd_update)
     self.to_group_idx = tf.convert_to_tensor(to_group_idx, tf.int64) # Tensor of type int32 or int64
-    self.list_ops = self.__get_ops()
+
+  def set_experiment(self, experiment):
+    self.experiment = experiment
+    self.is_input = self.from_group.name.split(":")[0] in self.experiment.input_name_list
+    self.list_ops = self.__get_ops()[0]
+    self.assign_output = self.__get_output()[0]
+    self.output = self.__get_output()[1]
 
   def __get_ops(self):
-    return [self.activation_func(self.to_group, self.to_group_idx, self.from_group)]
+    if self.is_input:
+      ops = [tf.cond(self.experiment.has_input,
+                     true_fn=lambda: self.activation_func(self.to_group, self.to_group_idx, self.from_group),
+                     false_fn=lambda: self.to_group)]
+    else:
+      ops = [self.activation_func(self.to_group, self.to_group_idx, self.from_group)]
+    return ops, ops
 
+  def __get_output(self):
+    if self.is_input:
+      output = tf.cond(self.experiment.has_input,
+                       true_fn=lambda: self.activation_func(self.to_group, self.to_group_idx, self.from_group),
+                       false_fn=lambda: self.to_group)
+    else:
+      output = self.activation_func(self.to_group, self.to_group_idx, self.from_group)
+    return output, output
 
 class WeightedConnection(BaseConnection):
   def __init__(self, from_group, to_group, activation_func, w, fargs_list=None):
@@ -50,8 +105,22 @@ class WeightedConnection(BaseConnection):
     super().__init__(from_group, to_group, activation_func)
     self.w = w
     self.fargs_list = fargs_list if fargs_list else [()]
+
+  def set_experiment(self, experiment):
+    self.experiment = experiment
+    for exp_conn in self.experiment.connection_list:
+      print("TEST CONNECTIONS")
+      print("exp_conn.to_group", exp_conn.to_group)
+      print("self.from_group", self.from_group)
+      if exp_conn.to_group == self.from_group:
+        print("TRUE exp_conn.to_group == self.from_group:")
+        self.from_group = exp_conn.assign_output
+
+
+    self.is_input = self.from_group.name.split(":")[0] in self.experiment.input_name_list
     self.list_ops = self.__get_ops()[0]
-    self.output = self.__get_ops()[1][-1]
+    self.assign_output = self.__get_output()[0]
+    self.output = self.__get_output()[1]
 
   def compute(self):
     for fargs in self.fargs_list:
@@ -93,3 +162,27 @@ class WeightedConnection(BaseConnection):
       list_ops.append(res_assign_op)
       output_ops.append(res_act_op)
     return list_ops, output_ops
+
+  def __get_output(self):
+    list_ops = []
+    output_ops = []
+    for fargs in self.fargs_list:
+      from_op = self.from_group if len(list_ops) == 0 else list_ops[-1]
+      if isinstance(self.w, tf.SparseTensor):
+        res_matmul_op = tf.sparse.matmul(self.w,\
+                                         tf.transpose(tf.expand_dims(from_op,0)))
+      else:
+        res_matmul_op = tf.matmul(self.w,\
+                                  tf.transpose(tf.expand_dims(from_op,0)))
+
+      if self.activation_func == None:
+        res_act_op = tf.squeeze(res_matmul_op)
+      else:
+        res_act_op = self.activation_func(tf.squeeze(res_matmul_op),\
+                                          self.from_group, *fargs)
+
+      res_assign_op = tf.assign(self.to_group, tf.squeeze(res_act_op))
+
+      list_ops.append(res_assign_op)
+      output_ops.append(res_act_op)
+    return list_ops[-1], output_ops[-1]

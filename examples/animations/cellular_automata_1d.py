@@ -18,14 +18,12 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx)
 
-fargs_list = [(a,) for a in [156,32]]
+fargs_list = [(a,) for a in [110,90]]
 
 exp.add_connection("g_ca_conn",
                    connection.WeightedConnection(g_ca_bin,g_ca_bin,
                                                  act.rule_binary_ca_1d_width3_func,
                                                  g_ca_bin_conn, fargs_list=fargs_list))
-
-#exp.add_monitor("g_ca", "g_ca_bin")
 
 exp.initialize_cells()
 
