@@ -124,21 +124,16 @@ class Experiment(object):
       if self.is_input_step() or self.is_training_step():
 
         feed_dict = generator(self.step_counter)
-        #print("feed_dict generator", feed_dict)
-
         self.run_step(feed_dict=feed_dict)
       else:
         self.run_step()
       utils.progressbar(step+1, timesteps-1)
 
   def run_step(self, feed_dict={}):
-    #print("INPUT STEP", self.is_input_step(), self.step_counter)
     feed_dict[self.has_input] = False
     if self.is_input_step():
       feed_dict[self.has_input] = True
       self.input_tracker += 1
-
-
 
     for experiment_output_key in self.experiment_output:
       self.session.run(self.experiment_output[experiment_output_key].assign_output,feed_dict=feed_dict)
