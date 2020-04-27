@@ -31,6 +31,7 @@ class Experiment(object):
     self.training_tracker = -1
     self.experiment_output = {}
     self.has_input = tf.placeholder(tf.bool, shape=())
+    self.training_loss = None
 
   def add_input(self, dtype, shape, name):
     input_placeholder = tf.placeholder(dtype, shape=shape, name=name)
@@ -82,6 +83,7 @@ class Experiment(object):
 
   def set_training(self, loss, learning_rate, optimizer="adam"):
     model_vars = tf.trainable_variables()
+    self.training_loss = loss
     t_vars = []
     for var in model_vars:
       for conn_key in self.trainable_connections:
@@ -89,7 +91,7 @@ class Experiment(object):
           t_vars.append(var)
 
     if optimizer == "adam":
-      train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss, var_list=t_vars)
+      train_op = tf.train.AdamOptimizer(learning_rate, beta1=0, beta2=0).minimize(loss, var_list=t_vars)
     else:
       print("set_training has set invalid optimizer")
 

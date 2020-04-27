@@ -58,7 +58,9 @@ plt.title('Step: 0')
 
 def updatefig(*args):
     global idx_anim
-    exp.run_step(feed_dict={input_ca: np.random.randint(2, size=(input_size,)), desired_output: np.ones((height,))})
+    desired_output_np = np.zeros((height,)) if (idx_anim//10) % 2 == 1 else np.ones((height,))
+    feed_dict = {input_ca: np.random.randint(2, size=(input_size,)), desired_output: desired_output_np}
+    exp.run_step(feed_dict=feed_dict)
     arr = np.hstack((exp.get_group_cells_state("g_ca", "g_ca_bin").reshape((height,width)),
                  exp.get_group_cells_state("output_layer", "output_layer_real_state").reshape((height,1))))
     im.set_array(arr)
@@ -67,7 +69,7 @@ def updatefig(*args):
     idx_anim += 1
     return im,# ttl
 
-ani = animation.FuncAnimation(fig, updatefig, interval=1000, blit=False)
+ani = animation.FuncAnimation(fig, updatefig, interval=500, blit=False)
 
 plt.show()
 plt.connect('close_event', exp.close())

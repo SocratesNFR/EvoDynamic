@@ -18,7 +18,7 @@ class Memory(object):
     return self.memory_op
 
   def get_state_memory(self):
-    return self.session.run(self.memory_op)
+    return self.experiment.session.run(self.memory_op)
 
   def update_state_memory(self):
     if self.experiment.step_counter < len(self.state_memory):

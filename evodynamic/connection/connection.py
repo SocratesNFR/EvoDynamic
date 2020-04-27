@@ -33,14 +33,8 @@ class IndexConnection(BaseConnection):
   def set_experiment(self, experiment):
     self.experiment = experiment
     for exp_conn in self.experiment.connection_list:
-      print("TEST CONNECTIONS")
-      print("exp_conn.to_group", exp_conn.to_group)
-      print("self.from_group", self.from_group)
       if exp_conn.to_group == self.from_group:
-        print("TRUE exp_conn.to_group == self.from_group:")
         self.from_group = exp_conn.assign_output
-
-    self.is_input = self.from_group.name.split(":")[0] in self.experiment.input_name_list
     self.list_ops = self.__get_ops()[0]
     self.assign_output = self.__get_output()[0]
     self.output = self.__get_output()[1]
@@ -59,7 +53,6 @@ class IndexConnection(BaseConnection):
       output = tf.cond(self.experiment.has_input,
                        true_fn=lambda: self.activation_func(self.to_group, self.to_group_idx, self.from_group),
                        false_fn=lambda: self.to_group)
-      #output = self.activation_func(self.to_group, self.to_group_idx, self.from_group)
     else:
       output = self.activation_func(self.to_group, self.to_group_idx, self.from_group)
     return output, output
@@ -76,7 +69,9 @@ class GatherIndexConnection(BaseConnection):
 
   def set_experiment(self, experiment):
     self.experiment = experiment
-    self.is_input = self.from_group.name.split(":")[0] in self.experiment.input_name_list
+    for exp_conn in self.experiment.connection_list:
+      if exp_conn.to_group == self.from_group:
+        self.from_group = exp_conn.assign_output
     self.list_ops = self.__get_ops()[0]
     self.assign_output = self.__get_output()[0]
     self.output = self.__get_output()[1]
@@ -109,15 +104,8 @@ class WeightedConnection(BaseConnection):
   def set_experiment(self, experiment):
     self.experiment = experiment
     for exp_conn in self.experiment.connection_list:
-      print("TEST CONNECTIONS")
-      print("exp_conn.to_group", exp_conn.to_group)
-      print("self.from_group", self.from_group)
       if exp_conn.to_group == self.from_group:
-        print("TRUE exp_conn.to_group == self.from_group:")
         self.from_group = exp_conn.assign_output
-
-
-    self.is_input = self.from_group.name.split(":")[0] in self.experiment.input_name_list
     self.list_ops = self.__get_ops()[0]
     self.assign_output = self.__get_output()[0]
     self.output = self.__get_output()[1]
