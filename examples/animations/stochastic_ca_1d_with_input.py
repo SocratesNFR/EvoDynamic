@@ -65,10 +65,7 @@ def updatefig(*args):
     global idx_anim, im_ca
     idx_anim += 1
 
-    if exp.is_input_step():
-      exp.run_step(feed_dict={input_ca: np.zeros((input_size,))})
-    else:
-      exp.run_step()
+    exp.run_step(feed_dict={input_ca: np.zeros((input_size,))})
 
     if idx_anim < height_fig:
       im_ca[idx_anim] = exp.get_group_cells_state("g_ca", "g_ca_bin")

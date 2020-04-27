@@ -13,6 +13,7 @@ class Experiment(object):
     self.dt = dt
     self.cell_groups = {}
     self.connections = {}
+    self.connection_list = []
     self.trainable_connections = {}
     self.connection_ops = []
     self.input_name_list = []
@@ -28,6 +29,9 @@ class Experiment(object):
     self.training_start = training_start
     self.training_delay = training_delay
     self.training_tracker = -1
+    self.experiment_output = {}
+    self.has_input = tf.placeholder(tf.bool, shape=())
+    self.training_loss = None
 
   def add_input(self, dtype, shape, name):
     input_placeholder = tf.placeholder(dtype, shape=shape, name=name)
@@ -48,10 +52,19 @@ class Experiment(object):
     self.memories[state] = state_memory
     return state_memory.get_op()
 
+  def update_experiment_output(self, new_connection):
+    if new_connection.from_group in self.experiment_output and\
+      new_connection.to_group not in self.experiment_output:
+      del self.experiment_output[new_connection.from_group]
+
+    self.experiment_output[new_connection.to_group] = new_connection
+
   def add_connection(self, name, connection):
     connection.set_experiment(self)
     self.connections[name] = connection
+    self.connection_list.insert(0,connection)
     self.connection_ops.append(connection.list_ops)
+    self.update_experiment_output(connection)
     if connection.from_group.name.split(":")[0] in self.input_name_list: # if input
       self.input_ops.append(connection.list_ops)
     else:
@@ -64,16 +77,13 @@ class Experiment(object):
     return connection
 
   def initialize_cells(self):
-
-    with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS) ):
-      self.connection_ops
-
     self.session.run(tf.global_variables_initializer())
     for monitor_key in self.monitors:
       self.monitors[monitor_key].initialize()
 
   def set_training(self, loss, learning_rate, optimizer="adam"):
     model_vars = tf.trainable_variables()
+    self.training_loss = loss
     t_vars = []
     for var in model_vars:
       for conn_key in self.trainable_connections:
@@ -81,7 +91,7 @@ class Experiment(object):
           t_vars.append(var)
 
     if optimizer == "adam":
-      train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss, var_list=t_vars)
+      train_op = tf.train.AdamOptimizer(learning_rate, beta1=0, beta2=0).minimize(loss, var_list=t_vars)
     else:
       print("set_training has set invalid optimizer")
 
@@ -116,21 +126,19 @@ class Experiment(object):
       if self.is_input_step() or self.is_training_step():
 
         feed_dict = generator(self.step_counter)
-        #print("feed_dict generator", feed_dict)
-
         self.run_step(feed_dict=feed_dict)
       else:
         self.run_step()
       utils.progressbar(step+1, timesteps-1)
 
-  def run_step(self, feed_dict=None):
-
+  def run_step(self, feed_dict={}):
+    feed_dict[self.has_input] = False
     if self.is_input_step():
-      self.session.run(self.input_ops, feed_dict=feed_dict)
-      self.session.run(self.connection_ops, feed_dict=feed_dict)
+      feed_dict[self.has_input] = True
       self.input_tracker += 1
-    else:
-      self.session.run(self.connection_ops, feed_dict=feed_dict)
+
+    for experiment_output_key in self.experiment_output:
+      self.session.run(self.experiment_output[experiment_output_key].assign_output,feed_dict=feed_dict)
 
     for memory_key in self.memories:
       self.memories[memory_key].update_state_memory()

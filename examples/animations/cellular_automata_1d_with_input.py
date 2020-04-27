@@ -12,7 +12,7 @@ height_fig = 200
 timesteps = 400
 input_size = width // 2
 
-exp = experiment.Experiment(input_start=5,input_delay=4)
+exp = experiment.Experiment(input_start=5,input_delay=14)
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
 neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
@@ -51,10 +51,7 @@ def updatefig(*args):
     global idx_anim, im_ca
     idx_anim += 1
 
-    if exp.is_input_step():
-      exp.run_step(feed_dict={input_ca: np.ones((input_size,))})
-    else:
-      exp.run_step()
+    exp.run_step(feed_dict={input_ca: np.ones((input_size,))})
 
     if idx_anim < height_fig:
       im_ca[idx_anim] = exp.get_group_cells_state("g_ca", "g_ca_bin")
