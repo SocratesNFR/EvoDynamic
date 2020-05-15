@@ -17,7 +17,7 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx)
 
-fargs_list = [(a,) for a in [110,90]]
+fargs_list = [(a,) for a in [110]]
 
 exp.add_connection("g_ca_conn",
                    connection.WeightedConnection(g_ca_bin,g_ca_bin,
@@ -32,5 +32,5 @@ exp.run(timesteps=timesteps)
 
 ca_result = exp.get_monitor("g_ca", "g_ca_bin")
 
-plt.imshow(ca_result)
+plt.imshow(ca_result[:,0,:])
 plt.show()

@@ -1,6 +1,7 @@
 """ Custom connections """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 def create_custom_matrix(name, matrix):
   return tf.get_variable(name, initializer=matrix)

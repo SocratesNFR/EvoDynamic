@@ -1,6 +1,7 @@
 """ Simple animation of random Boolean Network (rule 110) """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 import evodynamic.experiment as experiment
 import evodynamic.connection.random_boolean_net as rbn

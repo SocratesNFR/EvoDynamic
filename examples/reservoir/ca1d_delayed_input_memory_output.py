@@ -1,6 +1,7 @@
 """ Cellular automata 1D - Reservoir """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 import evodynamic.experiment as experiment
 import evodynamic.connection.cellular_automata as ca

@@ -1,6 +1,8 @@
 """ Connection """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+import numpy as np
 
 class BaseConnection(object):
   def __init__(self, from_group, to_group, activation_func):
@@ -28,33 +30,40 @@ class BaseConnection(object):
 class IndexConnection(BaseConnection):
   def __init__(self, from_group, to_group, to_group_idx, activation_func=tf.scatter_update):
     super().__init__(from_group, to_group, activation_func)
-    self.to_group_idx = tf.convert_to_tensor(to_group_idx, tf.int64) # Tensor of type int32 or int64
+#    self.to_group_idx = tf.convert_to_tensor(np.expand_dims(to_group_idx,1), tf.int64)#np.array(to_group_idx)
+    self.to_group_idx = np.array(to_group_idx)
 
   def set_experiment(self, experiment):
     self.experiment = experiment
+    temp_to_group_idx = np.vstack((np.zeros(len(self.to_group_idx)),self.to_group_idx))
+    for batch_idx in range(1,self.experiment.batch_size):
+      batch_to_group_idx = np.vstack((np.full(len(self.to_group_idx),batch_idx),self.to_group_idx))
+      temp_to_group_idx = np.hstack((temp_to_group_idx,batch_to_group_idx))
+    self.to_group_idx = tf.convert_to_tensor(temp_to_group_idx, tf.int64) # Tensor of type int32 or int64
     for exp_conn in self.experiment.connection_list:
       if exp_conn.to_group == self.from_group:
         self.from_group = exp_conn.assign_output
     self.list_ops = self.__get_ops()[0]
     self.assign_output = self.__get_output()[0]
     self.output = self.__get_output()[1]
+    #self.to_group_idx = tf.expand_dims(self.to_group_idx,1)
 
   def __get_ops(self):
     if self.is_input:
       ops = [tf.cond(self.experiment.has_input,
-                     true_fn=lambda: self.activation_func(self.to_group, self.to_group_idx, self.from_group),
+                     true_fn=lambda: self.activation_func(self.to_group, self.to_group_idx, tf.transpose(self.from_group)),
                      false_fn=lambda: self.to_group)]
     else:
-      ops = [self.activation_func(self.to_group, self.to_group_idx, self.from_group)]
+      ops = [self.activation_func(self.to_group, self.to_group_idx, tf.transpose(self.from_group))]
     return ops, ops
 
   def __get_output(self):
     if self.is_input:
       output = tf.cond(self.experiment.has_input,
-                       true_fn=lambda: self.activation_func(self.to_group, self.to_group_idx, self.from_group),
+                       true_fn=lambda: self.activation_func(self.to_group, self.to_group_idx, tf.transpose(self.from_group)),
                        false_fn=lambda: self.to_group)
     else:
-      output = self.activation_func(self.to_group, self.to_group_idx, self.from_group)
+      output = self.activation_func(self.to_group, self.to_group_idx, tf.transpose(self.from_group))
     return output, output
 
 class GatherIndexConnection(BaseConnection):
@@ -112,40 +121,40 @@ class WeightedConnection(BaseConnection):
 
   def compute(self):
     for fargs in self.fargs_list:
+      # Based on: https://stackoverflow.com/questions/48697079/tensorflow-batch-sparse-multiply
+      # y_sparse = tf.sparse.reduce_sum_sparse(a * b[:, None, :], axis=-1)
       if isinstance(self.w, tf.SparseTensor):
-        res_matmul_op = tf.sparse.matmul(self.w,\
-                                         tf.transpose(tf.expand_dims(self.from_group,0)))
+        res_matmul_op = tf.sparse.matmul(self.w, tf.transpose(self.from_group))
       else:
-        res_matmul_op = tf.matmul(self.w,\
-                                  tf.transpose(tf.expand_dims(self.from_group,0)))
+        res_matmul_op = tf.matmul(self.w, tf.transpose(self.from_group))
 
       if self.activation_func == None:
-        res_act_op = tf.squeeze(res_matmul_op)
+        res_act_op = tf.transpose(res_matmul_op)
       else:
-        res_act_op = self.activation_func(tf.squeeze(res_matmul_op),
+        res_act_op = self.activation_func(tf.transpose(res_matmul_op),
                                           self.from_group, *fargs)
 
-      res_assign_op = tf.assign(self.to_group, tf.squeeze(res_act_op))
+      res_assign_op = tf.assign(self.to_group, res_act_op)
       self.experiment.session.run(res_assign_op)
 
   def __get_ops(self):
     list_ops = []
     output_ops = []
     for fargs in self.fargs_list:
+      # Based on: https://stackoverflow.com/questions/48697079/tensorflow-batch-sparse-multiply
+      #y_sparse = tf.sparse.reduce_sum_sparse(a * b[:, None, :], axis=-1)
       if isinstance(self.w, tf.SparseTensor):
-        res_matmul_op = tf.sparse.matmul(self.w,\
-                                         tf.transpose(tf.expand_dims(self.from_group,0)))
+        res_matmul_op = tf.sparse.matmul(self.w,tf.transpose(self.from_group))
       else:
-        res_matmul_op = tf.matmul(self.w,\
-                                  tf.transpose(tf.expand_dims(self.from_group,0)))
+        res_matmul_op = tf.matmul(self.w,tf.transpose(self.from_group))
 
       if self.activation_func == None:
-        res_act_op = tf.squeeze(res_matmul_op)
+        res_act_op = tf.transpose(res_matmul_op)
       else:
-        res_act_op = self.activation_func(tf.squeeze(res_matmul_op),\
+        res_act_op = self.activation_func(tf.transpose(res_matmul_op),\
                                           self.from_group, *fargs)
 
-      res_assign_op = tf.assign(self.to_group, tf.squeeze(res_act_op))
+      res_assign_op = tf.assign(self.to_group, res_act_op)
 
       list_ops.append(res_assign_op)
       output_ops.append(res_act_op)
@@ -157,19 +166,17 @@ class WeightedConnection(BaseConnection):
     for fargs in self.fargs_list:
       from_op = self.from_group if len(list_ops) == 0 else list_ops[-1]
       if isinstance(self.w, tf.SparseTensor):
-        res_matmul_op = tf.sparse.matmul(self.w,\
-                                         tf.transpose(tf.expand_dims(from_op,0)))
+        res_matmul_op = tf.sparse.matmul(self.w, tf.transpose(from_op))
       else:
-        res_matmul_op = tf.matmul(self.w,\
-                                  tf.transpose(tf.expand_dims(from_op,0)))
+        res_matmul_op = tf.matmul(self.w, tf.transpose(from_op))
 
       if self.activation_func == None:
-        res_act_op = tf.squeeze(res_matmul_op)
+        res_act_op = tf.transpose(res_matmul_op)
       else:
-        res_act_op = self.activation_func(tf.squeeze(res_matmul_op),\
+        res_act_op = self.activation_func(tf.transpose(res_matmul_op),\
                                           self.from_group, *fargs)
 
-      res_assign_op = tf.assign(self.to_group, tf.squeeze(res_act_op))
+      res_assign_op = tf.assign(self.to_group, res_act_op)
 
       list_ops.append(res_assign_op)
       output_ops.append(res_act_op)

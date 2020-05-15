@@ -1,6 +1,7 @@
 """ Experiment """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 from . import monitor
 from . import memory
 from .. import cells
@@ -8,7 +9,7 @@ from .. import utils
 
 class Experiment(object):
   def __init__(self, dt: float = 1.0, input_start=0, input_delay=0,\
-               training_start=0, training_delay=0) -> None:
+               training_start=0, training_delay=0, batch_size=1) -> None:
     tf.reset_default_graph()
     self.dt = dt
     self.cell_groups = {}
@@ -32,14 +33,17 @@ class Experiment(object):
     self.experiment_output = {}
     self.has_input = tf.placeholder(tf.bool, shape=())
     self.training_loss = None
+    self.batch_size = batch_size
 
   def add_input(self, dtype, shape, name):
-    input_placeholder = tf.placeholder(dtype, shape=shape, name=name)
+    shape_with_batch = list(shape)
+    shape_with_batch.insert(0,self.batch_size)
+    input_placeholder = tf.placeholder(dtype, shape=shape_with_batch, name=name)
     self.input_name_list.append(name)
     return input_placeholder
 
   def add_group_cells(self, name, amount):
-    g_cells = cells.Cells(amount)
+    g_cells = cells.Cells(amount, self.batch_size)
     self.cell_groups[name] = g_cells
     return g_cells
 

@@ -1,6 +1,7 @@
 """ Cells """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 from functools import reduce
 from operator import mul
@@ -10,8 +11,10 @@ class Cells(object):
   """
   Class for Cells
   """
-  def __init__(self, amount: int, virtual_shape: Optional[Tuple[int]] = None):
+  def __init__(self, amount: int, batch_size: int, virtual_shape: Optional[Tuple[int]] = None):
     self.amount = amount
+    self.batch_size = batch_size
+    self.amount_with_batch = (self.batch_size, self.amount)
     self.virtual_shape = (self.amount,) if virtual_shape is None else virtual_shape
     assert self.amount == reduce(mul, self.virtual_shape),\
       "'amount' and 'virtual_shape' do not match"
@@ -25,32 +28,40 @@ class Cells(object):
 
     if init == "random":
       #np.random.seed(1)
-      initial = np.random.randint(2, size=self.amount).astype(np.float64)
+      initial = np.random.randint(2, size=self.amount_with_batch).astype(np.float64)
     elif init == "central":
-      initial = np.zeros(self.amount).astype(np.float64)
-      initial[int(self.amount//2)] = 1
+      initial = np.zeros(self.amount_with_batch).astype(np.float64)
+      initial[:,int(self.amount//2)] = 1
     elif init == "zeros":
-      initial = np.zeros(self.amount).astype(np.float64)
+      initial = np.zeros(self.amount_with_batch).astype(np.float64)
     elif init == "ones":
-      initial = np.ones(self.amount).astype(np.float64)
+      initial = np.ones(self.amount_with_batch).astype(np.float64)
     elif init == "reversecentral":
-      initial = np.ones(self.amount).astype(np.float64)
-      initial[int(self.amount//2)] = 0
+      initial = np.ones(self.amount_with_batch).astype(np.float64)
+      initial[:,int(self.amount//2)] = 0
     else:
-      initial = init.reshape(-1).astype(np.float64)
+      init = np.array(init)
+      if init.shape == (self.amount,):
+        initial = np.vstack(self.batch_size*[init]).astype(np.float64)
+      elif init.shape == self.virtual_shape:
+        initial = np.vstack(self.batch_size*[init.reshape(-1)]).astype(np.float64)
+      elif init.shape == self.amount_with_batch:
+        initial = init.astype(np.float64)
+      elif init.shape == tuple(list(self.virtual_shape).insert(0,self.batch_size)):
+        initial = init.reshape(self.batch_size,-1).astype(np.float64)
 
     var = tf.get_variable(state_name, initializer=initial)
     self.states[state_name] = var
     return var
 
   def add_n_state(self, state_name, n_state):
-    initial = np.random.randint(n_state, size=self.amount).astype(np.float64)
+    initial = np.random.randint(n_state, size=self.amount_with_batch).astype(np.float64)
     var = tf.get_variable(state_name, initializer=initial)
     self.states[state_name] = var
     return var
 
   def add_real_state(self, state_name, stddev = .1):
-    initial = tf.truncated_normal([self.amount], stddev=stddev,
+    initial = tf.truncated_normal(self.amount_with_batch, stddev=stddev,
                                   dtype=tf.dtypes.float64)
     var = tf.get_variable(state_name, initializer=initial)
     self.states[state_name] = var

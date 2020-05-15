@@ -1,5 +1,6 @@
 """ State memory """
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 class Memory(object):
   def __init__(self, experiment, state, memory_size) -> None:

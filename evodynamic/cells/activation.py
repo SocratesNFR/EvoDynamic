@@ -1,6 +1,7 @@
 """ Activation functions for Cells """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 def game_of_life_func(count_neighbors, previous_state):
   born_cells_op = tf.equal(count_neighbors, 3)
