@@ -2,7 +2,6 @@
 
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
-#import numpy as np
 
 class BaseConnection(object):
   def __init__(self, from_group, to_group, activation_func):
@@ -30,23 +29,16 @@ class BaseConnection(object):
 class IndexConnection(BaseConnection):
   def __init__(self, from_group, to_group, to_group_idx, activation_func=tf.scatter_update):
     super().__init__(from_group, to_group, activation_func)
-    self.to_group_idx = tf.convert_to_tensor(to_group_idx, tf.int64)#np.array(to_group_idx)
-#    self.to_group_idx = np.array(to_group_idx)
+    self.to_group_idx = tf.convert_to_tensor(to_group_idx, tf.int64)
 
   def set_experiment(self, experiment):
     self.experiment = experiment
-#    temp_to_group_idx = np.vstack((np.zeros(len(self.to_group_idx)),self.to_group_idx))
-#    for batch_idx in range(1,self.experiment.batch_size):
-#      batch_to_group_idx = np.vstack((np.full(len(self.to_group_idx),batch_idx),self.to_group_idx))
-#      temp_to_group_idx = np.hstack((temp_to_group_idx,batch_to_group_idx))
-#    self.to_group_idx = tf.convert_to_tensor(temp_to_group_idx, tf.int64) # Tensor of type int32 or int64
     for exp_conn in self.experiment.connection_list:
       if exp_conn.to_group == self.from_group:
         self.from_group = exp_conn.assign_output
     self.list_ops = self.__get_ops()[0]
     self.assign_output = self.__get_output()[0]
     self.output = self.__get_output()[1]
-    #self.to_group_idx = tf.expand_dims(self.to_group_idx,1)
 
   def __get_ops(self):
     if self.is_input:
