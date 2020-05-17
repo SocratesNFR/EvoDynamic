@@ -37,7 +37,7 @@ exp.initialize_cells()
 start = time.time()
 
 exp.run(timesteps=timesteps)
-ca_result = exp.get_monitor("g_ca", "g_ca_bin")
+ca_result = exp.get_monitor("g_ca", "g_ca_bin")[:,:,0]
 
 print("Execution time:", time.time()-start)
 

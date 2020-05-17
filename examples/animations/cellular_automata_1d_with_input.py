@@ -42,7 +42,7 @@ fig = plt.figure()
 
 idx_anim = 0
 im_ca = np.zeros((height_fig,width))
-im_ca[0] = exp.get_group_cells_state("g_ca", "g_ca_bin")
+im_ca[0] = exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0]
 
 im = plt.imshow(im_ca, animated=True)
 
@@ -52,13 +52,13 @@ def updatefig(*args):
     global idx_anim, im_ca
     idx_anim += 1
 
-    exp.run_step(feed_dict={input_ca: np.ones((input_size,))})
+    exp.run_step(feed_dict={input_ca: np.ones((input_size,1))})
 
     if idx_anim < height_fig:
-      im_ca[idx_anim] = exp.get_group_cells_state("g_ca", "g_ca_bin")
+      im_ca[idx_anim] = exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0]
       im.set_array(im_ca)
     else:
-      im_ca = np.vstack((im_ca[1:], exp.get_group_cells_state("g_ca", "g_ca_bin")))
+      im_ca = np.vstack((im_ca[1:], exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0]))
       im.set_array(im_ca)
 
     plt.title('Step: '+str(idx_anim+1))

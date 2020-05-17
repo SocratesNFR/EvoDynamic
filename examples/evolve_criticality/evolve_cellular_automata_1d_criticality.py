@@ -234,7 +234,7 @@ def evaluate_genome(genome=[110], filename = None):
 
   exp.close()
 
-  fitness, val_dict = evaluate_result(exp.get_monitor("g_ca", "g_ca_bin"))
+  fitness, val_dict = evaluate_result(exp.get_monitor("g_ca", "g_ca_bin")[:,:,0])
 
   if isinstance(filename, str):
     if ".csv" in filename:

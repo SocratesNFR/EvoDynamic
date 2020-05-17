@@ -37,17 +37,13 @@ class Experiment(object):
 
   def add_input(self, dtype, shape, name):
     shape_with_batch = list(shape)
-    shape_with_batch.insert(0,self.batch_size)
+    shape_with_batch.insert(1,self.batch_size)
     input_placeholder = tf.placeholder(dtype, shape=shape_with_batch, name=name)
     self.input_name_list.append(name)
     return input_placeholder
 
-  def add_group_cells(self, name, amount):
-    g_cells = cells.Cells(amount, self.batch_size)
-    self.cell_groups[name] = g_cells
-    return g_cells
-
-  def add_cells(self, name, g_cells):
+  def add_group_cells(self, name, amount, virtual_shape=None):
+    g_cells = cells.Cells(amount, self.batch_size, virtual_shape)
     self.cell_groups[name] = g_cells
     return g_cells
 
@@ -135,7 +131,9 @@ class Experiment(object):
         self.run_step()
       utils.progressbar(step+1, timesteps-1)
 
-  def run_step(self, feed_dict={}):
+  def run_step(self, feed_dict=None):
+    if not feed_dict:
+      feed_dict = {}
     feed_dict[self.has_input] = False
     if self.is_input_step():
       feed_dict[self.has_input] = True

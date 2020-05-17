@@ -28,14 +28,14 @@ import matplotlib.animation as animation
 fig = plt.figure()
 
 idx_anim = 0
-im = plt.imshow(exp.get_group_cells_state("g_ca", "g_ca_bin").reshape((height,width)), animated=True)
+im = plt.imshow(exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0].reshape((height,width)), animated=True)
 
 plt.title('Step: 0')
 
 def updatefig(*args):
     global idx_anim
     exp.run_step()
-    im.set_array(exp.get_group_cells_state("g_ca", "g_ca_bin").reshape((height,width)))
+    im.set_array(exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0].reshape((height,width)))
 
     plt.title('Step: '+str(idx_anim))
     idx_anim += 1

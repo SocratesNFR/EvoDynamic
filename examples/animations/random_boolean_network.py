@@ -7,7 +7,6 @@ import evodynamic.experiment as experiment
 import evodynamic.connection.random_boolean_net as rbn
 import evodynamic.connection as connection
 import evodynamic.cells.activation as act
-import evodynamic.cells as cells
 import networkx as nx
 
 width = 16
@@ -17,7 +16,7 @@ exp = experiment.Experiment()
 
 input_rbn = exp.add_input(tf.float64, [input_size], "input_rbn")
 
-g_rbn = exp.add_cells(name="g_rbn", g_cells=cells.Cells(width))
+g_rbn = exp.add_group_cells(name="g_rbn", amount=width)
 g_rbn_bin = g_rbn.add_binary_state(state_name='g_rbn_bin')
 g_rbn_bin_conn = rbn.create_conn_matrix('g_ca_bin_conn',width)
 
@@ -52,7 +51,7 @@ import matplotlib.animation as animation
 fig, ax = plt.subplots()
 
 plt.title('Step: 0')
-current_state = exp.get_group_cells_state("g_rbn", "g_rbn_bin")
+current_state = exp.get_group_cells_state("g_rbn", "g_rbn_bin")[:,0]
 
 node_color = ["black" if current_state[node]==0 else "gray" for node in G]
 
@@ -66,9 +65,9 @@ def updatefig(*args):
 
   ax.clear()
 
-  exp.run_step(feed_dict={input_rbn: np.random.randint(2, size=(input_size,))})
+  exp.run_step(feed_dict={input_rbn: np.random.randint(2, size=(input_size,1))})
 
-  current_state = exp.get_group_cells_state("g_rbn", "g_rbn_bin")
+  current_state = exp.get_group_cells_state("g_rbn", "g_rbn_bin")[:,0]
 
   node_color = ["black" if current_state[node]==0 else "gray" for node in G]
 

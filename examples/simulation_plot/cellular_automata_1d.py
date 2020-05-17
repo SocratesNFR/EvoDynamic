@@ -31,6 +31,6 @@ exp.initialize_cells()
 exp.run(timesteps=timesteps)
 
 ca_result = exp.get_monitor("g_ca", "g_ca_bin")
-
-plt.imshow(ca_result[:,0,:])
+print(ca_result.shape)
+plt.imshow(ca_result[:,:,0])
 plt.show()

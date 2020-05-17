@@ -12,8 +12,9 @@ import matplotlib.pyplot as plt
 width = 100
 timesteps = 400
 input_size = width // 2
+batch_size = 2
 
-exp = experiment.Experiment(input_start=25,input_delay=24, batch_size=1)
+exp = experiment.Experiment(input_start=25,input_delay=24, batch_size=batch_size)
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
 neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
@@ -38,11 +39,13 @@ exp.add_monitor("g_ca", "g_ca_bin")
 exp.initialize_cells()
 
 def input_generator(step):
-  return {input_ca: np.zeros((1,input_size)) if ((step // 10) % 2 == 0) else np.ones((1,input_size))}
+  return {input_ca: np.zeros((input_size,batch_size)) if ((step // 10) % 2 == 0) else np.ones((input_size,batch_size))}
 
 exp.run_with_input_generator(timesteps, input_generator)
 
 ca_result = exp.get_monitor("g_ca", "g_ca_bin")
 
-plt.imshow(ca_result[:,0,:])
+fig, axs = plt.subplots(1, batch_size)
+for i in range(batch_size):
+  axs[i].imshow(ca_result[:,:,i])
 plt.show()

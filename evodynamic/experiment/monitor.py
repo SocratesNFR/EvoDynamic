@@ -22,16 +22,16 @@ class Monitor(object):
 
   def initialize(self):
     if self.timesteps is None:
-      self.state_record = np.expand_dims(self.experiment.session.run(self.state), 0)
+      self.state_record = np.expand_dims(self.experiment.session.run(self.state), 1)
     else:
-      self.state_record = np.zeros((self.timesteps, self.batch_size, self.group_cells_size))
+      self.state_record = np.zeros((self.timesteps, self.group_cells_size, self.batch_size))
       self.state_record[0] = self.experiment.session.run(self.state)
       self.timestep_record = 1
 
   def record(self):
     if self.timesteps is None:
       self.state_record = np.vstack((self.state_record,\
-                                     np.expand_dims(self.experiment.session.run(self.state),0)))
+                                     np.expand_dims(self.experiment.session.run(self.state),1)))
     else:
       if self.timestep_record < self.timesteps:
         self.state_record[self.timestep_record] =\
