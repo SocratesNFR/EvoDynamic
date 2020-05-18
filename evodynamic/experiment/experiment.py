@@ -34,7 +34,8 @@ class Experiment(object):
     self.training_tracker = -1
     self.experiment_output = {}
     self.has_input = tf.placeholder(tf.bool, shape=())
-    self.training_loss = None
+    self.training_loss_op = None
+    self.training_loss = 9999999
     self.batch_size = batch_size
     self.reset_cells_after_train = reset_cells_after_train
     self.reset_memories_after_train = reset_memories_after_train
@@ -93,7 +94,7 @@ class Experiment(object):
 
   def set_training(self, loss, learning_rate, optimizer="adam"):
     model_vars = tf.trainable_variables()
-    self.training_loss = loss
+    self.training_loss_op = loss
     t_vars = []
     for var in model_vars:
       for conn_key in self.trainable_connections:
@@ -101,7 +102,8 @@ class Experiment(object):
           t_vars.append(var)
 
     if optimizer == "adam":
-      train_op = tf.train.AdamOptimizer(learning_rate, beta1=0, beta2=0).minimize(loss, var_list=t_vars)
+      #train_op = tf.train.AdamOptimizer(learning_rate, beta1=0, beta2=0).minimize(loss, var_list=t_vars)
+      train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss, var_list=t_vars)
     else:
       print("set_training has set invalid optimizer")
 
@@ -159,7 +161,10 @@ class Experiment(object):
       self.monitors[monitor_key].record()
 
     if self.is_training_step():
-      self.session.run(self.train_ops, feed_dict=feed_dict)
+      train_result = self.session.run(self.train_ops + [self.training_loss_op], feed_dict=feed_dict)
+      print("train_result", train_result)
+      #print("train_loss", train_result[-1])
+      self.training_loss = train_result[-1]
       self.training_tracker += 1
       if self.reset_cells_after_train:
         self.reset_cell_states()
