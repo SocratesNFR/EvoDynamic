@@ -9,7 +9,8 @@ from .. import utils
 
 class Experiment(object):
   def __init__(self, dt: float = 1.0, input_start=0, input_delay=0,\
-               training_start=0, training_delay=0, batch_size=1) -> None:
+               training_start=0, training_delay=0, batch_size=1,\
+               reset_cells_after_train=False, reset_memories_after_train=False) -> None:
     tf.reset_default_graph()
     self.dt = dt
     self.cell_groups = {}
@@ -24,6 +25,7 @@ class Experiment(object):
     self.session = tf.Session()
     self.memories = {}
     self.step_counter = 0
+    self.memory_counter = 0
     self.input_start = input_start
     self.input_delay = input_delay
     self.input_tracker = -1
@@ -34,6 +36,8 @@ class Experiment(object):
     self.has_input = tf.placeholder(tf.bool, shape=())
     self.training_loss = None
     self.batch_size = batch_size
+    self.reset_cells_after_train = reset_cells_after_train
+    self.reset_memories_after_train = reset_memories_after_train
 
   def add_input(self, dtype, shape, name):
     shape_with_batch = list(shape)
@@ -80,6 +84,12 @@ class Experiment(object):
     self.session.run(tf.global_variables_initializer())
     for monitor_key in self.monitors:
       self.monitors[monitor_key].initialize()
+
+  def reset_cell_states(self):
+    for cell_group_key in self.cell_groups:
+      for state_key in self.cell_groups[cell_group_key].states:
+        state = self.cell_groups[cell_group_key].states[state_key]
+        self.session.run(tf.assign(state, tf.zeros_like(state)))
 
   def set_training(self, loss, learning_rate, optimizer="adam"):
     model_vars = tf.trainable_variables()
@@ -151,7 +161,14 @@ class Experiment(object):
     if self.is_training_step():
       self.session.run(self.train_ops, feed_dict=feed_dict)
       self.training_tracker += 1
+      if self.reset_cells_after_train:
+        self.reset_cell_states()
+      if self.reset_memories_after_train:
+        self.memory_counter = 0
+        for memory_key in self.memories:
+          self.memories[memory_key].reset()
     self.step_counter += 1
+    self.memory_counter += 1
 
   def check_group_cells_state(self, group_cells_name, state_name):
     group_cells_name_exists = group_cells_name in self.cell_groups
