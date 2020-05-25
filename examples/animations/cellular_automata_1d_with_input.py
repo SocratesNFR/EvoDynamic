@@ -22,7 +22,7 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx)
 
-fargs_list = [(a,) for a in [30]]
+fargs_list = [(a,) for a in [170]]
 
 exp.add_connection("input_conn", connection.IndexConnection(input_ca,g_ca_bin,
                                                             np.arange(input_size)))

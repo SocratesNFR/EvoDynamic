@@ -34,7 +34,7 @@ class Experiment(object):
     self.training_tracker = -1
     self.experiment_output = {}
     self.has_input = tf.placeholder(tf.bool, shape=())
-    self.training_loss_op = None
+    self.training_loss_op = []
     self.training_loss = 9999999
     self.batch_size = batch_size
     self.reset_cells_after_train = reset_cells_after_train
@@ -94,7 +94,7 @@ class Experiment(object):
 
   def set_training(self, loss, learning_rate, optimizer="adam"):
     model_vars = tf.trainable_variables()
-    self.training_loss_op = loss
+    self.training_loss_op = [loss]
     t_vars = []
     for var in model_vars:
       for conn_key in self.trainable_connections:
@@ -102,7 +102,6 @@ class Experiment(object):
           t_vars.append(var)
 
     if optimizer == "adam":
-      #train_op = tf.train.AdamOptimizer(learning_rate, beta1=0, beta2=0).minimize(loss, var_list=t_vars)
       train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss, var_list=t_vars)
     else:
       print("set_training has set invalid optimizer")
@@ -151,8 +150,14 @@ class Experiment(object):
       feed_dict[self.has_input] = True
       self.input_tracker += 1
 
+    experiment_ops = []
     for experiment_output_key in self.experiment_output:
-      self.session.run(self.experiment_output[experiment_output_key].assign_output,feed_dict=feed_dict)
+      experiment_ops.append(self.experiment_output[experiment_output_key].assign_output)
+
+    if self.is_training_step():
+      experiment_ops += self.train_ops + self.training_loss_op
+
+    experiment_result = self.session.run(experiment_ops,feed_dict=feed_dict)
 
     for memory_key in self.memories:
       self.memories[memory_key].update_state_memory()
@@ -160,11 +165,9 @@ class Experiment(object):
     for monitor_key in self.monitors:
       self.monitors[monitor_key].record()
 
-    if self.is_training_step():
-      train_result = self.session.run(self.train_ops + [self.training_loss_op], feed_dict=feed_dict)
-      print("train_result", train_result)
-      #print("train_loss", train_result[-1])
-      self.training_loss = train_result[-1]
+    if self.is_training_step() and len(self.train_ops) > 0:
+      if len(experiment_result) > 0:
+        self.training_loss = experiment_result[-1]
       self.training_tracker += 1
       if self.reset_cells_after_train:
         self.reset_cell_states()
