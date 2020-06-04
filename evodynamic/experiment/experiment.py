@@ -2,15 +2,17 @@
 
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
+import numpy as np
 from . import monitor
 from . import memory
 from .. import cells
 from .. import utils
 
 class Experiment(object):
-  def __init__(self, dt: float = 1.0, input_start=0, input_delay=0,\
+  def __init__(self, dt: float = 1.0, input_start=0, input_delay=None,\
                training_start=0, training_delay=0, batch_size=1,\
-               reset_cells_after_train=False, reset_memories_after_train=False) -> None:
+               reset_cells_after_train=False, reset_memories_after_train=False,
+               input_delay_until_train=False) -> None:
     tf.reset_default_graph()
     self.dt = dt
     self.cell_groups = {}
@@ -28,6 +30,7 @@ class Experiment(object):
     self.memory_counter = 0
     self.input_start = input_start
     self.input_delay = input_delay
+    self.input_delay_until_train = input_delay_until_train
     self.input_tracker = -1
     self.training_start = training_start
     self.training_delay = training_delay
@@ -35,10 +38,11 @@ class Experiment(object):
     self.experiment_output = {}
     self.has_input = tf.placeholder(tf.bool, shape=())
     self.training_loss_op = []
-    self.training_loss = 9999999
+    self.training_loss = np.nan
     self.batch_size = batch_size
     self.reset_cells_after_train = reset_cells_after_train
     self.reset_memories_after_train = reset_memories_after_train
+    self.next_step_after_train = False
 
   def add_input(self, dtype, shape, name):
     shape_with_batch = list(shape)
@@ -74,12 +78,12 @@ class Experiment(object):
       self.input_ops.append(connection.list_ops)
     else:
       self.connection_ops.append(connection.list_ops)
-    return connection
+    return connection.assign_output
 
   def add_trainable_connection(self, name, connection):
     self.add_connection(name, connection)
     self.trainable_connections[name] = connection
-    return connection
+    return connection.assign_output
 
   def initialize_cells(self):
     self.session.run(tf.global_variables_initializer())
@@ -102,6 +106,7 @@ class Experiment(object):
           t_vars.append(var)
 
     if optimizer == "adam":
+      print("LEARNING RATE", learning_rate)
       train_op = tf.train.AdamOptimizer(learning_rate).minimize(loss, var_list=t_vars)
     else:
       print("set_training has set invalid optimizer")
@@ -112,7 +117,12 @@ class Experiment(object):
     self.session.close()
 
   def is_input_step(self):
-    return ((self.step_counter-self.input_start) // (self.input_delay+1)) > self.input_tracker
+    if self.input_delay_until_train and self.input_delay == None:
+      is_input_step = self.input_start == self.step_counter or self.next_step_after_train
+    else:
+      is_input_step = ((self.step_counter-self.input_start) // (self.input_delay+1)) > self.input_tracker
+
+    return is_input_step
 
   def is_training_step(self):
     return ((self.step_counter-self.training_start) // (self.training_delay+1)) > self.training_tracker
@@ -126,10 +136,9 @@ class Experiment(object):
     feed_counter = 0
     for step in range(timesteps-1):
       if self.is_input_step() or self.is_training_step():
-        self.run_step(feed_dict=feed_dict_list[feed_counter])
         feed_counter += 1
-      else:
-        self.run_step()
+
+      self.run_step(feed_dict=feed_dict_list[feed_counter])
       utils.progressbar(step+1, timesteps-1)
 
   def run_with_input_generator(self, timesteps: int, generator):
@@ -165,6 +174,7 @@ class Experiment(object):
     for monitor_key in self.monitors:
       self.monitors[monitor_key].record()
 
+    self.next_step_after_train = False
     if self.is_training_step() and len(self.train_ops) > 0:
       if len(experiment_result) > 0:
         self.training_loss = experiment_result[-1]
@@ -175,6 +185,9 @@ class Experiment(object):
         self.memory_counter = 0
         for memory_key in self.memories:
           self.memories[memory_key].reset()
+      print("self.training_loss", self.training_loss)
+      self.next_step_after_train = True
+
     self.step_counter += 1
     self.memory_counter += 1
 

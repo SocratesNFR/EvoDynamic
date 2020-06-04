@@ -32,9 +32,13 @@ class IndexConnection(BaseConnection):
     self.to_group_idx = tf.convert_to_tensor(to_group_idx, tf.int64)
 
   def set_experiment(self, experiment):
+    print("IndexConnection")
     self.experiment = experiment
     for exp_conn in self.experiment.connection_list:
       if exp_conn.to_group == self.from_group:
+        print("if exp_conn.to_group == self.from_group:")
+        print(exp_conn.to_group)
+        print(self.from_group)
         self.from_group = exp_conn.assign_output
     self.list_ops = self.__get_ops()[0]
     self.assign_output = self.__get_output()[0]
@@ -69,10 +73,14 @@ class GatherIndexConnection(BaseConnection):
     self.to_group_idx = tf.convert_to_tensor(to_group_idx, tf.int64) # Tensor of type int32 or int64
 
   def set_experiment(self, experiment):
+    print("GatherIndexConnection")
     self.experiment = experiment
     for exp_conn in self.experiment.connection_list:
       if exp_conn.to_group == self.from_group:
         self.from_group = exp_conn.assign_output
+        print("if exp_conn.to_group == self.from_group:")
+        print(exp_conn.to_group)
+        print(self.from_group)
     self.list_ops = self.__get_ops()[0]
     self.assign_output = self.__get_output()[0]
     self.output = self.__get_output()[1]
@@ -103,10 +111,14 @@ class WeightedConnection(BaseConnection):
     self.fargs_list = fargs_list if fargs_list else [()]
 
   def set_experiment(self, experiment):
+    print("WeightedConnection")
     self.experiment = experiment
     for exp_conn in self.experiment.connection_list:
       if exp_conn.to_group == self.from_group:
         self.from_group = exp_conn.assign_output
+        print("if exp_conn.to_group == self.from_group:")
+        print(exp_conn.to_group)
+        print(self.from_group)
     self.list_ops = self.__get_ops()[0]
     self.assign_output = self.__get_output()[0]
     self.output = self.__get_output()[1]
