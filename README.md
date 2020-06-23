@@ -22,10 +22,12 @@ Dependencies used:
 If you use EvoDynamic for academic research, please cite the following [paper](https://arxiv.org/abs/1907.01856):
 
 ```
-@article{pontes2019general,
-  title={A general representation of dynamical systems for reservoir computing},
-  author={Pontes-Filho, Sidney and Yazidi, Anis and Zhang, Jianhua and Hammer, Hugo and Mello, Gustavo and Sandvig, Ioanna and Tufte, Gunnar and Nichele, Stefano},
-  journal={arXiv preprint arXiv:1907.01856},
-  year={2019}
+@article{pontes2020neuro,
+  title={A neuro-inspired general framework for the evolution of stochastic dynamical systems: Cellular automata, random Boolean networks and echo state networks towards criticality},
+  author={Pontes-Filho, Sidney and Lind, Pedro and Yazidi, Anis and Zhang, Jianhua and Hammer, Hugo and Mello, Gustavo BM and Sandvig, Ioanna and Tufte, Gunnar and Nichele, Stefano},
+  journal={Cognitive Neurodynamics},
+  pages={1--18},
+  year={2020},
+  publisher={Springer}
 }
 ```
