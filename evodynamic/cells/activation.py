@@ -142,6 +142,9 @@ def rule_binary_sca_1d_width3_func(pattern, previous_state, prob_list):
 def sigmoid(x, args):
   return tf.sigmoid(x)
 
+def relu(x, args):
+  return tf.nn.relu(x)
+
 def stochastic_sigmoid(x, args):
   shape_x = tf.shape(x)
   prob = tf.sigmoid(x)
