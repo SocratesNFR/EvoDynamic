@@ -19,7 +19,7 @@ Dependencies used:
 
 ## Citing this work
 
-If you use EvoDynamic for academic research, please cite the following [paper](https://arxiv.org/abs/1907.01856):
+If you use EvoDynamic for academic research, please cite the following [paper](https://link.springer.com/article/10.1007/s11571-020-09600-x):
 
 ```
 @article{pontes2020neuro,
