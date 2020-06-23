@@ -9,7 +9,7 @@ from .. import cells
 from .. import utils
 
 class Experiment(object):
-  def __init__(self, dt: float = 1.0, input_start=0, input_delay=None,\
+  def __init__(self, dt: float = 1.0, input_start=0, input_delay=0,\
                training_start=0, training_delay=0, batch_size=1,\
                reset_cells_after_train=False, reset_memories_after_train=False,
                input_delay_until_train=False) -> None:

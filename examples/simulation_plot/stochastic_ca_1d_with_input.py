@@ -55,5 +55,5 @@ exp.run_with_input_generator(timesteps, input_generator)
 
 ca_result = exp.get_monitor("g_ca", "g_ca_bin")
 
-plt.imshow(ca_result[:,:,0])
+plt.imshow(ca_result[:,:,0].reshape((timesteps,width)))
 plt.show()

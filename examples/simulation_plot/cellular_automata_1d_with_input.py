@@ -47,5 +47,5 @@ ca_result = exp.get_monitor("g_ca", "g_ca_bin")
 
 fig, axs = plt.subplots(1, batch_size)
 for i in range(batch_size):
-  axs[i].imshow(ca_result[:,:,i])
+  axs[i].imshow(ca_result[:,:,i].reshape((timesteps,width)))
 plt.show()
