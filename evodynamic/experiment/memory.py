@@ -17,6 +17,12 @@ class Memory(object):
           state.name.replace(":0", "")+"_memory",
           initializer=tf.zeros(self.memory_shape, dtype=tf.dtypes.float64))
 
+    self.selection_indices = [[i] for i in range(self.state_shape[0],\
+                           self.memory_size*self.state_shape[0])]
+
+    self.total_update_indices = [i for i in range(self.memory_size*self.state_shape[0])]
+
+
   def get_op(self):
     return self.state_memory
 
@@ -29,26 +35,18 @@ class Memory(object):
 
   def update_state_memory(self):
     if self.experiment.memory_counter < self.memory_size:
-#      update_indices = list(range(self.experiment.memory_counter*self.state_shape[0],
-#                                  (self.experiment.memory_counter+1)*self.state_shape[0]))
-
       update_indices = [i for i in range(self.experiment.memory_counter*self.state_shape[0],\
                         (self.experiment.memory_counter+1)*self.state_shape[0])]
 
       self.experiment.session.run(
           tf.scatter_update(self.state_memory, update_indices, self.state))
-
     else:
-      selection_indices = [[i] for i in range(self.state_shape[0],\
-                           self.memory_size*self.state_shape[0])]
+      memory_shift_selection_op = tf.gather_nd(self.state_memory,self.selection_indices)
 
-      memory_shift_selection_op = tf.gather_nd(self.state_memory,selection_indices)
-
-      state_memory_update_indices = [i for i in range(self.memory_size*self.state_shape[0])]
       concat_op = tf.concat([memory_shift_selection_op, self.state], 0)
 
       state_memory_update_op = tf.scatter_update(self.state_memory,
-                                                 state_memory_update_indices,
+                                                 self.total_update_indices,
                                                  concat_op)
       self.experiment.session.run(state_memory_update_op)
 
