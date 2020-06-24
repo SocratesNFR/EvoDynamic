@@ -45,12 +45,8 @@ input_size = 1
 output_layer_size = 10
 image_num_pixels = x_train_image_shape[0] * x_train_image_shape[1]
 
-#exp = experiment.Experiment(input_start=0,input_delay=0,training_start=timesteps,
-#                            training_delay=timesteps-1,reset_cells_after_train=True,
-#                            batch_size=batch_size)
-
-exp = experiment.Experiment(input_start=0,input_delay=0,training_start=timesteps,
-                            training_delay=timesteps,reset_cells_after_train=False,
+exp = experiment.Experiment(input_start=0,input_delay=0,training_start=timesteps-1,
+                            training_delay=timesteps-1,reset_cells_after_train=False,
                             batch_size=batch_size)
 
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
@@ -91,7 +87,7 @@ c_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
 #c_loss = tf.losses.mean_squared_error(labels=desired_output,\
 #                                      predictions=exp.trainable_connections["output_conn"].output)
 
-exp.set_training(c_loss,0.003)
+exp.set_training(c_loss,0.03)
 
 exp.initialize_cells()
 
