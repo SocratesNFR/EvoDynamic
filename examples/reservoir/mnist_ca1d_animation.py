@@ -31,8 +31,8 @@ output_layer_size = 10
 image_num_pixels = x_train_image_shape[0] * x_train_image_shape[1]
 height_fig = timesteps
 
-exp = experiment.Experiment(input_start=0,input_delay=0,training_start=timesteps,
-                            training_delay=timesteps,reset_cells_after_train=True)
+exp = experiment.Experiment(input_start=0,input_delay=0,training_start=timesteps-1,
+                            training_delay=timesteps-1,reset_cells_after_train=True)
 
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
 desired_output = exp.add_input(tf.float64, [output_layer_size], "desired_output")
