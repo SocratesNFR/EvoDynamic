@@ -58,7 +58,7 @@ plt.title('Step: 0')
 
 def updatefig(*args):
     global idx_anim
-    desired_output_np = np.zeros((height,1)) if (idx_anim//10) % 2 == 1 else np.ones((height,1))
+    desired_output_np = np.ones((height,1))
     feed_dict = {input_ca: np.random.randint(2, size=(input_size,1)), desired_output: desired_output_np}
     exp.run_step(feed_dict=feed_dict)
     arr = np.hstack((exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0].reshape((height,width)),

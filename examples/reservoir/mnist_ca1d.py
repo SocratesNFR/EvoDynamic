@@ -84,9 +84,6 @@ c_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
     labels=desired_output,
     axis=0))
 
-#c_loss = tf.losses.mean_squared_error(labels=desired_output,\
-#                                      predictions=exp.trainable_connections["output_conn"].output)
-
 exp.set_training(c_loss,0.03)
 
 exp.initialize_cells()
@@ -133,15 +130,11 @@ for epoch in range(epochs):
 
     prediction_batch = exp.get_group_cells_state("output_layer", "output_layer_real_state")
     accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size
-#    print(np.argmax(desired_output_batch, axis=0), desired_output_batch.shape)
-#    print(np.argmax(prediction_batch, axis=0), prediction_batch.shape)
     weight = exp.session.run(exp.connections["output_conn"].w)
-    print(weight.shape)
-    print(step+1, exp.training_loss, accuracy_batch, np.min(weight), np.max(weight))
+    utils.progressbar_loss_accu(step+1, num_batches-1, exp.training_loss, accuracy_batch)
     fig = plot_first_hidden(np.transpose(weight))
     plt.savefig(output_folder+"\hidden_"+str(exp.step_counter).zfill(6)+'.png', bbox_inches='tight')
     plt.close(fig)
-    #utils.progressbar_loss_accu(step+1, num_batches-1, exp.training_loss, accuracy_batch)
     res_ca = exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0]
     fig = plt.figure()
     plt.imsave(output_folder+"\memory_"+str(exp.step_counter).zfill(6)+'.png', res_ca.reshape((28,28)))

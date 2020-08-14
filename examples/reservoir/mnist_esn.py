@@ -134,11 +134,8 @@ for epoch in range(epochs):
 
     prediction_batch = exp.get_group_cells_state("output_layer", "output_layer_real_state")
     accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size
-#    print(np.argmax(desired_output_batch, axis=0), desired_output_batch.shape)
-#    print(np.argmax(prediction_batch, axis=0), prediction_batch.shape)
     weight = exp.session.run(exp.connections["output_conn"].w)
-    print(step+1, exp.training_loss, accuracy_batch, np.min(weight), np.max(weight))
     fig = plot_first_hidden(np.transpose(weight))
     plt.savefig(output_folder+"\hidden_"+str(exp.step_counter).zfill(6)+'.png', bbox_inches='tight')
     plt.close(fig)
-    #utils.progressbar_loss_accu(step+1, num_batches-1, exp.training_loss, accuracy_batch)
+    utils.progressbar_loss_accu(step+1, num_batches-1, exp.training_loss, accuracy_batch)

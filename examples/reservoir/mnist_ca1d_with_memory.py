@@ -10,6 +10,11 @@ import evodynamic.connection.random as randon_conn
 import evodynamic.cells.activation as act
 import evodynamic.utils as utils
 
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import os
+
+
 mnist = tf.keras.datasets.mnist
 
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -34,17 +39,16 @@ y_test_one_hot[y_test,np.arange(y_test.size)] = 1
 y_test = y_test_one_hot
 
 epochs = 10
-batch_size = 8
+batch_size = 100
 num_batches =  int(np.ceil(x_train_num_images / batch_size))
 width = 10
 input_size = 1
 output_layer_size = 10
 memory_size = 28*28
-height_fig = memory_size
 
 exp = experiment.Experiment(input_start=0,input_delay=0,training_start=memory_size,
                             training_delay=memory_size-1,reset_cells_after_train=True,
-                            reset_memories_after_train=True, batch_size = 8)
+                            reset_memories_after_train=True, batch_size=batch_size)
 
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
 desired_output = exp.add_input(tf.float64, [output_layer_size], "desired_output")
@@ -59,7 +63,7 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
 fargs_list = [(a,) for a in [110]]
 
 exp.add_connection("input_conn", connection.IndexConnection(input_ca,g_ca_bin,
-                                                            [output_layer_size-1]))
+                                                            [width-1]))
 
 exp.add_connection("g_ca_conn",
                    connection.WeightedConnection(g_ca_bin,g_ca_bin,
@@ -86,6 +90,11 @@ exp.set_training(c_loss,0.003)
 
 exp.initialize_cells()
 
+output_folder = "mnist_ca1d_with_memory"
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+
+
 for epoch in range(epochs):
   print("Epoch:", epoch)
   shuffled_indices = np.random.permutation(x_train_num_images)
@@ -97,5 +106,15 @@ for epoch in range(epochs):
       desired_output_batch = y_train[:,batch_idx]
       feed_dict = {input_ca: input_ca_batch, desired_output: desired_output_batch}
       exp.run_step(feed_dict=feed_dict)
+      if pixel_idx > 780 or pixel_idx < 3:
+        print(exp.is_training_step(), epoch, step, pixel_idx, np.argmax(desired_output_batch, axis=0), exp.training_loss, exp.step_counter, exp.training_tracker)
+    print("Training loss:", exp.training_loss)
 
-    utils.progressbar_loss(step+1, num_batches-1, exp.training_loss)
+    exp_memory = exp.memories[g_ca_bin].get_state_memory()[:,0]
+    print("exp_memory.shape", exp_memory.shape)
+    fig = plt.figure()
+    plt.imsave(output_folder+"\memory_"+str(exp.step_counter).zfill(6)+'.png', exp_memory.reshape((28*28,10)))
+    plt.close(fig)
+
+
+    #utils.progressbar_loss(step+1, num_batches-1, exp.training_loss)

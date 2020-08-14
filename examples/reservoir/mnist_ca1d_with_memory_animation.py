@@ -28,6 +28,7 @@ input_size = 1
 output_layer_size = 10
 memory_size = 28*28
 height_fig = memory_size
+print(memory_size)
 
 exp = experiment.Experiment(input_start=0,input_delay=0,training_start=memory_size,
                             training_delay=memory_size-1,reset_cells_after_train=True,
@@ -97,10 +98,12 @@ def updatefig(*args):
 
     input_ca_np = x_train[idx_anim % memory_size,idx_anim // memory_size].reshape((-1,1))
     desired_output_np = y_train[:,idx_anim // memory_size].reshape((-1,1))
+#    print(exp.is_training_step(), idx_anim, idx_anim // memory_size, np.argmax(desired_output_np))
     feed_dict={input_ca: input_ca_np, desired_output: desired_output_np}
     exp.run_step(feed_dict=feed_dict)
 
     if idx_anim % memory_size == 0:
+#      print("idx_anim % memory_size == 0")
       im_mnist = x_train[:,idx_anim//memory_size].reshape(x_train_image_shape)
 
     im_memory = exp.memories[g_ca_bin].get_state_memory()[:,0].reshape((memory_size, width))
