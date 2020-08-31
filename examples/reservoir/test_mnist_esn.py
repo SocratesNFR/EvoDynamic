@@ -12,6 +12,7 @@ import evodynamic.cells.activation as act
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
+import time
 
 mnist = tf.keras.datasets.mnist
 
@@ -20,11 +21,11 @@ mnist = tf.keras.datasets.mnist
 x_train_num_images = x_train.shape[0]
 x_train_image_shape = x_train.shape[1:3]
 
-x_train = ((x_train / 255.0) > 0.5).astype(np.int8)
+x_train = ((x_train / 255.0) > 0.5).astype(np.float64)
 x_train = x_train.reshape(x_train.shape[0],-1)
 x_train = np.transpose(x_train)
 
-x_test = ((x_test / 255.0) > 0.5).astype(np.int8)
+x_test = ((x_test / 255.0) > 0.5).astype(np.float64)
 x_test = x_test.reshape(x_test.shape[0],-1)
 x_test = np.transpose(x_test)
 
@@ -50,7 +51,7 @@ exp = experiment.Experiment(input_start=0,input_delay=0,training_start=0,
 
 
 input_esn = exp.add_input(tf.float64, [input_size], "input_esn")
-desired_output = exp.add_input(tf.float64, [output_layer_size], "desired_output")
+desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desired_output")
 
 g_esn = exp.add_group_cells(name="g_esn", amount=width)
 g_esn_real = g_esn.add_real_state(state_name='g_esn_real')
@@ -120,7 +121,7 @@ def plot_first_hidden(weights):
 
     return fig
 
-output_folder = "test_weights_esn_23Jun2020"
+output_folder = "test_mnist_esn_"+time.strftime("%Y%m%d-%H%M%S")
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
@@ -132,8 +133,9 @@ for epoch in range(epochs):
   for step, batch_idx in enumerate(batch_indices):
     input_esn_batch = x_train[:,batch_idx]
     desired_output_batch = y_train[:,batch_idx]
-    print(exp.step_counter, exp.is_input_step(), exp.is_training_step())
+    print(exp.step_counter, exp.is_input_step(), exp.is_training_step(), input_esn_batch.shape, desired_output_batch.shape)
     feed_dict = {input_esn: input_esn_batch, desired_output: desired_output_batch}
+    print("feed_dict", feed_dict)
     exp.run_step(feed_dict=feed_dict)
 
     prediction_batch = exp.get_monitor("output_layer", "output_layer_real_state")[0,:,:]#exp.get_group_cells_state("output_layer", "output_layer_real_state")

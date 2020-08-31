@@ -9,6 +9,7 @@ import evodynamic.connection as connection
 import evodynamic.connection.random as randon_conn
 import evodynamic.cells.activation as act
 import os
+import time
 
 width = 100
 height_fig = 200
@@ -19,7 +20,7 @@ memory_size = 5
 exp = experiment.Experiment(input_start=5,input_delay=14,training_start=6,training_delay=0)
 
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
-desired_output = exp.add_input(tf.float64, [output_layer_size], "desired_output")
+desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desired_output")
 
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
 neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
@@ -77,12 +78,9 @@ ax1.title.set_text("CA")
 ax2.title.set_text("Memory")
 ax3.title.set_text("Trained output")
 
-
-
-output_folder = "ca1d_10Aug2020_test1"
+output_folder = "ca1d_delayed_input_memory_output_"+time.strftime("%Y%m%d-%H%M%S")
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
-
 
 def updatefig(*args):
     global idx_anim, im_ca, im_memory, im_output,im1,im2,im3
@@ -110,7 +108,6 @@ def updatefig(*args):
     fig = plt.figure()
     plt.imsave(output_folder+"\weight0_"+str(exp.step_counter).zfill(6)+'.png', weight[0].reshape((memory_size,output_layer_size)))
     plt.close(fig)
-
 
     return im1,im2,im3
 

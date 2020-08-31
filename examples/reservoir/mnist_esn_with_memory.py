@@ -8,10 +8,11 @@ import evodynamic.connection.random as conn_random
 import evodynamic.connection as connection
 import evodynamic.connection.random as randon_conn
 import evodynamic.cells.activation as act
-import evodynamic.utils as utils
+#import evodynamic.utils as utils
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
+import time
 
 mnist = tf.keras.datasets.mnist
 
@@ -55,7 +56,7 @@ exp = experiment.Experiment(input_start=0,training_start=memory_size,
 
 input_esn = exp.add_input(tf.float64, [input_size], "input_esn")
 input_esn_conn = conn_random.create_truncated_normal_connection("input_esn_conn", input_size, width, stddev=1.0)
-desired_output = exp.add_input(tf.float64, [output_layer_size], "desired_output")
+desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desired_output")
 
 g_esn = exp.add_group_cells(name="g_esn", amount=width)
 g_esn_real = g_esn.add_real_state(state_name='g_esn_real')
@@ -117,7 +118,7 @@ def plot_first_hidden(weights):
 
     return fig
 
-output_folder = "weights_esn_with_memory"
+output_folder = "mnist_esn_with_memory_"+time.strftime("%Y%m%d-%H%M%S")
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 

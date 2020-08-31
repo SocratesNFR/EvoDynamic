@@ -35,7 +35,7 @@ exp = experiment.Experiment(input_start=0,input_delay=0,training_start=timesteps
                             training_delay=timesteps-1,reset_cells_after_train=True)
 
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
-desired_output = exp.add_input(tf.float64, [output_layer_size], "desired_output")
+desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desired_output")
 
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
 neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
@@ -95,9 +95,7 @@ def updatefig(*args):
     global idx_anim, im_mnist, im_ca, im_output,im1,im2,im3
     idx_anim += 1
 
-    input_ca_np = x_train[idx_anim, idx_anim // timesteps].reshape((-1,1))\
-        if idx_anim < image_num_pixels else\
-        np.zeros_like(x_train[0,idx_anim // timesteps].reshape((-1,1)))
+    input_ca_np = x_train[idx_anim % timesteps, idx_anim // timesteps].reshape((-1,1))
     desired_output_np = y_train[:,idx_anim // timesteps].reshape((-1,1))
     feed_dict={input_ca: input_ca_np, desired_output: desired_output_np}
     exp.run_step(feed_dict=feed_dict)
@@ -105,7 +103,8 @@ def updatefig(*args):
       im_mnist = x_train[:,idx_anim//timesteps].reshape(x_train_image_shape)
       im_ca = np.zeros((height_fig,width))
 
-    im_ca[idx_anim % timesteps] = exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0]
+    g_ca_bin_current = exp.get_group_cells_state("g_ca", "g_ca_bin")
+    im_ca[idx_anim % timesteps] = g_ca_bin_current[:,0]
     im_output = exp.get_group_cells_state("output_layer", "output_layer_real_state")[:,0].reshape((-1,1))
 
     im1.set_array(im_mnist)

@@ -28,14 +28,13 @@ input_size = 1
 output_layer_size = 10
 memory_size = 28*28
 height_fig = memory_size
-print(memory_size)
 
 exp = experiment.Experiment(input_start=0,input_delay=0,training_start=memory_size,
                             training_delay=memory_size-1,reset_cells_after_train=True,
                             reset_memories_after_train=True)
 
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
-desired_output = exp.add_input(tf.float64, [output_layer_size], "desired_output")
+desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desired_output")
 
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
 neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
@@ -103,7 +102,6 @@ def updatefig(*args):
     exp.run_step(feed_dict=feed_dict)
 
     if idx_anim % memory_size == 0:
-#      print("idx_anim % memory_size == 0")
       im_mnist = x_train[:,idx_anim//memory_size].reshape(x_train_image_shape)
 
     im_memory = exp.memories[g_ca_bin].get_state_memory()[:,0].reshape((memory_size, width))

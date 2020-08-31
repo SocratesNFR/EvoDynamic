@@ -8,11 +8,11 @@ import evodynamic.connection.cellular_automata as ca
 import evodynamic.connection as connection
 import evodynamic.connection.random as randon_conn
 import evodynamic.cells.activation as act
-import evodynamic.utils as utils
-
+#import evodynamic.utils as utils
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+#import matplotlib.gridspec as gridspec
 import os
+import time
 
 
 mnist = tf.keras.datasets.mnist
@@ -51,16 +51,17 @@ exp = experiment.Experiment(input_start=0,input_delay=0,training_start=memory_si
                             reset_memories_after_train=True, batch_size=batch_size)
 
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
-desired_output = exp.add_input(tf.float64, [output_layer_size], "desired_output")
+desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desired_output")
 
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
 neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
 g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin', init="zeros")
 g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
-                                           center_idx=center_idx)
+                                           center_idx=center_idx,\
+                                           is_wrapped_ca = True)
 
-fargs_list = [(a,) for a in [110]]
+fargs_list = [(a,) for a in [170]]
 
 exp.add_connection("input_conn", connection.IndexConnection(input_ca,g_ca_bin,
                                                             [width-1]))
@@ -90,10 +91,9 @@ exp.set_training(c_loss,0.003)
 
 exp.initialize_cells()
 
-output_folder = "mnist_ca1d_with_memory"
+output_folder = "mnist_ca1d_with_memory_"+time.strftime("%Y%m%d-%H%M%S")
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
-
 
 for epoch in range(epochs):
   print("Epoch:", epoch)

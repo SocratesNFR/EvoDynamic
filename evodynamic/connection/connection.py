@@ -31,11 +31,12 @@ class IndexConnection(BaseConnection):
     super().__init__(from_group, to_group, activation_func)
     self.to_group_idx = tf.convert_to_tensor(to_group_idx, tf.int64)
 
-  def set_experiment(self, experiment):
+  def set_experiment(self, experiment, is_first_training_connection=False):
     self.experiment = experiment
-    for exp_conn in self.experiment.connection_list:
-      if exp_conn.to_group == self.from_group:
-        self.from_group = exp_conn.assign_output
+    if not is_first_training_connection:
+      for exp_conn in self.experiment.connection_list:
+        if exp_conn.to_group == self.from_group:
+          self.from_group = exp_conn.assign_output
     self.list_ops = self.__get_ops()[0]
     self.assign_output = self.__get_output()[0]
     self.output = self.__get_output()[1]
@@ -68,11 +69,12 @@ class GatherIndexConnection(BaseConnection):
     super().__init__(from_group, to_group, tf_gather_nd_update)
     self.to_group_idx = tf.convert_to_tensor(to_group_idx, tf.int64) # Tensor of type int32 or int64
 
-  def set_experiment(self, experiment):
+  def set_experiment(self, experiment, is_first_training_connection=False):
     self.experiment = experiment
-    for exp_conn in self.experiment.connection_list:
-      if exp_conn.to_group == self.from_group:
-        self.from_group = exp_conn.assign_output
+    if not is_first_training_connection:
+      for exp_conn in self.experiment.connection_list:
+        if exp_conn.to_group == self.from_group:
+          self.from_group = exp_conn.assign_output
     self.list_ops = self.__get_ops()[0]
     self.assign_output = self.__get_output()[0]
     self.output = self.__get_output()[1]
@@ -102,11 +104,12 @@ class WeightedConnection(BaseConnection):
     self.w = w
     self.fargs_list = fargs_list if fargs_list else [()]
 
-  def set_experiment(self, experiment):
+  def set_experiment(self, experiment, is_first_training_connection=False):
     self.experiment = experiment
-    for exp_conn in self.experiment.connection_list:
-      if exp_conn.to_group == self.from_group:
-        self.from_group = exp_conn.assign_output
+    if not is_first_training_connection:
+      for exp_conn in self.experiment.connection_list:
+        if exp_conn.to_group == self.from_group:
+          self.from_group = exp_conn.assign_output
     self.list_ops = self.__get_ops()[0]
     self.assign_output = self.__get_output()[0]
     self.output = self.__get_output()[1]

@@ -56,8 +56,7 @@ def create_uniform_matrix(name, width, sparsity=None, is_sparse=False):
           if sparsity < np.random.random():
             indices.append([i,j])
             values.append(np.random.randint(2) * 2.0 - 1.0)
-    #print(indices)
-    #print(values)
+
     initial = tf.cast(tf.SparseTensor(indices=indices, values=values,\
                                       dense_shape=[nodes, nodes]), tf.float64)
   else:
@@ -127,3 +126,35 @@ def create_xavier_connection(name, from_group_amount, to_group_amount):
 def create_truncated_normal_connection(name, from_group_amount, to_group_amount, stddev=0.02):
   return conn_utils.weight_variable([to_group_amount, from_group_amount],
                                     stddev=stddev, name=name)
+
+def create_uniform_connection(name, from_group_amount, to_group_amount, sparsity=None, is_sparse=False):
+  connection_shape = (to_group_amount, from_group_amount)
+  if is_sparse:
+    indices = []
+    values = []
+    if sparsity is None:
+      values = np.random.randint(2, size=connection_shape[0]*connection_shape[1]) * 2.0 - 1.0
+      for i in range(connection_shape[0]):
+        for j in range(connection_shape[1]):
+          indices.append([i,j])
+    else:
+      for i in range(connection_shape[0]):
+        for j in range(connection_shape[1]):
+          if sparsity < np.random.random():
+            indices.append([i,j])
+            values.append(np.random.randint(2) * 2.0 - 1.0)
+
+    initial = tf.cast(tf.SparseTensor(indices=indices, values=values,\
+                                      dense_shape=[connection_shape[0], connection_shape[1]]), tf.float64)
+  else:
+    if sparsity is None:
+      conn_matrix = np.random.randint(2, size=connection_shape) * 2.0 - 1.0
+    else:
+      conn_matrix = np.zeros(connection_shape)
+      for i in range(connection_shape[0]):
+        for j in range(connection_shape[1]):
+          if sparsity < np.random.random():
+            conn_matrix[i,j] = np.random.randint(2) * 2.0 - 1.0
+    initial = conn_matrix
+
+  return initial if is_sparse else tf.get_variable(name, initializer=initial)

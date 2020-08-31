@@ -16,7 +16,7 @@ input_size = 5*width
 exp = experiment.Experiment(input_start=2,input_delay=4,training_start=6,training_delay=0)
 
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
-desired_output = exp.add_input(tf.float64, [height], "desired_output")
+desired_output = exp.add_desired_output(tf.float64, [height], "desired_output")
 
 g_ca = exp.add_group_cells(name="g_ca", amount=width*height, virtual_shape=(width,height))
 g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin')

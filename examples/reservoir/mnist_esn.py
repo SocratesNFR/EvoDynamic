@@ -12,6 +12,7 @@ import evodynamic.utils as utils
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
+import time
 
 mnist = tf.keras.datasets.mnist
 
@@ -52,12 +53,15 @@ exp = experiment.Experiment(input_start=0,training_start=5,
 
 
 input_esn = exp.add_input(tf.float64, [input_size], "input_esn")
-input_esn_conn = conn_random.create_truncated_normal_connection("input_esn_conn", input_size, width, stddev=1.0)
-desired_output = exp.add_input(tf.float64, [output_layer_size], "desired_output")
+#input_esn_conn = conn_random.create_truncated_normal_connection("input_esn_conn", input_size, width, stddev=1.0)
+input_esn_conn = conn_random.create_uniform_connection("input_esn_conn", input_size, width)
+desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desired_output")
 
 g_esn = exp.add_group_cells(name="g_esn", amount=width)
 g_esn_real = g_esn.add_real_state(state_name='g_esn_real')
-g_esn_real_conn = conn_random.create_gaussian_matrix('g_esn_real_conn',width, sparsity=0.0, is_sparse=False)
+g_esn_real_conn = conn_random.create_gaussian_matrix('g_esn_real_conn',width,
+                                                     std=1.0, sparsity=0.0,
+                                                     is_sparse=False)
 
 exp.add_connection("input_conn",
                    connection.WeightedConnection(input_esn,
@@ -89,6 +93,10 @@ c_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
 
 exp.set_training(c_loss,0.003)
 
+# Monitors are needed because "reset_cells_after_train=True"
+exp.add_monitor("output_layer", "output_layer_real_state", timesteps=1)
+exp.add_monitor("g_esn", "g_esn_real", timesteps=1)
+
 exp.initialize_cells()
 
 def plot_first_hidden(weights):
@@ -112,7 +120,7 @@ def plot_first_hidden(weights):
 
     return fig
 
-output_folder = "weights_esn_22Jun2020"
+output_folder = "mnist_esn_"+time.strftime("%Y%m%d-%H%M%S")
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
@@ -128,11 +136,16 @@ for epoch in range(epochs):
       print(exp.step_counter, exp.is_input_step(), exp.is_training_step())
       feed_dict = {input_esn: input_esn_batch, desired_output: desired_output_batch}
       exp.run_step(feed_dict=feed_dict)
+      print(np.mean(exp.get_group_cells_state("output_layer", "output_layer_real_state")))
+
       if exp.is_training_step():
         break
 
 
-    prediction_batch = exp.get_group_cells_state("output_layer", "output_layer_real_state")
+    prediction_batch = exp.get_monitor("output_layer", "output_layer_real_state")[0,:,:]#exp.get_group_cells_state("output_layer", "output_layer_real_state")
+    print(prediction_batch.shape, np.mean(prediction_batch))
+    g_esn_get_monitor = exp.get_monitor("g_esn", "g_esn_real")[0,:,:]
+    print("ESN STATE", g_esn_get_monitor.shape, np.mean(g_esn_get_monitor))
     accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size
     weight = exp.session.run(exp.connections["output_conn"].w)
     fig = plot_first_hidden(np.transpose(weight))

@@ -12,6 +12,7 @@ import evodynamic.cells.activation as act
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
+import time
 
 mnist = tf.keras.datasets.mnist
 
@@ -20,11 +21,11 @@ mnist = tf.keras.datasets.mnist
 x_train_num_images = x_train.shape[0]
 x_train_image_shape = x_train.shape[1:3]
 
-x_train = ((x_train / 255.0) > 0.5).astype(np.int8)
+x_train = ((x_train / 255.0) > 0.5).astype(np.float64)
 x_train = x_train.reshape(x_train.shape[0],-1)
 x_train = np.transpose(x_train)
 
-x_test = ((x_test / 255.0) > 0.5).astype(np.int8)
+x_test = ((x_test / 255.0) > 0.5).astype(np.float64)
 x_test = x_test.reshape(x_test.shape[0],-1)
 x_test = np.transpose(x_test)
 
@@ -51,7 +52,7 @@ exp = experiment.Experiment(input_start=0,input_delay=0,training_start=1,
 
 
 input_esn = exp.add_input(tf.float64, [input_size], "input_esn")
-desired_output = exp.add_input(tf.float64, [output_layer_size], "desired_output")
+desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desired_output")
 
 g_esn = exp.add_group_cells(name="g_esn", amount=width)
 g_esn_real = g_esn.add_real_state(state_name='g_esn_real')
@@ -91,9 +92,6 @@ c_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
     labels=desired_output,
     axis=0))
 
-#c_loss = tf.losses.mean_squared_error(labels=desired_output,\
-#                                      predictions=exp.trainable_connections["output_conn"].output)
-
 exp.set_training(c_loss,0.03)
 
 # Monitors are needed because "reset_cells_after_train=True"
@@ -116,14 +114,14 @@ def plot_first_hidden(weights):
         im = plt.imshow(weight.reshape((2*28,28)), cmap="seismic_r", vmin=-max_abs_val, vmax=max_abs_val)
 
     # Adding colorbar
-    # https://stackoverflow.com/questions/13784201/matplotlib-2-subplots-1-colorbar
+    # Based on: https://stackoverflow.com/questions/13784201/matplotlib-2-subplots-1-colorbar
     fig.subplots_adjust(right=0.8)
     cbar_ax = fig.add_axes([0.85, 0.15, 0.015, 0.7])
     fig.colorbar(im, cax=cbar_ax, ticks=[-max_abs_val, 0, max_abs_val])
 
     return fig
 
-output_folder = "test_weights_esn_with_memory_14Aug2020_split_02"
+output_folder = "test_mnist_esn_with_memory_"+time.strftime("%Y%m%d-%H%M%S")
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
@@ -136,10 +134,6 @@ for epoch in range(epochs):
     input_esn_batch = x_train[:,batch_idx]
 
     desired_output_batch = y_train[:,batch_idx]
-#    test_idx = tuple(((c,idx) for idx,c in enumerate(np.argmax(desired_output_batch, axis=0))))
-#    print(test_idx)
-#    for i in test_idx:
-#      input_esn_batch[i] = 1
 
     input_esn_batch_1 = np.array(input_esn_batch)
     input_esn_batch_2 = np.array(input_esn_batch)
@@ -148,28 +142,23 @@ for epoch in range(epochs):
     input_esn_batch_1[split_img_idx:,:] = 0
     input_esn_batch_2[:split_img_idx,:] = 0
 
-
-
-    print(exp.step_counter, exp.is_input_step(), exp.is_training_step())
-    feed_dict = {input_esn: input_esn_batch, desired_output: desired_output_batch}
+    #print(exp.step_counter, exp.is_input_step(), exp.is_training_step())
+    feed_dict = {input_esn: input_esn_batch_2, desired_output: desired_output_batch}
     # Double run step
     exp.run_step(feed_dict=feed_dict)
-    res_ca = exp.get_monitor("g_esn", "g_esn_real")[:,:,0]
-    feed_dict = {input_esn: input_esn_batch_2, desired_output: desired_output_batch}
-    exp.run_step(feed_dict=feed_dict)
 
-    prediction_batch = exp.get_monitor("output_layer", "output_layer_real_state")[0,:,:]#exp.get_group_cells_state("output_layer", "output_layer_real_state")
+    feed_dict = {input_esn: input_esn_batch_1, desired_output: desired_output_batch}
+    exp.run_step(feed_dict=feed_dict)
+    res_ca = exp.get_monitor("g_esn", "g_esn_real")[:,:,0]
+    prediction_batch = exp.get_monitor("output_layer", "output_layer_real_state")[0,:,:]
     accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size
-#    print(np.argmax(desired_output_batch, axis=0), desired_output_batch.shape)
-#    print(np.argmax(prediction_batch, axis=0), prediction_batch.shape)
+
     weight = exp.session.run(exp.connections["output_conn"].w)
     print(step+1, exp.training_loss, accuracy_batch, np.min(weight), np.max(weight))
     fig = plot_first_hidden(np.transpose(weight))
     plt.savefig(output_folder+"\hidden_"+str(exp.step_counter).zfill(6)+'.png', bbox_inches='tight')
     plt.close(fig)
-    #utils.progressbar_loss_accu(step+1, num_batches-1, exp.training_loss, accuracy_batch)
 
-    print("ESN STATE", np.min(res_ca), np.max(res_ca))
     fig = plt.figure()
     plt.imsave(output_folder+"\esn_state_"+str(exp.step_counter).zfill(6)+'.png', res_ca.reshape((28,28)))
     plt.close(fig)
@@ -178,3 +167,5 @@ for epoch in range(epochs):
     fig = plt.figure()
     plt.imsave(output_folder+"\memory_"+str(exp.step_counter).zfill(6)+'.png', exp_memory.reshape((2*28,28)))
     plt.close(fig)
+
+    #utils.progressbar_loss_accu(step+1, num_batches-1, exp.training_loss, accuracy_batch)

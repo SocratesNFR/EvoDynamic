@@ -12,6 +12,7 @@ import evodynamic.utils as utils
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
+import time
 
 mnist = tf.keras.datasets.mnist
 
@@ -50,7 +51,7 @@ exp = experiment.Experiment(input_start=0,input_delay=0,training_start=timesteps
                             batch_size=batch_size)
 
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
-desired_output = exp.add_input(tf.float64, [output_layer_size], "desired_output")
+desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desired_output")
 
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
 neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
@@ -109,7 +110,7 @@ def plot_first_hidden(weights):
 
     return fig
 
-output_folder = "weights_ca1d"
+output_folder = "mnist_ca1d_"+time.strftime("%Y%m%d-%H%M%S")
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
