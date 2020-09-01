@@ -19,7 +19,7 @@ input_esn = exp.add_input(tf.float64, [input_size], "input_esn")
 g_esn = exp.add_group_cells(name="g_esn", amount=width)
 g_esn_real = g_esn.add_real_state(state_name='g_esn_bin')
 
-# Generete custom connection matrix
+# Generate custom connection matrix
 conn_matrix = np.random.normal(loc=0.0, scale=0.4, size=(width, width))
 conn_matrix[np.round(conn_matrix) == 0.0] = 0.0
 

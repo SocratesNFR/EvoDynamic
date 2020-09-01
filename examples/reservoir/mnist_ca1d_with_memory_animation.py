@@ -97,7 +97,6 @@ def updatefig(*args):
 
     input_ca_np = x_train[idx_anim % memory_size,idx_anim // memory_size].reshape((-1,1))
     desired_output_np = y_train[:,idx_anim // memory_size].reshape((-1,1))
-#    print(exp.is_training_step(), idx_anim, idx_anim // memory_size, np.argmax(desired_output_np))
     feed_dict={input_ca: input_ca_np, desired_output: desired_output_np}
     exp.run_step(feed_dict=feed_dict)
 

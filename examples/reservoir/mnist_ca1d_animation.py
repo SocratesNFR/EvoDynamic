@@ -1,4 +1,4 @@
-""" Cellular automata 1D - Reservoir for MNIST digit classification """
+""" Cellular automata 1D - Animation of reservoir for MNIST digit classification """
 
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()

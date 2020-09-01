@@ -1,4 +1,7 @@
-""" Echo State Network - Reservoir for MNIST digit classification """
+"""
+Testing features and method for
+Echo State Network - Reservoir for MNIST digit classification
+"""
 
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
@@ -8,7 +11,7 @@ import evodynamic.connection.random as conn_random
 import evodynamic.connection as connection
 import evodynamic.connection.custom as conn_custom
 import evodynamic.cells.activation as act
-#import evodynamic.utils as utils
+import evodynamic.utils as utils
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
@@ -89,9 +92,6 @@ c_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
     labels=desired_output,
     axis=0))
 
-#c_loss = tf.losses.mean_squared_error(labels=desired_output,\
-#                                      predictions=exp.trainable_connections["output_conn"].output)
-
 exp.set_training(c_loss,0.03)
 
 # Monitors are needed because "reset_cells_after_train=True"
@@ -133,23 +133,18 @@ for epoch in range(epochs):
   for step, batch_idx in enumerate(batch_indices):
     input_esn_batch = x_train[:,batch_idx]
     desired_output_batch = y_train[:,batch_idx]
-    print(exp.step_counter, exp.is_input_step(), exp.is_training_step(), input_esn_batch.shape, desired_output_batch.shape)
     feed_dict = {input_esn: input_esn_batch, desired_output: desired_output_batch}
-    print("feed_dict", feed_dict)
     exp.run_step(feed_dict=feed_dict)
 
-    prediction_batch = exp.get_monitor("output_layer", "output_layer_real_state")[0,:,:]#exp.get_group_cells_state("output_layer", "output_layer_real_state")
+    prediction_batch = exp.get_monitor("output_layer", "output_layer_real_state")[0,:,:]
     accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size
-#    print(np.argmax(desired_output_batch, axis=0), desired_output_batch.shape)
-#    print(np.argmax(prediction_batch, axis=0), prediction_batch.shape)
     weight = exp.session.run(exp.connections["output_conn"].w)
-    print(step+1, exp.training_loss, accuracy_batch, np.min(weight), np.max(weight))
     fig = plot_first_hidden(np.transpose(weight))
     plt.savefig(output_folder+"\hidden_"+str(exp.step_counter).zfill(6)+'.png', bbox_inches='tight')
     plt.close(fig)
-    #utils.progressbar_loss_accu(step+1, num_batches-1, exp.training_loss, accuracy_batch)
     res_ca = exp.get_monitor("g_esn", "g_esn_real")[:,:,0]
-    print("MEMORY", np.min(res_ca), np.max(res_ca))
     fig = plt.figure()
     plt.imsave(output_folder+"\memory_"+str(exp.step_counter).zfill(6)+'.png', res_ca.reshape((28,28)))
     plt.close(fig)
+
+    utils.progressbar_loss_accu(step+1, num_batches-1, exp.training_loss, accuracy_batch)

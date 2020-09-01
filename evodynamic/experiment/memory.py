@@ -11,7 +11,6 @@ class Memory(object):
     self.experiment = experiment
     self.state = state
     self.state_shape = self.state.get_shape().as_list()
-    print(" self.state_shape", self.state_shape)
     self.memory_size = memory_size
     self.memory_shape = tuple([self.memory_size*self.state_shape[0]] +
                               list(np.array(self.state_shape)[1:]))
@@ -43,13 +42,3 @@ class Memory(object):
 
     state_memory_update_op = tf.assign(self.state_memory, concat_op)
     self.experiment.session.run(state_memory_update_op)
-
-#
-#  def update_state_memory_op(self):
-#      memory_shift_selection_op = tf.gather_nd(self.state_memory,self.selection_indices)
-#
-#      concat_op = tf.concat([memory_shift_selection_op, self.state], 0)
-#
-#      state_memory_update_op = tf.assign(self.state_memory, concat_op)
-#
-#      return [state_memory_update_op]

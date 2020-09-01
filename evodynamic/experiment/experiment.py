@@ -47,7 +47,6 @@ class Experiment(object):
     self.reset_memories_after_train = reset_memories_after_train
     self.next_step_after_train = False
     self.training_input = None
-#    self.training_input_placeholder = None
     self.training_output = {}
 
   def add_input(self, dtype, shape, name):
@@ -93,7 +92,6 @@ class Experiment(object):
 
   def add_connection(self, name, connection):
     connection.set_experiment(self)
-#    print("ADD CONNECTION", connection, connection.from_group, connection.to_group)
     self.connections[name] = connection
     self.connection_list.insert(0,connection)
     self.connection_ops.append(connection.list_ops)
@@ -106,13 +104,10 @@ class Experiment(object):
 
   def add_trainable_connection(self, name, connection):
     if self.training_input == None:
-#      self.training_input_placeholder = tf.placeholder(connection.from_group.dtype, shape=connection.from_group.shape)
       self.training_input = connection.from_group
-#      print("self.training_input = connection.from_group", connection, connection.from_group)
       connection.set_experiment(self, is_first_training_connection=True)
     else:
       connection.set_experiment(self, is_first_training_connection=False)
-#    print("ADD TRAINABLE CONNECTION", connection, connection.from_group, connection.to_group)
     self.trainable_connections[name] = connection
     self.connections[name] = connection
     self.connection_list.insert(0,connection)
@@ -206,13 +201,9 @@ class Experiment(object):
 
     experiment_feed_dict[self.has_input] = False
 
-    #print(experiment_feed_dict)
-
     if self.next_step_after_train and self.reset_cells_after_train:
-      print("RESET CELLS!!!!")
       self.reset_cell_states()
     if self.next_step_after_train and self.reset_memories_after_train:
-      print("RESET MEMORY!!!!")
       for memory_key in self.memories:
         self.memories[memory_key].reset()
 
@@ -228,13 +219,8 @@ class Experiment(object):
     for experiment_output_key in self.experiment_output:
       experiment_ops.append(self.experiment_output[experiment_output_key].assign_output)
 
-#    experiment_result = self.session.run(experiment_ops,feed_dict=experiment_feed_dict)
     self.session.run(experiment_ops,feed_dict=experiment_feed_dict)
 
-#    print("self.experiment_output", self.experiment_output)
-#    print("self.training_input", self.training_input, self.training_input_placeholder)
-#    print("self.training_output", self.training_output)
-#    print("experiment_result", experiment_result[-1].dtype)
     for memory_key in self.memories:
       self.memories[memory_key].update_state_memory()
 
@@ -243,20 +229,12 @@ class Experiment(object):
       for training_output_key in self.training_output:
         training_ops.append(self.training_output[training_output_key].assign_output)
       training_ops += self.train_ops + self.training_loss_op
-#      if self.training_input in self.experiment_output:
-#        training_feed_dict[self.training_input_placeholder] = experiment_result[-1]
-#      elif self.training_input in self.memory_ops:
-#        training_feed_dict[self.training_input_placeholder] = self.training_input#.get_state_memory()
-#      else:
-#        print("ERROR!! NO TRAINING INPUT", self.training_input, self.memories)
-#      print("experiment_feed_dict", experiment_feed_dict)
-#      print("training_feed_dict", training_feed_dict)
+
       training_result = self.session.run(training_ops,feed_dict=training_feed_dict)
       self.next_step_after_train = True
       self.training_tracker += 1
       if len(training_result) > 0:
         self.training_loss = training_result[-1]
-      print(self.step_counter, self.training_loss)
 
     for monitor_key in self.monitors:
       self.monitors[monitor_key].record()

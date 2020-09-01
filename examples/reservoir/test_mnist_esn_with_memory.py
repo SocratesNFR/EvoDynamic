@@ -1,4 +1,7 @@
-""" Echo State Network - Reservoir for MNIST digit classification """
+"""
+Testing features and method for
+Echo State Network - Reservoir for MNIST digit classification with memory
+"""
 
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
@@ -8,7 +11,7 @@ import evodynamic.connection.random as conn_random
 import evodynamic.connection as connection
 import evodynamic.connection.custom as conn_custom
 import evodynamic.cells.activation as act
-#import evodynamic.utils as utils
+import evodynamic.utils as utils
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
@@ -139,10 +142,9 @@ for epoch in range(epochs):
     input_esn_batch_2 = np.array(input_esn_batch)
 
     split_img_idx = width//2
-    input_esn_batch_1[split_img_idx:,:] = 0
-    input_esn_batch_2[:split_img_idx,:] = 0
+    input_esn_batch_1[:split_img_idx,:] = 0
+    input_esn_batch_2[split_img_idx:,:] = 0
 
-    #print(exp.step_counter, exp.is_input_step(), exp.is_training_step())
     feed_dict = {input_esn: input_esn_batch_2, desired_output: desired_output_batch}
     # Double run step
     exp.run_step(feed_dict=feed_dict)
@@ -154,7 +156,6 @@ for epoch in range(epochs):
     accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size
 
     weight = exp.session.run(exp.connections["output_conn"].w)
-    print(step+1, exp.training_loss, accuracy_batch, np.min(weight), np.max(weight))
     fig = plot_first_hidden(np.transpose(weight))
     plt.savefig(output_folder+"\hidden_"+str(exp.step_counter).zfill(6)+'.png', bbox_inches='tight')
     plt.close(fig)
@@ -168,4 +169,4 @@ for epoch in range(epochs):
     plt.imsave(output_folder+"\memory_"+str(exp.step_counter).zfill(6)+'.png', exp_memory.reshape((2*28,28)))
     plt.close(fig)
 
-    #utils.progressbar_loss_accu(step+1, num_batches-1, exp.training_loss, accuracy_batch)
+    utils.progressbar_loss_accu(step+1, num_batches-1, exp.training_loss, accuracy_batch)
