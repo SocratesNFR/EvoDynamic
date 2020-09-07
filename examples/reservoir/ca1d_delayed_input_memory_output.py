@@ -8,8 +8,6 @@ import evodynamic.connection.cellular_automata as ca
 import evodynamic.connection as connection
 import evodynamic.connection.random as randon_conn
 import evodynamic.cells.activation as act
-import os
-import time
 
 width = 100
 height_fig = 200
@@ -78,10 +76,6 @@ ax1.title.set_text("CA")
 ax2.title.set_text("Memory")
 ax3.title.set_text("Trained output")
 
-output_folder = "ca1d_delayed_input_memory_output_"+time.strftime("%Y%m%d-%H%M%S")
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
-
 def updatefig(*args):
     global idx_anim, im_ca, im_memory, im_output,im1,im2,im3
     idx_anim += 1
@@ -102,12 +96,6 @@ def updatefig(*args):
     im1.set_array(im_ca)
     im2.set_array(im_memory)
     im3.set_array(im_output)
-
-
-    weight = exp.session.run(exp.connections["output_conn"].w)
-    fig = plt.figure()
-    plt.imsave(output_folder+"\weight0_"+str(exp.step_counter).zfill(6)+'.png', weight[0].reshape((memory_size,output_layer_size)))
-    plt.close(fig)
 
     return im1,im2,im3
 

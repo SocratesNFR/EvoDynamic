@@ -12,10 +12,6 @@ import evodynamic.connection as connection
 import evodynamic.connection.custom as conn_custom
 import evodynamic.cells.activation as act
 import evodynamic.utils as utils
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import os
-import time
 
 mnist = tf.keras.datasets.mnist
 
@@ -106,31 +102,6 @@ exp.add_monitor("g_esn", "g_esn_real", timesteps=1)
 
 exp.initialize_cells()
 
-def plot_first_hidden(weights):
-    max_abs_val = max(abs(np.max(weights)), abs(np.min(weights)))
-    fig = plt.figure(figsize=(5, 2))
-    gs = gridspec.GridSpec(2, 5)
-    gs.update(wspace=0.1, hspace=0.1)
-
-    for i, weight in enumerate(np.transpose(weights)):
-        ax = plt.subplot(gs[i])
-        ax.set_xticklabels([])
-        ax.set_yticklabels([])
-        ax.set_aspect('equal')
-        im = plt.imshow(weight.reshape((2*28,28)), cmap="seismic_r", vmin=-max_abs_val, vmax=max_abs_val)
-
-    # Adding colorbar
-    # Based on: https://stackoverflow.com/questions/13784201/matplotlib-2-subplots-1-colorbar
-    fig.subplots_adjust(right=0.8)
-    cbar_ax = fig.add_axes([0.85, 0.15, 0.015, 0.7])
-    fig.colorbar(im, cax=cbar_ax, ticks=[-max_abs_val, 0, max_abs_val])
-
-    return fig
-
-output_folder = "test_mnist_esn_with_memory_"+time.strftime("%Y%m%d-%H%M%S")
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
-
 for epoch in range(epochs):
   print("Epoch:", epoch)
   shuffled_indices = np.random.permutation(x_train_num_images)
@@ -158,22 +129,7 @@ for epoch in range(epochs):
     prediction_batch = exp.get_monitor("output_layer", "output_layer_real_state")[0,:,:]
     accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size
 
-    weight = exp.session.run(exp.connections["output_conn"].w)
-    fig = plot_first_hidden(np.transpose(weight))
-    plt.savefig(output_folder+"\hidden_"+str(exp.step_counter).zfill(6)+'.png', bbox_inches='tight')
-    plt.close(fig)
-
-    fig = plt.figure()
-    plt.imsave(output_folder+"\esn_state_"+str(exp.step_counter).zfill(6)+'.png', res_ca.reshape((28,28)))
-    plt.close(fig)
-
-    exp_memory = exp.memories[g_esn_real].get_state_memory()[:,0]
-    fig = plt.figure()
-    plt.imsave(output_folder+"\memory_"+str(exp.step_counter).zfill(6)+'.png', exp_memory.reshape((2*28,28)))
-    plt.close(fig)
-
     utils.progressbar_loss_accu(step+1, num_batches, exp.training_loss, accuracy_batch)
-
 
   print("Testing...")
 
