@@ -23,6 +23,8 @@ mnist = tf.keras.datasets.mnist
 
 x_train_num_images = x_train.shape[0]
 x_train_image_shape = x_train.shape[1:3]
+x_test_num_images = x_test.shape[0]
+x_test_image_shape = x_test.shape[1:3]
 
 x_train = ((x_train / 255.0) > 0.5).astype(np.float64)
 x_train = x_train.reshape(x_train.shape[0],-1)
@@ -43,6 +45,7 @@ y_test = y_test_one_hot
 epochs = 10
 batch_size = 100
 num_batches =  int(np.ceil(x_train_num_images / batch_size))
+num_batches_test =  int(np.ceil(x_test_num_images / batch_size))
 width = 28*28
 input_size = 28*28
 output_layer_size = 10
@@ -169,4 +172,35 @@ for epoch in range(epochs):
     plt.imsave(output_folder+"\memory_"+str(exp.step_counter).zfill(6)+'.png', exp_memory.reshape((2*28,28)))
     plt.close(fig)
 
-    utils.progressbar_loss_accu(step+1, num_batches-1, exp.training_loss, accuracy_batch)
+    utils.progressbar_loss_accu(step+1, num_batches, exp.training_loss, accuracy_batch)
+
+
+  print("Testing...")
+
+  # Testing!
+  shuffled_indices_test = np.random.permutation(x_test_num_images)
+  batch_indices_test = np.split(shuffled_indices_test,\
+                           np.arange(batch_size,x_test_num_images,batch_size))
+  for step_test, batch_idx in enumerate(batch_indices_test):
+    input_esn_batch = x_test[:,batch_idx]
+
+    desired_output_batch = y_test[:,batch_idx]
+
+    input_esn_batch_1 = np.array(input_esn_batch)
+    input_esn_batch_2 = np.array(input_esn_batch)
+
+    split_img_idx = width//2
+    input_esn_batch_1[:split_img_idx,:] = 0
+    input_esn_batch_2[split_img_idx:,:] = 0
+
+    feed_dict = {input_esn: input_esn_batch_2, desired_output: desired_output_batch}
+    # Double run step
+    exp.run_step(feed_dict=feed_dict)
+
+    feed_dict = {input_esn: input_esn_batch_1, desired_output: desired_output_batch}
+    exp.run_step(feed_dict=feed_dict)
+    res_ca = exp.get_monitor("g_esn", "g_esn_real")[:,:,0]
+    prediction_batch = exp.get_monitor("output_layer", "output_layer_real_state")[0,:,:]
+    accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size
+
+    utils.progressbar_loss_accu(step_test+1, num_batches_test, exp.training_loss, accuracy_batch)

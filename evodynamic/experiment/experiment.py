@@ -167,16 +167,17 @@ class Experiment(object):
       self.run_step()
       utils.progressbar(step+1, timesteps-1)
 
-  def run_with_input_list(self, timesteps: int, feed_dict_list):
+  def run_with_input_list(self, timesteps: int, feed_dict_list, testing=False):
     feed_counter = 0
     for step in range(timesteps-1):
       if self.is_input_step() or self.is_training_step():
         feed_counter += 1
 
-      self.run_step(feed_dict=feed_dict_list[feed_counter])
+      self.run_step(feed_dict=feed_dict_list[feed_counter], testing=testing)
       utils.progressbar(step+1, timesteps-1)
 
-  def run_with_input_generator(self, timesteps: int, generator):
+  #TODO: Test this function
+  def run_with_input_generator(self, timesteps: int, generator, testing=False):
     for step in range(timesteps-1):
       if self.is_input_step() or self.is_training_step():
 
@@ -186,8 +187,7 @@ class Experiment(object):
         self.run_step()
       utils.progressbar(step+1, timesteps-1)
 
-
-  def run_step(self, feed_dict=None):
+  def run_step(self, feed_dict=None, testing=False):
     if not feed_dict:
       feed_dict = {}
 
@@ -228,7 +228,11 @@ class Experiment(object):
       training_ops = []
       for training_output_key in self.training_output:
         training_ops.append(self.training_output[training_output_key].assign_output)
-      training_ops += self.train_ops + self.training_loss_op
+
+      if testing:
+        training_ops += self.training_loss_op
+      else:
+        training_ops += self.train_ops + self.training_loss_op
 
       training_result = self.session.run(training_ops,feed_dict=training_feed_dict)
       self.next_step_after_train = True
