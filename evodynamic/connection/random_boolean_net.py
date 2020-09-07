@@ -1,6 +1,7 @@
 """ Connections for random Boolean network """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 import random
 
@@ -17,8 +18,6 @@ def create_conn_matrix(name, width, n_neighbors=3, n_states=2, is_sparse = True)
       for idx, k in enumerate(random.sample(range(width), n_neighbors)):
         indices.append([i,k])
         values.append(pattern_neighbors[idx])
-    #print(indices)
-    #print(values)
     initial = tf.cast(tf.SparseTensor(indices=indices, values=values,\
                                       dense_shape=[nodes, nodes]), tf.float64)
   else:

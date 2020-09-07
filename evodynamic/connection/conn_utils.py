@@ -1,6 +1,7 @@
 """ Connection utils """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 
 def weight_variable(shape, stddev=0.02, name=None):
@@ -13,6 +14,6 @@ def weight_variable(shape, stddev=0.02, name=None):
 
 def weight_variable_xavier_initialized(shape, name=None):
   # https://github.com/wiseodd/generative-models/blob/master/GAN/vanilla_gan/gan_tensorflow.py
-  in_dim = shape[0]
+  in_dim = shape[1]
   xavier_stddev = 1. / np.sqrt(in_dim / 2.)
   return weight_variable(shape, stddev=xavier_stddev, name=name)

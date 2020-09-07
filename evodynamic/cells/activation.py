@@ -1,6 +1,7 @@
 """ Activation functions for Cells """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 def game_of_life_func(count_neighbors, previous_state):
   born_cells_op = tf.equal(count_neighbors, 3)
@@ -140,6 +141,9 @@ def rule_binary_sca_1d_width3_func(pattern, previous_state, prob_list):
 
 def sigmoid(x, args):
   return tf.sigmoid(x)
+
+def relu(x, args):
+  return tf.nn.relu(x)
 
 def stochastic_sigmoid(x, args):
   shape_x = tf.shape(x)

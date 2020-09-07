@@ -44,7 +44,7 @@ def evaluate_genome(genome=[110], show_result = False):
   exp.run(timesteps=timesteps)
   print("Execution time:", time.time()-start)
   exp.close()
-  fitness, val_dict = evaluate_result(exp.get_monitor("g_ca", "g_ca_bin"))
+  fitness, val_dict = evaluate_result(exp.get_monitor("g_ca", "g_ca_bin")[:,:,0])
 
   return fitness, val_dict
 

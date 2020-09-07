@@ -1,6 +1,7 @@
 """ Stochastic Cellular automata 1D with input - animation """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import evodynamic.experiment as experiment
 import evodynamic.connection.cellular_automata as ca
 import evodynamic.cells.activation as act
@@ -48,11 +49,11 @@ exp.add_monitor("g_ca", "g_ca_bin")
 exp.initialize_cells()
 
 def input_generator(step):
-  return {input_ca: np.zeros((input_size,)) if ((step // 10) % 2 == 0) else np.ones((input_size,))}
+  return {input_ca: np.zeros((input_size,1)) if ((step // 10) % 2 == 0) else np.ones((input_size,1))}
 
 exp.run_with_input_generator(timesteps, input_generator)
 
 ca_result = exp.get_monitor("g_ca", "g_ca_bin")
 
-plt.imshow(ca_result)
+plt.imshow(ca_result[:,:,0].reshape((timesteps,width)))
 plt.show()

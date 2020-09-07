@@ -15,29 +15,30 @@ class Monitor(object):
     self.state_name = state_name
     self.state = experiment.cell_groups[group_cells_name].states[state_name]
     self.group_cells_size = experiment.cell_groups[group_cells_name].amount
+    self.batch_size = experiment.batch_size
     self.timesteps = duration
     self.timestep_record = 0
     self.state_record = None
 
   def initialize(self):
     if self.timesteps is None:
-      self.state_record = self.experiment.session.run(self.state)
+      self.state_record = np.expand_dims(self.experiment.session.run(self.state), 0)
     else:
-      self.state_record = np.zeros((self.timesteps, self.group_cells_size))
+      self.state_record = np.zeros((self.timesteps, self.group_cells_size, self.batch_size))
       self.state_record[0] = self.experiment.session.run(self.state)
       self.timestep_record = 1
 
   def record(self):
     if self.timesteps is None:
       self.state_record = np.vstack((self.state_record,\
-                                     self.experiment.session.run(self.state)))
+                                     np.expand_dims(self.experiment.session.run(self.state),0)))
     else:
       if self.timestep_record < self.timesteps:
         self.state_record[self.timestep_record] =\
           self.experiment.session.run(self.state)
       else:
         self.state_record = np.vstack((self.state_record[1:],\
-                                     self.experiment.session.run(self.state)))
+                                     np.expand_dims(self.experiment.session.run(self.state),0)))
 
       self.timestep_record = self.timestep_record+1
 

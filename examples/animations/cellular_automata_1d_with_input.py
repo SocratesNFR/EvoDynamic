@@ -1,6 +1,7 @@
 """ Cellular automata 1D with input - animation """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import evodynamic.experiment as experiment
 import evodynamic.connection.cellular_automata as ca
 import evodynamic.cells.activation as act
@@ -21,7 +22,7 @@ g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx)
 
-fargs_list = [(a,) for a in [30]]
+fargs_list = [(a,) for a in [170]]
 
 exp.add_connection("input_conn", connection.IndexConnection(input_ca,g_ca_bin,
                                                             np.arange(input_size)))
@@ -41,7 +42,7 @@ fig = plt.figure()
 
 idx_anim = 0
 im_ca = np.zeros((height_fig,width))
-im_ca[0] = exp.get_group_cells_state("g_ca", "g_ca_bin")
+im_ca[0] = exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0]
 
 im = plt.imshow(im_ca, animated=True)
 
@@ -51,13 +52,13 @@ def updatefig(*args):
     global idx_anim, im_ca
     idx_anim += 1
 
-    exp.run_step(feed_dict={input_ca: np.ones((input_size,))})
+    exp.run_step(feed_dict={input_ca: np.ones((input_size,1))})
 
     if idx_anim < height_fig:
-      im_ca[idx_anim] = exp.get_group_cells_state("g_ca", "g_ca_bin")
+      im_ca[idx_anim] = exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0]
       im.set_array(im_ca)
     else:
-      im_ca = np.vstack((im_ca[1:], exp.get_group_cells_state("g_ca", "g_ca_bin")))
+      im_ca = np.vstack((im_ca[1:], exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0]))
       im.set_array(im_ca)
 
     plt.title('Step: '+str(idx_anim+1))

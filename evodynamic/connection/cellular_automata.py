@@ -1,6 +1,7 @@
 """ Connections for cellular automata """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 
 def create_count_neighbors_ca1d(width):

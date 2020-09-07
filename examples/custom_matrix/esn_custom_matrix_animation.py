@@ -1,12 +1,12 @@
 """ Simple animation of Echo State Network with custom connection matrix"""
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 import evodynamic.experiment as experiment
 import evodynamic.connection.custom as conn_custom
 import evodynamic.connection as connection
 import evodynamic.cells.activation as act
-import evodynamic.cells as cells
 import networkx as nx
 
 width = 100
@@ -16,10 +16,10 @@ exp = experiment.Experiment()
 
 input_esn = exp.add_input(tf.float64, [input_size], "input_esn")
 
-g_esn = exp.add_cells(name="g_esn", g_cells=cells.Cells(width))
+g_esn = exp.add_group_cells(name="g_esn", amount=width)
 g_esn_real = g_esn.add_real_state(state_name='g_esn_bin')
 
-# Generete custom connection matrix
+# Generate custom connection matrix
 conn_matrix = np.random.normal(loc=0.0, scale=0.4, size=(width, width))
 conn_matrix[np.round(conn_matrix) == 0.0] = 0.0
 
@@ -63,7 +63,7 @@ import matplotlib.animation as animation
 fig, ax = plt.subplots()
 
 plt.title('Step: 0')
-current_state = exp.get_group_cells_state("g_esn", "g_esn_bin")
+current_state = exp.get_group_cells_state("g_esn", "g_esn_bin")[:,0]
 
 node_color = [round(current_state[node],2) for node in G]
 
@@ -77,9 +77,9 @@ def updatefig(*args):
 
   ax.clear()
 
-  exp.run_step(feed_dict={input_esn: np.random.randint(2, size=(input_size,))})
+  exp.run_step(feed_dict={input_esn: np.random.randint(2, size=(input_size,1))})
 
-  current_state = exp.get_group_cells_state("g_esn", "g_esn_bin")
+  current_state = exp.get_group_cells_state("g_esn", "g_esn_bin")[:,0]
 
   node_color = [round(current_state[node],2) for node in G]
   nx.draw(G.reverse(), node_color = node_color, pos=pos_new, cmap=plt.cm.jet,
