@@ -31,3 +31,8 @@ If you use EvoDynamic for academic research, please cite the following [paper](h
   publisher={Springer}
 }
 ```
+
+## Other EvoDynamic papers
+
+* [Pontes-Filho, Sidney, et al. "EvoDynamic: A Framework for the Evolution of Generally Represented Dynamical Systems and Its Application to Criticality." International Conference on the Applications of Evolutionary Computation (Part of EvoStar). Springer, Cham, 2020.](https://link.springer.com/chapter/10.1007/978-3-030-43722-0_9)
+* [Pontes-Filho, Sidney, et al. "A general representation of dynamical systems for reservoir computing." arXiv preprint arXiv:1907.01856 (2019).](https://arxiv.org/abs/1907.01856)
