@@ -39,7 +39,7 @@ class Cells(object):
     elif init == "reversecentral":
       initial = np.ones(self.amount_with_batch).astype(np.float64)
       initial[int(self.amount//2),:] = 0
-    else:
+    else: # Manual initialization with list or numpy array
       init = np.array(init)
       virtual_shape_list = list(self.virtual_shape)
       virtual_shape_list.insert(1,self.batch_size)

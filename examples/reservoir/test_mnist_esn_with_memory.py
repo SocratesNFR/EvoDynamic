@@ -151,10 +151,10 @@ for epoch in range(epochs):
 
     feed_dict = {input_esn: input_esn_batch_2, desired_output: desired_output_batch}
     # Double run step
-    exp.run_step(feed_dict=feed_dict)
+    exp.run_step(feed_dict=feed_dict, testing = True)
 
     feed_dict = {input_esn: input_esn_batch_1, desired_output: desired_output_batch}
-    exp.run_step(feed_dict=feed_dict)
+    exp.run_step(feed_dict=feed_dict, testing = True)
     res_ca = exp.get_monitor("g_esn", "g_esn_real")[:,:,0]
     prediction_batch = exp.get_monitor("output_layer", "output_layer_real_state")[0,:,:]
     accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size

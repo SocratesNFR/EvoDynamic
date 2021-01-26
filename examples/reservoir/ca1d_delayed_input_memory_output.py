@@ -21,8 +21,8 @@ input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
 desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desired_output")
 
 g_ca = exp.add_group_cells(name="g_ca", amount=width)
-neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
 g_ca_bin = g_ca.add_binary_state(state_name='g_ca_bin', init="zeros")
+neighbors, center_idx = ca.create_pattern_neighbors_ca1d(3)
 g_ca_bin_conn = ca.create_conn_matrix_ca1d('g_ca_bin_conn',width,\
                                            neighbors=neighbors,\
                                            center_idx=center_idx)
@@ -81,7 +81,7 @@ def updatefig(*args):
     idx_anim += 1
 
     input_ca_np = np.zeros((input_size,1)) if ((idx_anim // 10) % 2 == 0) else np.ones((input_size,1))
-    desired_output_np = np.zeros((output_layer_size,1)) if (idx_anim//10) % 2 == 2 else np.ones((output_layer_size,1))
+    desired_output_np = np.ones((output_layer_size,1))
     feed_dict={input_ca: input_ca_np, desired_output: desired_output_np}
     exp.run_step(feed_dict=feed_dict)
 
