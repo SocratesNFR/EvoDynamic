@@ -260,3 +260,21 @@ def rule_binary_soc_sca_1d_width3_func(pattern, previous_state, prob_list):
                                                0.5), tf.float64)
 
   return tf.cond(tf.equal(tf.reduce_mean(previous_state), 1.0), lambda: new_state_op, lambda: update_7_op)
+
+
+def integrate_and_fire(potential_change, spike_in, potential, threshold, potential_decay):
+  shape_potential = tf.shape(potential)
+  potential_update_op_1 = tf.add(potential, potential_change)
+  has_spike_op = tf.greater(potential_update_op_1, threshold)
+
+  potential_update_op_2 = tf.where(has_spike_op,
+                                   tf.zeros(shape_potential, dtype=tf.float64),
+                                   tf.subtract(potential_update_op_1, tf.multiply(potential_update_op_1, potential_decay)))
+
+  potential_update_op_3 = tf.assign(potential, potential_update_op_2)
+  return tf.cast(tf.logical_and(tf.equal(potential_update_op_3, 0), has_spike_op), tf.float64)
+
+
+
+
+

@@ -156,3 +156,4 @@ examples/*/*
 !examples/evolve_criticality/*.py
 !examples/evolution/*.py
 !examples/simulation_plot/*.py
+!examples/spiking_net/*.py
