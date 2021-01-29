@@ -71,16 +71,16 @@ class Experiment(object):
     return g_cells
 
   def update_experiment_output(self, new_connection):
-    if new_connection.from_group in self.experiment_output and\
-      new_connection.to_group not in self.experiment_output:
-      del self.experiment_output[new_connection.from_group]
-    self.experiment_output[new_connection.to_group] = new_connection
+    if new_connection.from_group_state in self.experiment_output and\
+      new_connection.to_group_state not in self.experiment_output:
+      del self.experiment_output[new_connection.from_group_state]
+    self.experiment_output[new_connection.to_group_state] = new_connection
 
   def update_training_output(self, new_connection):
-    if new_connection.from_group in self.training_output and\
-      new_connection.to_group not in self.training_output:
-      del self.training_output[new_connection.from_group]
-    self.training_output[new_connection.to_group] = new_connection
+    if new_connection.from_group_state in self.training_output and\
+      new_connection.to_group_state not in self.training_output:
+      del self.training_output[new_connection.from_group_state]
+    self.training_output[new_connection.to_group_state] = new_connection
 
 
   def add_state_memory(self, state, memory_size):
@@ -96,7 +96,7 @@ class Experiment(object):
     self.connection_list.insert(0,connection)
     self.connection_ops.append(connection.list_ops)
     self.update_experiment_output(connection)
-    if connection.from_group.name.split(":")[0] in self.input_name_list: # if input
+    if connection.from_group_state.name.split(":")[0] in self.input_name_list: # if input
       self.input_ops.append(connection.list_ops)
     else:
       self.connection_ops.append(connection.list_ops)
@@ -104,7 +104,7 @@ class Experiment(object):
 
   def add_trainable_connection(self, name, connection):
     if self.training_input == None:
-      self.training_input = connection.from_group
+      self.training_input = connection.from_group_state
       connection.set_experiment(self, is_first_training_connection=True)
     else:
       connection.set_experiment(self, is_first_training_connection=False)
@@ -114,7 +114,7 @@ class Experiment(object):
     self.connection_ops.append(connection.list_ops)
     self.update_training_output(connection)
 
-    if connection.from_group.name.split(":")[0] in self.input_name_list: # if input
+    if connection.from_group_state.name.split(":")[0] in self.input_name_list: # if input
       self.input_ops.append(connection.list_ops)
     else:
       self.connection_ops.append(connection.list_ops)
