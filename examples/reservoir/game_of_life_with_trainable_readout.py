@@ -26,7 +26,7 @@ g_ca_bin_conn = ca.create_conn_matrix_ca2d('g_ca_bin_conn',width,height,\
                                            center_idx=center_idx)
 
 output_layer = exp.add_group_cells(name="output_layer", amount=height)
-output_layer_real_state = output_layer.add_real_state(state_name='output_layer_real_state', stddev=0)
+output_layer_real_state = output_layer.add_real_state(state_name='output_layer_real_state')
 
 ca_output_conn = randon_conn.create_xavier_connection("ca_output_conn", width*height, height)
 

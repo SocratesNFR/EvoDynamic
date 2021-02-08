@@ -9,10 +9,8 @@ import evodynamic.connection as connection
 import evodynamic.cells.activation as act
 import networkx as nx
 
-width = 100
-input_size = width // 10
-threshold = 1.0
-potential_decay = 0.01
+width = 10
+input_size = 2
 
 
 a, b, c, d = 0.02, 0.20, -65.0, 8.00
@@ -67,7 +65,7 @@ node_color = [round(current_spike[node],2) for node in G]
 nx.draw(G.reverse(), node_color = node_color, pos=pos_fixed, cmap=plt.cm.jet,
         connectionstyle="arc3, rad=0.1", ax=axs[0])
 
-idx_plot_neuron = 50
+idx_plot_neuron = 0
 plot_width = 200
 x_values = np.array([0])
 mem_values = np.array([round(current_mem[idx_plot_neuron],2)])

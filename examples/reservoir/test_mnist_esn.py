@@ -74,7 +74,7 @@ exp.add_connection("g_esn_conn",
                                                  g_esn_real_conn))
 
 output_layer =  exp.add_group_cells(name="output_layer", amount=output_layer_size)
-output_layer_real_state = output_layer.add_real_state(state_name='output_layer_real_state', stddev=0)
+output_layer_real_state = output_layer.add_real_state(state_name='output_layer_real_state')
 
 esn_output_conn = conn_random.create_xavier_connection("esn_output_conn", width, output_layer_size)
 exp.add_trainable_connection("output_conn",

@@ -55,7 +55,7 @@ exp.add_connection("g_ca_conn",
                                                  g_ca_bin_conn, fargs_list=fargs_list))
 
 output_layer = exp.add_group_cells(name="output_layer", amount=output_layer_size)
-output_layer_real_state = output_layer.add_real_state(state_name='output_layer_real_state', stddev=0)
+output_layer_real_state = output_layer.add_real_state(state_name='output_layer_real_state')
 
 ca_output_conn = randon_conn.create_xavier_connection("ca_output_conn", width, output_layer_size)
 exp.add_trainable_connection("output_conn",

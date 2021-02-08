@@ -62,10 +62,32 @@ class Cells(object):
     self.states[state_name] = var
     return var
 
-  def add_real_state(self, state_name, stddev = .1):
-    initial = tf.truncated_normal(self.amount_with_batch, stddev=stddev,
-                                  dtype=tf.dtypes.float64)
-    var = tf.get_variable(state_name, initializer=initial)
+  def add_real_state(self, state_name,
+                     init_normal: Optional[Tuple[float, float]]=None,
+                     init_truncnorm: Optional[Tuple[float, float]]=None,
+                     init_full: Optional[float]=None):
+    if init_normal and not init_truncnorm and not init_full:
+      initial = tf.random_normal(self.amount_with_batch, mean=init_normal[0],
+                                 stddev=init_normal[1],
+                                 dtype=tf.dtypes.float64)
+      var = tf.get_variable(state_name, initializer=initial)
+    elif init_truncnorm and not init_normal and not init_full:
+      initial = tf.truncated_normal(self.amount_with_batch,
+                                    mean=init_truncnorm[0],
+                                    stddev=init_truncnorm[1],
+                                    dtype=tf.dtypes.float64)
+      var = tf.get_variable(state_name, initializer=initial)
+    elif init_full and not init_normal and not init_truncnorm:
+      initial = np.full(self.amount_with_batch, init_full).astype(np.float64)
+      var = tf.get_variable(state_name, initializer=initial)
+    elif not init_normal and not init_truncnorm and not init_full:
+      initial = np.zeros(self.amount_with_batch).astype(np.float64)
+      var = tf.get_variable(state_name, initializer=initial)
+    else:
+      print("Warning: In 'add_real_state', you cannot have more than one initializer: 'init_normal', 'init_truncnorm' and 'init_full'.")
+      initial = np.zeros(self.amount_with_batch).astype(np.float64)
+      var = tf.get_variable(state_name, initializer=initial)
+
     self.states[state_name] = var
     return var
 

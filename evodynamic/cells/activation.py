@@ -272,28 +272,39 @@ def integrate_and_fire(potential_change, spike_in, potential, threshold, potenti
                                    tf.subtract(potential_update_op_1, tf.multiply(potential_update_op_1, potential_decay)))
 
   potential_update_op_3 = tf.assign(potential, potential_update_op_2)
-  return tf.cast(tf.logical_and(tf.equal(potential_update_op_3, 0), has_spike_op), tf.float64)
+  return tf.cast(has_spike_op, tf.float64) + (0*potential_update_op_3)
 
 
 def izhikevich(potential_change, spike_in, potential, recovery, a, b, c, d):
   shape_potential = tf.shape(potential)
-  potential_update_op_1 = 0.04*tf.pow(potential, 2) + 5*potential + 140 - recovery + 0.0*potential_change
-  recovery_update_op_1 = a*(b*potential - recovery)
-  has_spike_op = tf.greater(potential_update_op_1, 30)
+  #potential_update_op_1 = 0.04*tf.pow(potential, 2) + 5*potential + 140 - recovery + potential_change
+  #potential_update_op_1 = tf.add(tf.subtract(tf.add(tf.add(tf.multiply(0.04, tf.pow(potential, 2.0)), tf.multiply(5.0,potential)), 140.0), recovery), potential_change)
+  potential_update_op_1 = tf.pow(potential, 2.0)
+  potential_update_op_1 = tf.multiply(potential_update_op_1, 0.04)
+  potential_update_op_1 = tf.add(potential_update_op_1, tf.multiply(potential, 5.0))
+  potential_update_op_1 = tf.add(potential_update_op_1, 140.0)
+  potential_update_op_1 = tf.subtract(potential_update_op_1, recovery)
+  potential_update_op_1 = tf.add(potential_update_op_1, potential_change)
+
+  #recovery_update_op_1 = a*(b*potential - recovery)
+  #recovery_update_op_1 = tf.multiply(a, tf.subtract(tf.multiply(b,potential), recovery))
+  recovery_update_op_1 = tf.multiply(potential, b)
+  recovery_update_op_1 = tf.subtract(recovery_update_op_1, recovery)
+  recovery_update_op_1 = tf.multiply(recovery_update_op_1, a)
+
+  has_spike_op = tf.greater(potential_update_op_1, 30.0)
 
   potential_update_op_2 = tf.where(has_spike_op,
                                    tf.cast(tf.fill(shape_potential, c), tf.float64),
                                    potential_update_op_1)
 
   recovery_update_op_2 = tf.where(has_spike_op,
-                                   tf.add(recovery_update_op_1, d),
+                                   tf.add(recovery, d),
                                    recovery_update_op_1)
 
   potential_update_op_3 = tf.assign(potential, potential_update_op_2)
   recovery_update_op_3 = tf.assign(recovery, recovery_update_op_2)
-  workaround_assign_1 = tf.equal(potential_update_op_3, potential_update_op_3)
-  workaround_assign_2 = tf.equal(recovery_update_op_3, recovery_update_op_3)
-  return tf.cast(tf.logical_and(tf.logical_and(workaround_assign_1, workaround_assign_2), has_spike_op), tf.float64)
+  return tf.cast(has_spike_op, tf.float64) + (0*potential_update_op_3) + (0*recovery_update_op_3)
 
 
 

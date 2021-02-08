@@ -32,7 +32,7 @@ g_ca_selected_bin = g_ca_selected.add_binary_state(state_name='g_ca_selected_bin
 g_ca_memory = exp.add_state_memory(g_ca_selected_bin,5)
 
 output_layer = exp.add_group_cells(name="output_layer", amount=height)
-output_layer_real_state = output_layer.add_real_state(state_name='output_layer_real_state', stddev=0)
+output_layer_real_state = output_layer.add_real_state(state_name='output_layer_real_state')
 
 ca_output_conn = randon_conn.create_xavier_connection("ca_output_conn", 5*(width*height//2), height)
 

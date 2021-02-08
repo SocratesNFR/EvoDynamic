@@ -19,7 +19,7 @@ exp = experiment.Experiment()
 input_lsm = exp.add_input(tf.float64, [input_size], "input_lsm")
 
 g_lsm = exp.add_group_cells(name="g_lsm", amount=width)
-g_lsm_mem = g_lsm.add_real_state(state_name='g_lsm_mem', stddev = 0)
+g_lsm_mem = g_lsm.add_real_state(state_name='g_lsm_mem')
 g_lsm_spike = g_lsm.add_binary_state(state_name='g_lsm_spike', init ='zeros')
 g_lsm_conn = conn_random.create_gaussian_matrix('g_lsm_conn',width, sparsity=0.95, is_sparse=True)
 # create_uniform_connection(name, from_group_amount, to_group_amount, sparsity=None, is_sparse=False)
