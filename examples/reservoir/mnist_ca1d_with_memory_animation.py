@@ -75,11 +75,16 @@ exp.initialize_cells()
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-fig, (ax1, ax2, ax3) = plt.subplots(1,3)
+f = "mnist_ca1d_with_memory_animation.mp4"
+writervideo = animation.FFMpegWriter(fps=60)
+
+
+fig, (ax1, ax2, ax3) = plt.subplots(1,3, figsize=(12,12))
 
 idx_anim = 0
 
-im_mnist = x_train[:,0].reshape(x_train_image_shape)
+#im_mnist = x_train[:,0].reshape(x_train_image_shape)
+im_mnist = x_train[:,1].reshape(x_train_image_shape)
 im_memory = exp.memories[g_ca_bin].get_state_memory()[:,0].reshape((memory_size, width))
 im_output = exp.get_group_cells_state("output_layer", "output_layer_real_state")[:,0].reshape((-1,1))
 
@@ -88,22 +93,34 @@ im2 = ax2.imshow(im_memory, vmin=0, vmax=1, animated=True)
 im3 = ax3.imshow(im_output, vmin=0, vmax=1, animated=True)
 
 ax1.title.set_text("Input image")
-ax2.title.set_text("CA")
+ax2.title.set_text("CA Memory")
 ax3.title.set_text("Trained output")
 
 def updatefig(*args):
     global idx_anim, im_mnist, im_memory, im_output,im1,im2,im3
     idx_anim += 1
 
-    input_ca_np = x_train[idx_anim % memory_size,idx_anim // memory_size].reshape((-1,1))
-    desired_output_np = y_train[:,idx_anim // memory_size].reshape((-1,1))
+    #input_ca_np = x_train[idx_anim % memory_size,idx_anim // memory_size].reshape((-1,1))
+    #desired_output_np = y_train[:,idx_anim // memory_size].reshape((-1,1))
+
+    input_ca_np = x_train[idx_anim % memory_size, 1].reshape((-1,1))
+    desired_output_np = y_train[:, 1].reshape((-1,1))
+
     feed_dict={input_ca: input_ca_np, desired_output: desired_output_np}
     exp.run_step(feed_dict=feed_dict)
 
-    if idx_anim % memory_size == 0:
-      im_mnist = x_train[:,idx_anim//memory_size].reshape(x_train_image_shape)
+#    if idx_anim % memory_size == 0:
+#      im_mnist = x_train[:,idx_anim//memory_size].reshape(x_train_image_shape)
 
-    im_memory = exp.memories[g_ca_bin].get_state_memory()[:,0].reshape((memory_size, width))
+
+    #im_memory = exp.memories[g_ca_bin].get_state_memory()[:,0].reshape((memory_size, width))
+
+    im_memory_part = exp.memories[g_ca_bin].get_state_memory()[:,0].reshape((memory_size, width))[-1,:]
+    im_memory[idx_anim % memory_size] = im_memory_part
+    if idx_anim % memory_size == 0:
+        im_memory = np.zeros((memory_size, width))
+
+
     im_output = exp.get_group_cells_state("output_layer", "output_layer_real_state")[:,0].reshape((-1,1))
 
     im1.set_array(im_mnist)
@@ -112,8 +129,10 @@ def updatefig(*args):
 
     return im1,im2,im3
 
-ani = animation.FuncAnimation(fig, updatefig, interval=1, blit=False)
+ani = animation.FuncAnimation(fig, updatefig, interval=1, blit=False, save_count=(3*28*28)+1)
 
-plt.show()
+#plt.show()
+#plt.connect('close_event', exp.close())
 
-plt.connect('close_event', exp.close())
+ani.save(f, writer=writervideo)
+exp.close()

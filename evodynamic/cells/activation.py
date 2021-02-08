@@ -277,12 +277,12 @@ def integrate_and_fire(potential_change, spike_in, potential, threshold, potenti
 
 def izhikevich(potential_change, spike_in, potential, recovery, a, b, c, d):
   shape_potential = tf.shape(potential)
-  potential_update_op_1 = 0.04*tf.pow(potential, 2) + 5*potential + 140 - recovery + potential_change
+  potential_update_op_1 = 0.04*tf.pow(potential, 2) + 5*potential + 140 - recovery + 0.0*potential_change
   recovery_update_op_1 = a*(b*potential - recovery)
   has_spike_op = tf.greater(potential_update_op_1, 30)
 
   potential_update_op_2 = tf.where(has_spike_op,
-                                   tf.fill(shape_potential, c, dtype=tf.float64),
+                                   tf.cast(tf.fill(shape_potential, c), tf.float64),
                                    potential_update_op_1)
 
   recovery_update_op_2 = tf.where(has_spike_op,
@@ -294,6 +294,7 @@ def izhikevich(potential_change, spike_in, potential, recovery, a, b, c, d):
   workaround_assign_1 = tf.equal(potential_update_op_3, potential_update_op_3)
   workaround_assign_2 = tf.equal(recovery_update_op_3, recovery_update_op_3)
   return tf.cast(tf.logical_and(tf.logical_and(workaround_assign_1, workaround_assign_2), has_spike_op), tf.float64)
+
 
 
 

@@ -14,29 +14,34 @@ input_size = width // 10
 threshold = 1.0
 potential_decay = 0.01
 
+
+a, b, c, d = 0.02, 0.20, -65.0, 8.00
+
 exp = experiment.Experiment()
 
 input_lsm = exp.add_input(tf.float64, [input_size], "input_lsm")
 
 g_lsm = exp.add_group_cells(name="g_lsm", amount=width)
-g_lsm_mem = g_lsm.add_real_state(state_name='g_lsm_mem', stddev = 0)
+g_lsm_mem = g_lsm.add_real_state(state_name='g_lsm_mem', stddev = 0.2)
+g_lsm_rec = g_lsm.add_real_state(state_name='g_lsm_rec', stddev = 0.2)
 g_lsm_spike = g_lsm.add_binary_state(state_name='g_lsm_spike', init ='zeros')
 g_lsm_conn = conn_random.create_gaussian_matrix('g_lsm_conn',width, sparsity=0.95, is_sparse=True)
 # create_uniform_connection(name, from_group_amount, to_group_amount, sparsity=None, is_sparse=False)
 g_lsm_input_conn = conn_random.create_uniform_connection('g_lsm_input_conn', input_size, width, sparsity=0.9)
 
 
+#izhikevich(potential_change, spike_in, potential, recovery, a, b, c, d)
 
 exp.add_connection("input_conn", connection.WeightedConnection(input_lsm,
-                                                              g_lsm_spike, act.integrate_and_fire,
+                                                              g_lsm_spike, act.izhikevich,
                                                               g_lsm_input_conn,
-                                                              fargs_list=[(g_lsm_mem,threshold,potential_decay)]))
+                                                              fargs_list=[(g_lsm_mem,g_lsm_rec,a, b, c, d)]))
 
 exp.add_connection("g_lsm_conn",
                    connection.WeightedConnection(g_lsm_spike,
-                                                 g_lsm_spike, act.integrate_and_fire,
+                                                 g_lsm_spike, act.izhikevich,
                                                  g_lsm_conn,
-                                                 fargs_list=[(g_lsm_mem,threshold,potential_decay)]))
+                                                 fargs_list=[(g_lsm_mem,g_lsm_rec,a, b, c, d)]))
 
 exp.initialize_cells()
 
@@ -45,7 +50,7 @@ weight_matrix = exp.session.run(exp.get_connection("g_lsm_conn").w)
 G = nx.DiGraph()
 G.add_edges_from(weight_matrix[0])
 
-pos_fixed = nx.circular_layout(G)
+pos_fixed = nx.spring_layout(G)
 
 # Animation
 import matplotlib.pyplot as plt
@@ -72,7 +77,7 @@ axs_1, = axs[1].plot(x_values, mem_values)
 axs_2 = axs[2].scatter(scatter_values, spike_values)
 
 xmin, xmax = np.min(x_values), np.min(x_values)+plot_width
-ymin, ymax = -2.0, 2.0
+ymin, ymax = -200.0, 200.0
 axs[1].set(xlim=(xmin, xmax), ylim=(ymin, ymax))
 axs[2].set(xlim=(xmin, xmax), ylim=(0, width))
 
