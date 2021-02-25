@@ -74,7 +74,7 @@ axs_2 = axs[2].scatter(scatter_values, spike_values)
 xmin, xmax = np.min(x_values), np.min(x_values)+plot_width
 ymin, ymax = -2.0, 2.0
 axs[1].set(xlim=(xmin, xmax), ylim=(ymin, ymax))
-axs[2].set(xlim=(xmin, xmax), ylim=(0, width))
+axs[2].set(xlim=(xmin, xmax), ylim=(-1, width))
 
 idx_anim = 0
 

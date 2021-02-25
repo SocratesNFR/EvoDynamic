@@ -11,23 +11,21 @@ import networkx as nx
 
 width = 100
 input_size = width // 10
-threshold = 1.0
-potential_decay = 0.01
-
 
 a, b, c, d = 0.02, 0.20, -65.0, 8.00
+dt = 0.5
 
 exp = experiment.Experiment()
 
 input_lsm = exp.add_input(tf.float64, [input_size], "input_lsm")
 
 g_lsm = exp.add_group_cells(name="g_lsm", amount=width)
-g_lsm_mem = g_lsm.add_real_state(state_name='g_lsm_mem', init_full = 0.0)
-g_lsm_rec = g_lsm.add_real_state(state_name='g_lsm_rec', init_full = 140.0)
+g_lsm_mem = g_lsm.add_real_state(state_name='g_lsm_mem', init_full = c)
+g_lsm_rec = g_lsm.add_real_state(state_name='g_lsm_rec', init_full = b*c)
 g_lsm_spike = g_lsm.add_binary_state(state_name='g_lsm_spike', init ='zeros')
-g_lsm_conn = conn_random.create_gaussian_matrix('g_lsm_conn',width, sparsity=0.95, is_sparse=True)
+g_lsm_conn = conn_random.create_gaussian_matrix('g_lsm_conn', width, mean=10.0, std=5.0, sparsity=0.95, is_sparse=True)
 # create_uniform_connection(name, from_group_amount, to_group_amount, sparsity=None, is_sparse=False)
-g_lsm_input_conn = conn_random.create_uniform_connection('g_lsm_input_conn', input_size, width, sparsity=0.9)
+g_lsm_input_conn = conn_random.create_gaussian_connection('g_lsm_input_conn', input_size, width, mean=10.0, std=5.0, sparsity=0.9)
 
 
 #izhikevich(potential_change, spike_in, potential, recovery, a, b, c, d)
@@ -35,13 +33,13 @@ g_lsm_input_conn = conn_random.create_uniform_connection('g_lsm_input_conn', inp
 exp.add_connection("input_conn", connection.WeightedConnection(input_lsm,
                                                               g_lsm_spike, act.izhikevich,
                                                               g_lsm_input_conn,
-                                                              fargs_list=[(g_lsm_mem,g_lsm_rec,a, b, c, d)]))
+                                                              fargs_list=[(g_lsm_mem,g_lsm_rec,a, b, c, d, dt)]))
 
 exp.add_connection("g_lsm_conn",
                    connection.WeightedConnection(g_lsm_spike,
                                                  g_lsm_spike, act.izhikevich,
                                                  g_lsm_conn,
-                                                 fargs_list=[(g_lsm_mem,g_lsm_rec,a, b, c, d)]))
+                                                 fargs_list=[(g_lsm_mem,g_lsm_rec,a, b, c, d, dt)]))
 
 exp.initialize_cells()
 
@@ -59,7 +57,7 @@ import matplotlib.animation as animation
 fig, axs = plt.subplots(nrows=1, ncols=3)
 
 plt.title('Step: 0')
-current_mem = exp.get_group_cells_state("g_lsm", "g_lsm_rec")[:,0]
+current_mem = exp.get_group_cells_state("g_lsm", "g_lsm_mem")[:,0]
 current_spike = exp.get_group_cells_state("g_lsm", "g_lsm_spike")[:,0]
 
 node_color = [round(current_spike[node],2) for node in G]
@@ -77,9 +75,9 @@ axs_1, = axs[1].plot(x_values, mem_values)
 axs_2 = axs[2].scatter(scatter_values, spike_values)
 
 xmin, xmax = np.min(x_values), np.min(x_values)+plot_width
-ymin, ymax = -200.0, 200.0
+ymin, ymax = -100.0, 100.0
 axs[1].set(xlim=(xmin, xmax), ylim=(ymin, ymax))
-axs[2].set(xlim=(xmin, xmax), ylim=(0, width))
+axs[2].set(xlim=(xmin, xmax), ylim=(-1, width))
 
 idx_anim = 0
 
@@ -88,9 +86,9 @@ def updatefig(*args):
 
   axs[0].clear()
 
-  exp.run_step(feed_dict={input_lsm: np.random.randint(2, size=(input_size,1))})
+  exp.run_step(feed_dict={input_lsm: 10*np.random.randint(2, size=(input_size,1))})
 
-  current_mem = exp.get_group_cells_state("g_lsm", "g_lsm_rec")[:,0]
+  current_mem = exp.get_group_cells_state("g_lsm", "g_lsm_mem")[:,0]
   current_spike = exp.get_group_cells_state("g_lsm", "g_lsm_spike")[:,0]
 
 

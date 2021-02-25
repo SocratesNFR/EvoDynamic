@@ -158,3 +158,34 @@ def create_uniform_connection(name, from_group_amount, to_group_amount, sparsity
     initial = conn_matrix
 
   return initial if is_sparse else tf.get_variable(name, initializer=initial)
+
+def create_gaussian_connection(name, from_group_amount, to_group_amount, mean=0.0, std=1.0, sparsity=None, is_sparse=False):
+  connection_shape = (to_group_amount, from_group_amount)
+  if is_sparse:
+    indices = []
+    values = []
+    if sparsity is None:
+      values = np.random.normal(loc=mean, scale=std, size=connection_shape[0]*connection_shape[1])
+      for i in range(connection_shape[0]):
+        for j in range(connection_shape[1]):
+          indices.append([i,j])
+    else:
+      for i in range(connection_shape[0]):
+        for j in range(connection_shape[1]):
+          if sparsity < np.random.random():
+            indices.append([i,j])
+            values.append(np.random.normal(loc=mean, scale=std))
+    initial = tf.cast(tf.SparseTensor(indices=indices, values=values,\
+                                      dense_shape=[connection_shape[0], connection_shape[1]]), tf.float64)
+  else:
+    if sparsity is None:
+      conn_matrix = np.random.normal(loc=mean, scale=std, size=connection_shape)
+    else:
+      conn_matrix = np.zeros(connection_shape)
+      for i in range(connection_shape[0]):
+        for j in range(connection_shape[1]):
+          if sparsity < np.random.random():
+            conn_matrix[i,j] = np.random.normal(loc=mean, scale=std)
+    initial = conn_matrix
+
+  return initial if is_sparse else tf.get_variable(name, initializer=initial)
