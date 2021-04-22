@@ -278,8 +278,7 @@ def integrate_and_fire(potential_change, spike_in, potential, threshold, potenti
 def izhikevich(potential_change, spike_in, potential, recovery, a, b, c, d, dt):
   shape_potential = tf.shape(potential)
   has_spike_op = tf.greater(potential, 30.0)
-  #potential_update_op_1 = 0.04*tf.pow(potential, 2) + 5*potential + 140 - recovery + potential_change
-  #potential_update_op_1 = tf.add(tf.subtract(tf.add(tf.add(tf.multiply(0.04, tf.pow(potential, 2.0)), tf.multiply(5.0,potential)), 140.0), recovery), potential_change)
+
   potential_update_op_1 = tf.pow(potential, 2.0)
   potential_update_op_1 = tf.multiply(potential_update_op_1, 0.04)
   potential_update_op_1 = tf.add(potential_update_op_1, tf.multiply(potential, 5.0))
@@ -289,15 +288,11 @@ def izhikevich(potential_change, spike_in, potential, recovery, a, b, c, d, dt):
   potential_update_op_1 = tf.multiply(potential_update_op_1, dt)
   potential_update_op_1 = tf.add(potential_update_op_1, potential)
 
-  #recovery_update_op_1 = a*(b*potential - recovery)
-  #recovery_update_op_1 = tf.multiply(a, tf.subtract(tf.multiply(b,potential), recovery))
   recovery_update_op_1 = tf.multiply(potential, b)
   recovery_update_op_1 = tf.subtract(recovery_update_op_1, recovery)
   recovery_update_op_1 = tf.multiply(recovery_update_op_1, a)
   recovery_update_op_1 = tf.multiply(recovery_update_op_1, dt)
   recovery_update_op_1 = tf.add(recovery_update_op_1, recovery)
-
-#  has_spike_op = tf.greater(potential, 30.0)
 
   potential_update_op_2 = tf.where(has_spike_op,
                                    tf.cast(tf.fill(shape_potential, c), tf.float64),

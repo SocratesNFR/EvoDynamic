@@ -23,9 +23,6 @@ class Cells(object):
     self.update_ops = []
 
   def add_binary_state(self, state_name, init="random"):
-#    assert init in ["random","central","zeros","ones","reversecentral"],\
-#      "init must be 'random', 'central', 'reversecentral', 'zeros', or 'ones'."
-
     if init == "random":
       #np.random.seed(1)
       initial = np.random.randint(2, size=self.amount_with_batch).astype(np.float64)
@@ -92,4 +89,4 @@ class Cells(object):
     return var
 
   def get_shaped_indices(self):
-    return np.arange(self.amount)#.reshape()
+    return np.arange(self.amount)

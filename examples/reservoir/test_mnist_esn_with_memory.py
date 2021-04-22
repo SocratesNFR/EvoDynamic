@@ -38,7 +38,7 @@ y_test_one_hot = np.zeros((y_test.max()+1, y_test.size))
 y_test_one_hot[y_test,np.arange(y_test.size)] = 1
 y_test = y_test_one_hot
 
-epochs = 10
+epochs = 1
 batch_size = 100
 num_batches =  int(np.ceil(x_train_num_images / batch_size))
 num_batches_test =  int(np.ceil(x_test_num_images / batch_size))

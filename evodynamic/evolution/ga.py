@@ -9,7 +9,6 @@ import csv
 # Select genomes and reproduce them
 
 # Code based on https://github.com/PytLab/gaft/blob/master/gaft
-
 def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255]):
   assert pop_size%2==0, "Error: pop_size must be even!"
   timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -110,9 +109,6 @@ def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255])
     val_dict_list = new_val_dict_list
     generation_best_genome_idx = max(pop_indices, key=lambda idx: fitness_list[idx])
 
-#    for ii, pf in enumerate(zip(fitness_list, pop_list)):
-#      print("GENERATION", ii, pf[0], pf[1])
-
     if fitness_list[generation_best_genome_idx] > best_genome_fitness:
       best_genome = pop_list[generation_best_genome_idx].copy()
       best_genome_fitness = fitness_list[generation_best_genome_idx]
@@ -212,9 +208,6 @@ def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8)
     fitness_list = new_fitness_list
     val_dict_list = new_val_dict_list
     generation_best_genome_idx = max(pop_indices, key=lambda idx: fitness_list[idx])
-
-#    for ii, pf in enumerate(zip(fitness_list, pop_list)):
-#      print("GENERATION", ii, pf[0], pf[1])
 
     if fitness_list[generation_best_genome_idx] > best_genome_fitness:
       best_genome = pop_list[generation_best_genome_idx].copy()
