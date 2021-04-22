@@ -79,7 +79,11 @@ ymin, ymax = -100.0, 100.0
 axs[1].set(xlim=(xmin, xmax), ylim=(ymin, ymax))
 axs[2].set(xlim=(xmin, xmax), ylim=(-1, width))
 
+axs[1].set_title('Membrane potential')
+axs[2].set_title('Spike train')
+
 idx_anim = 0
+fig.suptitle('Step: '+str(idx_anim))
 
 def updatefig(*args):
   global idx_anim, x_values, mem_values, spike_values, scatter_values#, axs_1, axs_2
@@ -90,7 +94,6 @@ def updatefig(*args):
 
   current_mem = exp.get_group_cells_state("g_lsm", "g_lsm_mem")[:,0]
   current_spike = exp.get_group_cells_state("g_lsm", "g_lsm_spike")[:,0]
-
 
   current_spike_values = np.where(current_spike == 1)[0]
   current_scatter_values = np.full_like(current_spike_values, idx_anim+1)
@@ -105,6 +108,7 @@ def updatefig(*args):
     spike_values =  np.concatenate((spike_values, np.where(current_spike == 1)[0]))
     scatter_values = np.concatenate((scatter_values, current_scatter_values))
 
+  print("scatter_values.shape", scatter_values.shape)
   node_color = [round(current_spike[node],2) for node in G]
   nx.draw(G.reverse(), node_color = node_color, pos=pos_fixed, cmap=plt.cm.jet,
           connectionstyle="arc3, rad=0.1", ax=axs[0])
@@ -116,7 +120,7 @@ def updatefig(*args):
   axs_1.set_data(x_values, mem_values)
   axs_2.set_offsets(np.vstack((scatter_values, spike_values)).transpose())
 
-  plt.title('Step: '+str(idx_anim))
+  fig.suptitle('Step: '+str(idx_anim))
   idx_anim += 1
 
 

@@ -76,7 +76,11 @@ ymin, ymax = -2.0, 2.0
 axs[1].set(xlim=(xmin, xmax), ylim=(ymin, ymax))
 axs[2].set(xlim=(xmin, xmax), ylim=(-1, width))
 
+axs[1].set_title('Membrane potential')
+axs[2].set_title('Spike train')
+
 idx_anim = 0
+fig.suptitle('Step: '+str(idx_anim))
 
 def updatefig(*args):
   global idx_anim, x_values, mem_values, spike_values, scatter_values#, axs_1, axs_2
@@ -113,7 +117,8 @@ def updatefig(*args):
   axs_1.set_data(x_values, mem_values)
   axs_2.set_offsets(np.vstack((scatter_values, spike_values)).transpose())
 
-  plt.title('Step: '+str(idx_anim))
+  fig.suptitle('Step: '+str(idx_anim))
+
   idx_anim += 1
 
 
