@@ -25,8 +25,6 @@ g_lsm_conn = conn_random.create_gaussian_matrix('g_lsm_conn',width, sparsity=0.9
 # create_uniform_connection(name, from_group_amount, to_group_amount, sparsity=None, is_sparse=False)
 g_lsm_input_conn = conn_random.create_uniform_connection('g_lsm_input_conn', input_size, width, sparsity=0.9)
 
-
-
 exp.add_connection("input_conn", connection.WeightedConnection(input_lsm,
                                                               g_lsm_spike, act.integrate_and_fire,
                                                               g_lsm_input_conn,

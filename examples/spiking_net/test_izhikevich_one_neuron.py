@@ -26,9 +26,7 @@ g_lsm_conn = conn_random.create_gaussian_matrix('g_lsm_conn', width, mean=10.0, 
 # create_uniform_connection(name, from_group_amount, to_group_amount, sparsity=None, is_sparse=False)
 g_lsm_input_conn = conn_random.create_gaussian_connection('g_lsm_input_conn', input_size, width, mean=10.0, std=0.2, sparsity=0.0)
 
-
 #izhikevich(potential_change, spike_in, potential, recovery, a, b, c, d)
-
 exp.add_connection("input_conn", connection.WeightedConnection(input_lsm,
                                                               g_lsm_spike, act.izhikevich,
                                                               g_lsm_input_conn,
