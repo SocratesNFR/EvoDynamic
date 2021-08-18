@@ -8,12 +8,9 @@ from operator import mul
 from typing import Tuple, Optional
 
 class Cells(object):
-  """
-  Class for Cells
-  """
   def __init__(self, amount: int, batch_size: int, virtual_shape: Optional[Tuple[int]] = None):
     """
-    __init__(self, amount: int, batch_size: int, virtual_shape: Optional[Tuple[int]] = None)
+    Cells(amount: int, batch_size: int, virtual_shape: Optional[Tuple[int]] = None)
 
     Cells constructor
 

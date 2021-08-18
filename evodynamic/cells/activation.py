@@ -581,9 +581,3 @@ def izhikevich(potential_change, spike_in, potential, recovery, a, b, c, d, dt):
   potential_update_op_3 = tf.assign(potential, potential_update_op_2)
   recovery_update_op_3 = tf.assign(recovery, recovery_update_op_2)
   return tf.cast(has_spike_op, tf.float64) + (0*potential_update_op_3) + (0*recovery_update_op_3)
-
-
-
-
-
-
