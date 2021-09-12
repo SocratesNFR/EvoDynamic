@@ -5,8 +5,6 @@ tf.disable_v2_behavior()
 
 def game_of_life_func(count_neighbors, previous_state):
   """
-  game_of_life_func(count_neighbors, previous_state)
-
   Activation function for Conway's Game of Life.
 
   Parameters
@@ -46,8 +44,6 @@ def game_of_life_func(count_neighbors, previous_state):
 
 def rule_binary_ca_1d_width3_func(pattern, previous_state, rule):
   """
-  rule_binary_ca_1d_width3_func(pattern, previous_state, rule)
-
   Activation function for 3-neighbor Elementary Cellular Automaton.
 
   Parameters
@@ -128,8 +124,6 @@ def rule_binary_ca_1d_width3_func(pattern, previous_state, rule):
 
 def rule_binary_sca_1d_width3_func(pattern, previous_state, prob_list):
   """
-  rule_binary_sca_1d_width3_func(pattern, previous_state, prob_list)
-
   Activation function for 3-neighbor Stochastic Elementary Cellular Automaton.
 
   Parameters
@@ -241,8 +235,6 @@ def rule_binary_sca_1d_width3_func(pattern, previous_state, prob_list):
 
 def sigmoid(x, empty_parameter):
   """
-  sigmoid(x, empty_parameter)
-
   Sigmoid activation function. It works as a wrapped for EvoDynamic functions.
 
   Parameters
@@ -273,8 +265,6 @@ def sigmoid(x, empty_parameter):
 
 def relu(x, empty_parameter):
   """
-  relu(x, empty_parameter)
-
   Rectified linear unit activation function. It works as a wrapped for
   EvoDynamic functions.
 
@@ -306,8 +296,6 @@ def relu(x, empty_parameter):
 
 def stochastic_sigmoid(x, empty_parameter):
   """
-  stochastic_sigmoid(x, empty_parameter)
-
   Stochastic sigmoid activation function. It uses the sigmoid result as the
   probability of selecting a binary state.
 
@@ -345,8 +333,6 @@ def stochastic_sigmoid(x, empty_parameter):
 
 def _stochastic_prob(prob_mean, prob_std):
   """
-  _stochastic_prob(prob_mean, prob_std)
-
   Private stochastic probability generates a probability from a defined
   normal distribution. This function is used by
   'stochastic_prob'.
@@ -371,8 +357,6 @@ def _stochastic_prob(prob_mean, prob_std):
 
 def stochastic_prob(prob_mean, prob_std):
   """
-  stochastic_prob(prob_mean, prob_std)
-
   Stochastic probability generates a probability from a defined
   normal distribution. If prob_mean is 0 or 1, the value is returned unchanged.
   This function is used by 'rule_binary_soc_sca_1d_width3_func'.
@@ -398,8 +382,6 @@ def stochastic_prob(prob_mean, prob_std):
 
 def rule_binary_soc_sca_1d_width3_func(pattern, previous_state, prob_list):
   """
-  rule_binary_soc_sca_1d_width3_func(pattern, previous_state, prob_list)
-
   Activation function for 3-neighbor Stochastic Elementary Cellular Automaton
   for analysis of self-organized criticality.
   Similar to 'rule_binary_sca_1d_width3_func', but if all states are 1, then
@@ -447,8 +429,6 @@ def rule_binary_soc_sca_1d_width3_func(pattern, previous_state, prob_list):
 
 def integrate_and_fire(potential_change, spike_in, potential, threshold, potential_decay):
   """
-  integrate_and_fire(potential_change, spike_in, potential, threshold, potential_decay)
-
   Activation function for spiking neural networks with neuron model
   integrate and fire.
 
@@ -503,8 +483,6 @@ def integrate_and_fire(potential_change, spike_in, potential, threshold, potenti
 
 def izhikevich(potential_change, spike_in, potential, recovery, a, b, c, d, dt):
   """
-  izhikevich(potential_change, spike_in, potential, recovery, a, b, c, d, dt)
-
   Activation function for spiking neural networks with Izhikevich neuron model.
 
   Parameters

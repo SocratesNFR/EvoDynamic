@@ -10,8 +10,6 @@ from typing import Tuple, Optional
 class Cells(object):
   def __init__(self, amount: int, batch_size: int, virtual_shape: Optional[Tuple[int]] = None):
     """
-    Cells(amount: int, batch_size: int, virtual_shape: Optional[Tuple[int]] = None)
-
     Cells constructor
 
     Parameters
@@ -41,8 +39,6 @@ class Cells(object):
 
   def add_binary_state(self, state_name, init="random"):
     """
-    add_binary_state(self, state_name, init="random")
-
     Add binary state to a group of cells.
 
     Parameters
@@ -89,8 +85,6 @@ class Cells(object):
 
   def add_n_state(self, state_name, n_state):
     """
-    add_n_state(self, state_name, n_state)
-
     Add n-nary state to a group of cells.
 
     Parameters
@@ -141,8 +135,6 @@ class Cells(object):
 
   def get_shaped_indices(self):
     """
-    get_shaped_indices(self)
-
     Get indices of the group of cells.
 
     Returns
