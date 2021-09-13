@@ -6,8 +6,6 @@ tf.disable_v2_behavior()
 class BaseConnection(object):
   def __init__(self, from_group_state, to_group_state, activation_func):
     """
-    BaseConnection(from_group_state, to_group_state, activation_func)
-
     BaseConnection constructor
 
     Parameters
@@ -61,8 +59,6 @@ class BaseConnection(object):
 class IndexConnection(BaseConnection):
   def __init__(self, from_group_state, to_group_state, to_group_state_idx):
     """
-    IndexConnection(from_group_state, to_group_state, to_group_state_idx)
-
     IndexConnection constructor
 
     Parameters
@@ -109,8 +105,6 @@ class IndexConnection(BaseConnection):
 class GatherIndexConnection(BaseConnection):
   def __init__(self, from_group_state, to_group_state, from_group_state_idx):
     """
-    GatherIndexConnection(from_group_state, to_group_state, from_group_state_idx)
-
     IndexConnection constructor
 
     Parameters
@@ -162,9 +156,6 @@ class GatherIndexConnection(BaseConnection):
 class WeightedConnection(BaseConnection):
   def __init__(self, from_group_state, to_group_state, activation_func, w, fargs_list=None):
     """
-    WeightedConnection(from_group_state, to_group_state, activation_func, w,
-                       fargs_list=None)
-
     WeightedConnection constructor
 
     Parameters

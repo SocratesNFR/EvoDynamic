@@ -6,9 +6,47 @@ import numpy as np
 import random
 
 def create_pattern_neighbors(width, n_states=2):
+  """
+  This is a private function that returns the weights for calculating an unique
+  number for each different neighborhood pattern in a random Boolean network.
+
+  Parameters
+  ----------
+  width : int
+      Neighborhood size.
+  n_states : int
+      Number of discrete state in a cell.
+
+  Returns
+  -------
+  out : list
+      List of weights of the neighbors.
+  """
   return [n_states**p for p in range(width)[::-1]]
 
-def create_conn_matrix(name, width, n_neighbors=3, n_states=2, is_sparse = True):
+def create_conn_matrix(name, width, n_neighbors=3, n_states=2, is_sparse=True):
+  """
+  Creates a random square matrix with Gaussian distribution according to
+  parameters for evodynamic.connection.WeightedConnection.
+
+  Parameters
+  ----------
+  name : str
+      Name of the Tensor.
+  width : int
+      Width of the adjacency matrix.
+  n_neighbors : int
+      Number of neighbors a cell will have.
+  n_states : int
+      Number of states a cell will have.
+  is_sparse : Boolean
+      Determines whether the returning Tensor is sparse or not.
+
+  Returns
+  -------
+  out : Tensor
+      Random adjacency matrix for TensorFlow.
+  """
   pattern_neighbors = create_pattern_neighbors(n_neighbors, n_states=n_states)
   nodes = width
   if is_sparse:

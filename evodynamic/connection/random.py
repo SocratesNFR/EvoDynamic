@@ -8,6 +8,30 @@ from . import conn_utils
 # Based on https://github.com/nschaetti/EchoTorch/blob/master/echotorch/nn/ESNCell.py
 
 def create_gaussian_matrix(name, width, mean=0.0, std=1.0, sparsity=None, is_sparse=False):
+  """
+  Creates a random square matrix with Gaussian distribution according to
+  parameters for evodynamic.connection.WeightedConnection.
+
+  Parameters
+  ----------
+  name : str
+      Name of the Tensor.
+  width : int
+      Width of the adjacency matrix.
+  mean : float
+      Mean for the Gaussian distribution.
+  std : float
+      Standard deviation for the Gaussian distribution.
+  sparsity : float between 0 and 1
+      Percentage of zeros in the matrix.
+  is_sparse : Boolean
+      Determines whether the returning Tensor is sparse or not.
+
+  Returns
+  -------
+  out : Tensor
+      Random adjacency matrix for TensorFlow.
+  """
   nodes = width
   size = (width, width)
   if is_sparse:
@@ -40,6 +64,26 @@ def create_gaussian_matrix(name, width, mean=0.0, std=1.0, sparsity=None, is_spa
   return initial if is_sparse else tf.get_variable(name, initializer=initial)
 
 def create_uniform_matrix(name, width, sparsity=None, is_sparse=False):
+  """
+  Creates a random square matrix with Uniform distribution of weights
+  according to parameters for evodynamic.connection.WeightedConnection.
+
+  Parameters
+  ----------
+  name : str
+      Name of the Tensor.
+  width : int
+      Width of the adjacency matrix.
+  sparsity : float between 0 and 1
+      Percentage of zeros in the matrix.
+  is_sparse : Boolean
+      Determines whether the returning Tensor is sparse or not.
+
+  Returns
+  -------
+  out : Tensor
+      Random adjacency matrix for TensorFlow.
+  """
   nodes = width
   size = (width, width)
   if is_sparse:
@@ -75,6 +119,36 @@ def create_uniform_matrix(name, width, sparsity=None, is_sparse=False):
 def create_esn_matrix(name, width, mean_pos=0.0, std_pos=1.0,\
                       mean_neg=0.0, std_neg=1.0, pos_neg_prop=0.5,\
                       sparsity=None, is_sparse=False):
+  """
+  Creates a random square matrix for an echo state network to be used
+  by evodynamic.connection.WeightedConnection'.
+
+  Parameters
+  ----------
+  name : str
+      Name of the Tensor.
+  width : int
+      Width of the adjacency matrix.
+  mean_pos : float
+      Mean for the Gaussian distribution of positive weights.
+  std_pos : float
+      Standard deviation for the Gaussian distribution of positive weights.
+  mean_neg : float
+      Mean for the Gaussian distribution of negative weights.
+  std_neg : float
+      Standard deviation for the Gaussian distribution of negative weights.
+  pos_neg_prop : float between 0 and 1
+      Proportion of positive weights over negative ones.
+  sparsity : float between 0 and 1
+      Percentage of zeros in the matrix.
+  is_sparse : Boolean
+      Determines whether the returning Tensor is sparse or not.
+
+  Returns
+  -------
+  out : Tensor
+      Random adjacency matrix for TensorFlow.
+  """
   nodes = width
   size = (width, width)
   if is_sparse:
@@ -121,13 +195,93 @@ def create_esn_matrix(name, width, mean_pos=0.0, std_pos=1.0,\
   return initial if is_sparse else tf.get_variable(name, initializer=initial)
 
 def create_xavier_connection(name, from_group_amount, to_group_amount):
+  """
+  Xavier initializer of a connection.
+
+  Parameters
+  ----------
+  name : str
+      Name of the Tensor.
+  from_group_amount : int
+      Number of cells in the 'from_group'.
+  to_group_amount : int
+      Number of cells in the 'to_group'.
+
+  Returns
+  -------
+  out : Tensor
+      Random adjacency matrix for TensorFlow.
+  """
   return conn_utils.weight_variable_xavier_initialized([to_group_amount, from_group_amount], name=name)
 
-def create_truncated_normal_connection(name, from_group_amount, to_group_amount, stddev=0.02):
+def create_normal_distribution_connection(name, from_group_amount, to_group_amount, stddev=0.02):
+  """
+  Normal distribution initializer of a connection.
+
+  Parameters
+  ----------
+  name : str
+      Name of the Tensor.
+  from_group_amount : int
+      Number of cells in the 'from_group'.
+  to_group_amount : int
+      Number of cells in the 'to_group'.
+  stddev : int
+      Standard deviation of the normal distribution (mean=0.0).
+
+  Returns
+  -------
+  out : Tensor
+      Random adjacency matrix for TensorFlow.
+  """
   return conn_utils.weight_variable([to_group_amount, from_group_amount],
                                     stddev=stddev, name=name)
 
+def create_truncated_normal_connection(name, from_group_amount, to_group_amount, stddev=0.02):
+  """
+  Truncated normal initializer of a connection.
+
+  Parameters
+  ----------
+  name : str
+      Name of the Tensor.
+  from_group_amount : int
+      Number of cells in the 'from_group'.
+  to_group_amount : int
+      Number of cells in the 'to_group'.
+  stddev : int
+      Standard deviation of the normal distribution (mean=0.0).
+
+  Returns
+  -------
+  out : Tensor
+      Random adjacency matrix for TensorFlow.
+  """
+  return conn_utils.weight_variable_truncated_normal([to_group_amount, from_group_amount],
+                                    stddev=stddev, name=name)
+
 def create_uniform_connection(name, from_group_amount, to_group_amount, sparsity=None, is_sparse=False):
+  """
+  Creates a connection with uniform distribution.
+
+  Parameters
+  ----------
+  name : str
+      Name of the Tensor.
+  from_group_amount : int
+      Number of cells in the 'from_group'.
+  to_group_amount : int
+      Number of cells in the 'to_group'.
+  sparsity : float between 0 and 1
+      Percentage of zeros in the matrix.
+  is_sparse : Boolean
+      Determines whether the returning Tensor is sparse or not.
+
+  Returns
+  -------
+  out : Tensor
+      Random adjacency matrix for TensorFlow.
+  """
   connection_shape = (to_group_amount, from_group_amount)
   if is_sparse:
     indices = []
@@ -160,6 +314,31 @@ def create_uniform_connection(name, from_group_amount, to_group_amount, sparsity
   return initial if is_sparse else tf.get_variable(name, initializer=initial)
 
 def create_gaussian_connection(name, from_group_amount, to_group_amount, mean=0.0, std=1.0, sparsity=None, is_sparse=False):
+  """
+  Creates a connection with Gaussian distribution.
+
+  Parameters
+  ----------
+  name : str
+      Name of the Tensor.
+  from_group_amount : int
+      Number of cells in the 'from_group'.
+  to_group_amount : int
+      Number of cells in the 'to_group'.
+  mean : float
+      Mean for the Gaussian distribution.
+  std : float
+      Standard deviation for the Gaussian distribution.
+  sparsity : float between 0 and 1
+      Percentage of zeros in the matrix.
+  is_sparse : Boolean
+      Determines whether the returning Tensor is sparse or not.
+
+  Returns
+  -------
+  out : Tensor
+      Random adjacency matrix for TensorFlow.
+  """
   connection_shape = (to_group_amount, from_group_amount)
   if is_sparse:
     indices = []
