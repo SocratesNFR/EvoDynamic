@@ -2,8 +2,28 @@
 import numpy as np
 
 class Monitor(object):
-  def __init__(self, experiment, group_cells_name, state_name, duration=None, duration_type="timesteps") -> None:
+  def __init__(self, experiment, group_cells_name, state_name, duration=None) -> None:
+    """
+    Monitor constructor.
 
+    A monitor saves the state of a group of cells as a Numpy array.
+
+    Parameters
+    ----------
+    experiment : object
+        Experiment object.
+    group_cells_name : str
+        Name of the group of cells.
+    state_name : str
+        Number of time steps to be saved in memory.
+    duration : int, optional
+        Maximum number of time steps to store. If none, then there is no limit.
+
+    Returns
+    -------
+    out : object
+        New object of class Monitor.
+    """
     group_cells_name_exists = group_cells_name in experiment.cell_groups
     assert group_cells_name_exists, "Error: group_cells_name for group_cells does not exist."
 
@@ -21,6 +41,9 @@ class Monitor(object):
     self.state_record = None
 
   def initialize(self):
+    """
+    Initializes the monitor.
+    """
     if self.timesteps is None:
       self.state_record = np.expand_dims(self.experiment.session.run(self.state), 0)
     else:
@@ -29,6 +52,9 @@ class Monitor(object):
       self.timestep_record = 1
 
   def record(self):
+    """
+    Record the state value in the current time step.
+    """
     if self.timesteps is None:
       self.state_record = np.vstack((self.state_record,\
                                      np.expand_dims(self.experiment.session.run(self.state),0)))
@@ -43,4 +69,7 @@ class Monitor(object):
       self.timestep_record = self.timestep_record+1
 
   def get(self):
+    """
+    Returns the recording of the state as a Numpy array.
+    """
     return self.state_record

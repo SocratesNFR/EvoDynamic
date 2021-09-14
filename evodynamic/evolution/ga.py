@@ -1,15 +1,43 @@
-""" Genetic algorithm """
+"""
+Genetic algorithm
+
+- Generate random genomes
+- Evaluate genomes
+- Select genomes and reproduce them
+
+* Code based on https://github.com/PytLab/gaft/blob/master/gaft
+"""
 
 import numpy as np
 import random
 import time
 import csv
-# Generate random genomes
-# Evaluate genomes
-# Select genomes and reproduce them
 
-# Code based on https://github.com/PytLab/gaft/blob/master/gaft
 def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255]):
+  """
+  Genetic algorithm for evolving rules of a 1D cellular automaton.
+  The genome is a list of int that is initialized with 1 to 5 elements (genes).
+  Each gene represents a rule that is executed in sequence for one time step.
+  Genes can be added or removed depending on their propabilities.
+  This function returns the best genome. It also saves the log of the evolution
+  in a csv file.
+
+  Parameters
+  ----------
+  evaluate_genome : function
+      Function that returns the fitness score of the genome.
+  pop_size : int
+      Size of the population.
+  generation : int
+      Maximum number of generations.
+  gene_range : list with 2 elements
+      List containing the range of the gene values.
+
+  Returns
+  -------
+  best_genome : list
+      Best genome of entire evolution process.
+  """
   assert pop_size%2==0, "Error: pop_size must be even!"
   timestr = time.strftime("%Y%m%d-%H%M%S")
 
@@ -129,6 +157,30 @@ def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255])
   return best_genome
 
 def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8):
+  """
+  Genetic algorithm for evolving rules of a 1D stochastic cellular automaton.
+  The genome is a list of float that has 8 genes.
+  Each gene represents the probability of the state becoming one for each
+  neighborhood pattern.
+  This function returns the best genome. It also saves the log of the evolution
+  in a csv file.
+
+  Parameters
+  ----------
+  evaluate_genome : function
+      Function that returns the fitness score of the genome.
+  pop_size : int
+      Size of the population.
+  generation : int
+      Maximum number of generations.
+  prob_size : int
+      Size of the genome containing the probabilities.
+
+  Returns
+  -------
+  best_genome : list
+      Best genome of entire evolution process.
+  """
   assert pop_size%2==0, "Error: pop_size must be even!"
   timestr = time.strftime("%Y%m%d-%H%M%S")
 
@@ -225,12 +277,3 @@ def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8)
   print("best_val_dict", best_val_dict)
   filehistory.close()
   return best_genome
-
-
-
-
-
-
-
-
-
