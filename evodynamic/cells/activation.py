@@ -42,6 +42,56 @@ def game_of_life_func(count_neighbors, previous_state):
   # Return update_born_op
   return tf.where(born_cells_op, tf.ones(tf.shape(previous_state), dtype=tf.float64), update_kill_op)
 
+def life_like_func(count_neighbors, previous_state, born_list, keep_list, n_neighbors):
+  """
+  Activation function for life-like 2D cellular automaton.
+
+  Parameters
+  ----------
+  count_neighbors : Tensor
+      Result of the matrix multiplication that happens in
+      evodynamic.connection.WeightedConnection
+  previous_state : Tensor
+      State of a binary state of a group of cells before being updated.
+  born_list : list
+      List with numbers to born a cell.
+  keep_list : list
+      List with numbers to keep a cell.
+  n_neighbors : int
+      Number of neighbors.
+
+  Returns
+  -------
+  out : Tensor
+      Tensor containing the operation for changing the binary states of a group
+      of cells as the Conway's Game of Life.
+
+  Notes
+  -----
+  The values of the first two parameters come from operations in
+  the Connection object.
+
+  Examples
+  --------
+  >>> evodynamic.connection.WeightedConnection(ca_binary_state,ca_binary_state,
+                                               life_like_func,ca_conn)
+  """
+  born_cells_list_op = [tf.equal(count_neighbors, b) for b in born_list]
+  born_cells_op = tf.reduce_any(tf.concat(born_cells_list_op, 1), 1)
+
+  kill_list = list(range(n_neighbors))
+  for k in keep_list:
+    kill_list.remove(k)
+
+  kill_cells_list_op = [tf.equal(count_neighbors, k) for k in kill_list]
+  kill_cells_op = tf.reduce_any(tf.concat(kill_cells_list_op, 1), 1)
+
+  update_kill_op = tf.where(kill_cells_op, tf.zeros(tf.shape(previous_state), dtype=tf.float64), previous_state)
+
+  # Return update_born_op
+  return tf.where(born_cells_op, tf.ones(tf.shape(previous_state), dtype=tf.float64), update_kill_op)
+
+
 def rule_binary_ca_1d_width3_func(pattern, previous_state, rule):
   """
   Activation function for 3-neighbor Elementary Cellular Automaton.
@@ -419,7 +469,19 @@ def rule_binary_soc_sca_1d_width3_func(pattern, previous_state, prob_list):
   """
   shape_previous_state = tf.shape(previous_state)
 
-  update_7_op = rule_binary_sca_1d_width3_func(pattern, previous_state, prob_list)
+  prob_0 = stochastic_prob(prob_list[0], prob_list[8])
+  prob_1 = stochastic_prob(prob_list[1], prob_list[8])
+  prob_2 = stochastic_prob(prob_list[2], prob_list[8])
+  prob_3 = stochastic_prob(prob_list[3], prob_list[8])
+  prob_4 = stochastic_prob(prob_list[4], prob_list[8])
+  prob_5 = stochastic_prob(prob_list[5], prob_list[8])
+  prob_6 = stochastic_prob(prob_list[6], prob_list[8])
+  prob_7 = stochastic_prob(prob_list[7], prob_list[8])
+
+  new_prob_list = [prob_0,prob_1,prob_2,prob_3,prob_4,prob_5,prob_6,prob_7]
+
+  update_7_op = rule_binary_sca_1d_width3_func(pattern, previous_state,
+                                               new_prob_list)
 
   #return update_7_op
   new_state_op =  tf.cast(tf.less_equal(tf.random.uniform(shape_previous_state),\
