@@ -105,7 +105,7 @@ class IndexConnection(BaseConnection):
 class GatherIndexConnection(BaseConnection):
   def __init__(self, from_group_state, to_group_state, from_group_state_idx):
     """
-    IndexConnection constructor
+    GatherIndexConnection constructor
 
     Parameters
     ----------

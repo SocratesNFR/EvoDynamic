@@ -4,7 +4,6 @@ import evodynamic.experiment as experiment
 import evodynamic.connection.cellular_automata as ca
 import evodynamic.cells.activation as act
 import evodynamic.connection as connection
-import numpy as np
 
 width = 200
 height = 150
@@ -19,7 +18,7 @@ g_ca_bin_conn = ca.create_conn_matrix_ca2d('g_ca_bin_conn',width,height,\
 
 exp.add_connection("g_ca_conn", connection.WeightedConnection(g_ca_bin,g_ca_bin,
                                                               act.life_like_func,g_ca_bin_conn,
-                                                              fargs_list=[([3],[1,2,3,4],np.prod(neighbors.shape)-1)]))
+                                                              fargs_list=[([3],[1,2,3,4])]))
 
 exp.initialize_cells()
 

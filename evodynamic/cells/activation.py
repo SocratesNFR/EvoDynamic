@@ -42,7 +42,7 @@ def game_of_life_func(count_neighbors, previous_state):
   # Return update_born_op
   return tf.where(born_cells_op, tf.ones(tf.shape(previous_state), dtype=tf.float64), update_kill_op)
 
-def life_like_func(count_neighbors, previous_state, born_list, keep_list, n_neighbors):
+def life_like_func(count_neighbors, previous_state, born_list, keep_list):
   """
   Activation function for life-like 2D cellular automaton.
 
@@ -79,12 +79,8 @@ def life_like_func(count_neighbors, previous_state, born_list, keep_list, n_neig
   born_cells_list_op = [tf.equal(count_neighbors, b) for b in born_list]
   born_cells_op = tf.reduce_any(tf.concat(born_cells_list_op, 1), 1)
 
-  kill_list = list(range(n_neighbors))
-  for k in keep_list:
-    kill_list.remove(k)
-
-  kill_cells_list_op = [tf.equal(count_neighbors, k) for k in kill_list]
-  kill_cells_op = tf.reduce_any(tf.concat(kill_cells_list_op, 1), 1)
+  kill_cells_list_op = [tf.not_equal(count_neighbors, k) for k in keep_list]
+  kill_cells_op = tf.reduce_all(tf.concat(kill_cells_list_op, 1), 1)
 
   update_kill_op = tf.where(kill_cells_op, tf.zeros(tf.shape(previous_state), dtype=tf.float64), previous_state)
 
