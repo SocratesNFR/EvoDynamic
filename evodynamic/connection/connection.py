@@ -211,7 +211,81 @@ class WeightedConnection(BaseConnection):
         res_act_op = res_matmul_op
       else:
         res_act_op = self.activation_func(res_matmul_op,\
-                                          self.from_group_state, *fargs)
+                                          self.to_group_state, *fargs)
+
+      res_assign_op = tf.assign(self.to_group_state, res_act_op)
+
+      list_ops.append(res_assign_op)
+      output_ops.append(res_act_op)
+    return list_ops, output_ops
+
+  def __get_output(self):
+    list_ops, output_ops = self.__get_ops()
+    return list_ops[-1], output_ops[-1]
+
+class BiasWeightedConnection(BaseConnection):
+  def __init__(self, from_group_state, to_group_state, activation_func, w, bias, fargs_list=None):
+    """
+    BiasWeightedConnection constructor
+
+    Parameters
+    ----------
+    from_group_state : Tensor
+        State in group of cells that will affect 'to_group_state'.
+    to_group_state : Tensor
+        State in group of cells that will be affected by 'from_group_state'.
+    activation_func : function
+        Function that defines how 'to_group_state' will be affected.
+    w : Tensor
+        Weighted adjacency matrix.
+    bias : Tensor
+        Bias.
+    fargs_list: list, optional
+        List of arguments to be added to some 'activation_func'.
+
+    Returns
+    -------
+    out : object
+        New object of class BiasWeightedConnection.
+
+    Examples
+    --------
+    >>> BiasWeightedConnection(esn_real_state,esn_real_state,
+                           leaky_relu,
+                           esn_conn,
+                           esn_bias,
+                           fargs_list=[(leaky_rate,)])
+    """
+    # fargs_list: List of Tuples
+    super().__init__(from_group_state, to_group_state, activation_func)
+    self.w = w
+    self.bias = bias
+    self.fargs_list = fargs_list if fargs_list else [()]
+
+  def set_experiment(self, experiment, is_first_training_connection=False):
+    self.experiment = experiment
+    if not is_first_training_connection:
+      for exp_conn in self.experiment.connection_list:
+        if exp_conn.to_group_state == self.from_group_state:
+          self.from_group_state = exp_conn.assign_output
+    self.list_ops = self.__get_ops()[0]
+    self.assign_output = self.__get_output()[0]
+    self.output = self.__get_output()[1]
+
+  def __get_ops(self):
+    list_ops = []
+    output_ops = []
+    for fargs in self.fargs_list:
+      if isinstance(self.w, tf.SparseTensor):
+        res_matmul_op = tf.add(tf.sparse.matmul(self.w, self.from_group_state), self.bias)
+      else:
+        res_matmul_op = tf.add(tf.matmul(self.w, self.from_group_state), self.bias)
+
+      if self.activation_func == None:
+        res_act_op = res_matmul_op
+      else:
+        res_act_op = self.activation_func(res_matmul_op,\
+                                          self.to_group_state, *fargs)
 
       res_assign_op = tf.assign(self.to_group_state, res_act_op)
 

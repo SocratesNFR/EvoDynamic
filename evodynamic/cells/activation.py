@@ -279,7 +279,7 @@ def rule_binary_sca_1d_width3_func(pattern, previous_state, prob_list):
   # Return update_7_op
   return tf.where(pattern_7_op, new_state_pattern_7, update_6_op)
 
-def sigmoid(x, empty_parameter):
+def sigmoid(x, previous_state):
   """
   Sigmoid activation function. It works as a wrapped for EvoDynamic functions.
 
@@ -288,9 +288,9 @@ def sigmoid(x, empty_parameter):
   x : Tensor
       Input value or the result of the matrix multiplication that happens in
       evodynamic.connection.WeightedConnection
-  empty_parameter : Tensor
-      Empty parameter for matching the necessary number of parameters in case
-      of using evodynamic.connection.WeightedConnection.
+  previous_state : Tensor
+      State of a binary state of a group of cells before being updated. This
+      is not used, but it is needed for evodynamic.connection.WeightedConnection
 
   Returns
   -------
@@ -309,7 +309,37 @@ def sigmoid(x, empty_parameter):
   """
   return tf.sigmoid(x)
 
-def relu(x, empty_parameter):
+def tanh(x, previous_state):
+  """
+  Hyperbolic tangent activation function. It works as a wrapped for EvoDynamic functions.
+
+  Parameters
+  ----------
+  x : Tensor
+      Input value or the result of the matrix multiplication that happens in
+      evodynamic.connection.WeightedConnection
+  previous_state : Tensor
+      State of a binary state of a group of cells before being updated. This
+      is not used, but it is needed for evodynamic.connection.WeightedConnection
+
+  Returns
+  -------
+  out : Tensor
+      Activation function result.
+
+  Notes
+  -----
+  The values of the first two parameters come from operations in
+  the Connection object.
+
+  Examples
+  --------
+  >>> evodynamic.connection.WeightedConnection(ann_layer_1,ann_layer_2,
+                                               tanh,l1_l2_connection)
+  """
+  return tf.tanh(x)
+
+def relu(x, previous_state):
   """
   Rectified linear unit activation function. It works as a wrapped for
   EvoDynamic functions.
@@ -319,9 +349,9 @@ def relu(x, empty_parameter):
   x : Tensor
       Input value or the result of the matrix multiplication that happens in
       evodynamic.connection.WeightedConnection
-  empty_parameter : Tensor
-      Empty parameter for matching the necessary number of parameters in case
-      of using evodynamic.connection.WeightedConnection.
+  previous_state : Tensor
+      State of a binary state of a group of cells before being updated. This
+      is not used, but it is needed for evodynamic.connection.WeightedConnection
 
   Returns
   -------
@@ -340,7 +370,106 @@ def relu(x, empty_parameter):
   """
   return tf.nn.relu(x)
 
-def stochastic_sigmoid(x, empty_parameter):
+def leaky_sigmoid(x, previous_state, leaky_rate = 1.0):
+  """
+  Sigmoid activation function for cells with leaky rate.
+
+  Parameters
+  ----------
+  x : Tensor
+      Input value or the result of the matrix multiplication that happens in
+      evodynamic.connection.WeightedConnection
+  previous_state : Tensor
+      State of a binary state of a group of cells before being updated.
+
+  Returns
+  -------
+  out : Tensor
+      Activation function result.
+
+  Notes
+  -----
+  The values of the first two parameters come from operations in
+  the Connection object.
+
+  Examples
+  --------
+  >>> evodynamic.connection.WeightedConnection(ann_layer_1,ann_layer_2,
+                                               leaky_sigmoid,l1_l2_connection,
+                                               fargs_list=[(leaky_rate,)])
+  """
+  new_x = tf.sigmoid(x)
+  leaky_x = tf.multiply(new_x, leaky_rate)
+  leaky_previous_state = tf.multiply(previous_state, 1.0-leaky_rate)
+  return tf.add(leaky_x, leaky_previous_state)
+
+def leaky_tanh(x, previous_state, leaky_rate = 1.0):
+  """
+  Hyperbolic tangent activation function for cells with leaky rate.
+
+  Parameters
+  ----------
+  x : Tensor
+      Input value or the result of the matrix multiplication that happens in
+      evodynamic.connection.WeightedConnection
+  previous_state : Tensor
+      State of a binary state of a group of cells before being updated.
+
+  Returns
+  -------
+  out : Tensor
+      Activation function result.
+
+  Notes
+  -----
+  The values of the first two parameters come from operations in
+  the Connection object.
+
+  Examples
+  --------
+  >>> evodynamic.connection.WeightedConnection(ann_layer_1,ann_layer_2,
+                                               leaky_tanh,l1_l2_connection,
+                                               fargs_list=[(leaky_rate,)])
+  """
+  new_x = tf.tanh(x)
+  leaky_x = tf.multiply(new_x, leaky_rate)
+  leaky_previous_state = tf.multiply(previous_state, 1.0-leaky_rate)
+  return tf.add(leaky_x, leaky_previous_state)
+
+def leaky_relu(x, previous_state, leaky_rate = 1.0):
+  """
+  Rectified linear unit activation function for cells with leaky rate.
+
+  Parameters
+  ----------
+  x : Tensor
+      Input value or the result of the matrix multiplication that happens in
+      evodynamic.connection.WeightedConnection
+  previous_state : Tensor
+      State of a binary state of a group of cells before being updated.
+
+  Returns
+  -------
+  out : Tensor
+      Activation function result.
+
+  Notes
+  -----
+  The values of the first two parameters come from operations in
+  the Connection object.
+
+  Examples
+  --------
+  >>> evodynamic.connection.WeightedConnection(ann_layer_1,ann_layer_2,
+                                               leaky_relu,l1_l2_connection,
+                                               fargs_list=[(leaky_rate,)])
+  """
+  new_x = tf.nn.relu(x)
+  leaky_x = tf.multiply(new_x, leaky_rate)
+  leaky_previous_state = tf.multiply(previous_state, 1.0-leaky_rate)
+  return tf.add(leaky_x, leaky_previous_state)
+
+def stochastic_sigmoid(x, previous_state):
   """
   Stochastic sigmoid activation function. It uses the sigmoid result as the
   probability of selecting a binary state.
@@ -350,9 +479,8 @@ def stochastic_sigmoid(x, empty_parameter):
   x : Tensor
       Input value or the result of the matrix multiplication that happens in
       evodynamic.connection.WeightedConnection
-  empty_parameter : Tensor
-      Empty parameter for matching the necessary number of parameters in case
-      of using evodynamic.connection.WeightedConnection.
+  previous_state : Tensor
+      State of a binary state of a group of cells before being updated.
 
   Returns
   -------

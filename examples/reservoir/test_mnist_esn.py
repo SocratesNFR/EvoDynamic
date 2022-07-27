@@ -77,11 +77,13 @@ output_layer =  exp.add_group_cells(name="output_layer", amount=output_layer_siz
 output_layer_real_state = output_layer.add_real_state(state_name='output_layer_real_state')
 
 esn_output_conn = conn_random.create_xavier_connection("esn_output_conn", width, output_layer_size)
+esn_output_bias = conn_random.create_xavier_connection("esn_output_bias", 1, output_layer_size)
 exp.add_trainable_connection("output_conn",
-                             connection.WeightedConnection(g_esn_real,
+                             connection.BiasWeightedConnection(g_esn_real,
                                                            output_layer_real_state,
                                                            act.sigmoid,
-                                                           esn_output_conn))
+                                                           esn_output_conn,
+                                                           esn_output_bias))
 
 c_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
     logits=exp.trainable_connections["output_conn"].output,

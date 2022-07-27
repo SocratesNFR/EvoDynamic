@@ -4,7 +4,7 @@ import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 import numpy as np
 
-def weight_variable(shape, stddev=0.02, name=None):
+def weight_variable(shape, stddev=0.02, scale = 1.0, name=None):
   """
   Initializer of weights.
 
@@ -22,13 +22,13 @@ def weight_variable(shape, stddev=0.02, name=None):
   out : Tensor
       Initialized connection matrix for TensorFlow.
   """
-  initial = np.random.normal(scale=stddev, size=shape)
+  initial = np.random.normal(scale=stddev, size=shape) * scale
   if name is None:
     return tf.Variable(initial)
   else:
     return tf.get_variable(name, initializer=initial)
 
-def weight_variable_truncated_normal(shape, stddev=0.02, name=None):
+def weight_variable_truncated_normal(shape, stddev=0.02, scale = 1.0, name=None):
   """
   Initializer of weights.
 
@@ -46,7 +46,9 @@ def weight_variable_truncated_normal(shape, stddev=0.02, name=None):
   out : Tensor
       Initialized connection matrix for TensorFlow.
   """
-  initial = tf.truncated_normal(shape, stddev=stddev, dtype=tf.float64)
+  initial = tf.multiply(
+    tf.truncated_normal(shape, stddev=stddev, dtype=tf.float64),
+    scale)
   if name is None:
     return tf.Variable(initial)
   else:

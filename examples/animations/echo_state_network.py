@@ -17,8 +17,8 @@ exp = experiment.Experiment()
 input_esn = exp.add_input(tf.float64, [input_size], "input_esn")
 
 g_esn = exp.add_group_cells(name="g_esn", amount=width)
-g_esn_real = g_esn.add_real_state(state_name='g_esn_bin')
-g_esn_real_conn = conn_random.create_gaussian_matrix('g_ca_bin_conn',width, sparsity=0.95, is_sparse=True)
+g_esn_real = g_esn.add_real_state(state_name='g_esn_real')
+g_esn_real_conn = conn_random.create_gaussian_matrix('g_esn_real_conn',width, sparsity=0.95, is_sparse=True)
 
 exp.add_connection("input_conn", connection.IndexConnection(input_esn,g_esn_real,np.arange(input_size)))
 
@@ -50,7 +50,7 @@ import matplotlib.animation as animation
 fig, ax = plt.subplots()
 
 plt.title('Step: 0')
-current_state = exp.get_group_cells_state("g_esn", "g_esn_bin")[:,0]
+current_state = exp.get_group_cells_state("g_esn", "g_esn_real")[:,0]
 
 node_color = [round(current_state[node],2) for node in G]
 
@@ -64,9 +64,11 @@ def updatefig(*args):
 
   ax.clear()
 
-  exp.run_step(feed_dict={input_esn: np.random.randint(2, size=(input_size,1))})
+  input_esn_arr = np.random.randint(2, size=(input_size,1)) if idx_anim < 1 else np.zeros((input_size,1))
 
-  current_state = exp.get_group_cells_state("g_esn", "g_esn_bin")[:,0]
+  exp.run_step(feed_dict={input_esn: input_esn_arr})
+
+  current_state = exp.get_group_cells_state("g_esn", "g_esn_real")[:,0]
 
   node_color = [round(current_state[node],2) for node in G]
   nx.draw(G.reverse(), node_color = node_color, pos=pos_new, cmap=plt.cm.jet,

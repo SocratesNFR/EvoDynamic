@@ -334,7 +334,12 @@ class Experiment(object):
     if self.input_delay_until_train and self.input_delay == None:
       is_input_step = self.input_start == self.step_counter or self.next_step_after_train
     else:
-      is_input_step = ((self.step_counter-self.input_start) // (self.input_delay+1)) > self.input_tracker
+      is_input_step = True
+      if self.input_delay > 0:
+        is_input_step = ((self.step_counter-self.input_start + 1) // (self.input_delay)) > self.input_tracker
+
+    if is_input_step:
+      self.input_tracker += 1
 
     return is_input_step
 
@@ -342,7 +347,13 @@ class Experiment(object):
     """
     Identifies the time step with training.
     """
-    return ((self.step_counter-self.training_start) // (self.training_delay+1)) > self.training_tracker
+    is_training_step = len(self.train_ops) > 0
+    if self.training_delay > 0 and is_training_step:
+      is_training_step = ((self.step_counter-self.training_start + 1) // (self.training_delay)) > self.training_tracker
+
+    if is_training_step:
+      self.training_tracker += 1
+    return is_training_step
 
   def run(self,timesteps: int = 10):
     """
@@ -440,7 +451,6 @@ class Experiment(object):
 
     if self.is_input_step():
       experiment_feed_dict[self.has_input] = True
-      self.input_tracker += 1
 
     experiment_ops = []
     for experiment_output_key in self.experiment_output:
@@ -451,7 +461,7 @@ class Experiment(object):
     for memory_key in self.memories:
       self.memories[memory_key].update_state_memory()
 
-    if self.is_training_step() and len(self.train_ops) > 0:
+    if self.is_training_step():
       training_ops = []
       for training_output_key in self.training_output:
         training_ops.append(self.training_output[training_output_key].assign_output)
@@ -463,7 +473,7 @@ class Experiment(object):
 
       training_result = self.session.run(training_ops,feed_dict=training_feed_dict)
       self.next_step_after_train = True
-      self.training_tracker += 1
+
       if len(training_result) > 0:
         self.training_loss = training_result[-1]
 

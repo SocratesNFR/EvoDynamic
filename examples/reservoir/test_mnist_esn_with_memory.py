@@ -48,8 +48,8 @@ output_layer_size = 10
 image_num_pixels = x_train_image_shape[0] * x_train_image_shape[1]
 memory_size = 2
 
-exp = experiment.Experiment(input_start=0,input_delay=0,training_start=1,
-                            training_delay=1,reset_cells_after_train=True,
+exp = experiment.Experiment(input_start=0,input_delay=0,training_start=2,
+                            training_delay=2,reset_cells_after_train=True,
                             batch_size=batch_size)
 
 

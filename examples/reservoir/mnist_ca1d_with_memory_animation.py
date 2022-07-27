@@ -30,7 +30,7 @@ memory_size = 28*28
 height_fig = memory_size
 
 exp = experiment.Experiment(input_start=0,input_delay=0,training_start=memory_size,
-                            training_delay=memory_size-1,reset_cells_after_train=True,
+                            training_delay=memory_size,reset_cells_after_train=True,
                             reset_memories_after_train=True)
 
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
@@ -75,7 +75,7 @@ exp.initialize_cells()
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-f = "mnist_ca1d_with_memory_animation.mp4"
+f = "mnist_ca1d_with_memory_animation_v2.mp4"
 writervideo = animation.FFMpegWriter(fps=60)
 
 
@@ -131,8 +131,8 @@ def updatefig(*args):
 
 ani = animation.FuncAnimation(fig, updatefig, interval=1, blit=False, save_count=(3*28*28)+1)
 
-#plt.show()
-#plt.connect('close_event', exp.close())
+plt.show()
+plt.connect('close_event', exp.close())
 
-ani.save(f, writer=writervideo)
-exp.close()
+#ani.save(f, writer=writervideo)
+#exp.close()

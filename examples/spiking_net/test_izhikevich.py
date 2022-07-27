@@ -73,7 +73,7 @@ axs_1, = axs[1].plot(x_values, mem_values)
 axs_2 = axs[2].scatter(scatter_values, spike_values)
 
 xmin, xmax = np.min(x_values), np.min(x_values)+plot_width
-ymin, ymax = -100.0, 100.0
+ymin, ymax = -150.0, 150.0
 axs[1].set(xlim=(xmin, xmax), ylim=(ymin, ymax))
 axs[2].set(xlim=(xmin, xmax), ylim=(-1, width))
 
@@ -106,7 +106,6 @@ def updatefig(*args):
     spike_values =  np.concatenate((spike_values, np.where(current_spike == 1)[0]))
     scatter_values = np.concatenate((scatter_values, current_scatter_values))
 
-  print("scatter_values.shape", scatter_values.shape)
   node_color = [round(current_spike[node],2) for node in G]
   nx.draw(G.reverse(), node_color = node_color, pos=pos_fixed, cmap=plt.cm.jet,
           connectionstyle="arc3, rad=0.1", ax=axs[0])
