@@ -43,7 +43,7 @@ y_test_one_hot[y_test,np.arange(y_test.size)] = 1
 y_test = y_test_one_hot
 
 epochs = 10
-batch_size = 50
+batch_size = 100
 num_batches =  int(np.ceil(x_train_num_images / batch_size))
 width = 100#1200
 image_size = 28
@@ -69,35 +69,16 @@ desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desire
 g_esn = exp.add_group_cells(name="g_esn", amount=width)
 g_esn_real = g_esn.add_real_state(state_name='g_esn_real')
 
-# exp.add_connection("input_conn", connection.IndexConnection(input_esn,g_esn_real,
-#                                                             np.arange(width)))
-
 g_input_real_conn = conn_random.create_gaussian_connection('g_input_real_conn',
                                                           input_size, width,
                                                           scale=input_scaling,
                                                           sparsity=input_sparsity,
                                                           is_sparse=False)
 
-# exp.add_connection("input_conn",
-#                    connection.WeightedConnection(input_esn,
-#                                                  g_esn_real,act.leaky_sigmoid,
-#                                                  g_input_real_conn,
-#                                                  fargs_list=[(leaky_rate,)]))
-
 exp.add_connection("input_conn",
                    connection.WeightedConnection(input_esn,
                                                  g_esn_real,None,
                                                  g_input_real_conn))
-
-
-# indices = [[i,i] for i in range(width)]
-# values = [1]*width
-# dense_shape = [width, width]
-
-# g_esn_real_conn = conn_custom.create_custom_sparse_matrix('g_esn_real_conn',
-#                                                           indices,
-#                                                           values,
-#                                                           dense_shape)
 
 g_esn_real_conn = conn_random.create_gaussian_matrix('g_esn_real_conn',
                                                       width,
@@ -117,26 +98,14 @@ exp.add_connection("g_esn_conn",
                                                   g_esn_real_bias,
                                                   fargs_list=[(leaky_rate,)]))
 
-# exp.add_connection("g_esn_conn",
-#                    connection.BiasWeightedConnection(g_esn_real,
-#                                                  g_esn_real,act.sigmoid,
-#                                                  g_esn_real_conn,
-#                                                  g_esn_real_bias))
-
 output_layer =  exp.add_group_cells(name="output_layer", amount=output_layer_size)
 output_layer_real_state = output_layer.add_real_state(state_name='output_layer_real_state')
 
-
-#esn_output_conn = conn_random.create_xavier_connection("esn_output_conn", width, output_layer_size)
 g_esn_memory = exp.add_state_memory(g_esn_real,memory_size)
 esn_output_conn = conn_random.create_xavier_connection("esn_output_conn", width*memory_size, output_layer_size)
 
 esn_output_bias = conn_random.create_xavier_connection("esn_output_bias", 1, output_layer_size)
-# exp.add_trainable_connection("output_conn",
-#                              connection.WeightedConnection(g_esn_real,
-#                                                            output_layer_real_state,
-#                                                            act.sigmoid,
-#                                                            esn_output_conn))
+
 exp.add_trainable_connection("output_conn",
                              connection.BiasWeightedConnection(g_esn_memory,
                                                                output_layer_real_state,
@@ -149,7 +118,7 @@ c_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
     labels=desired_output,
     axis=0))
 
-exp.set_training(c_loss,0.03)
+exp.set_training(c_loss,0.001)
 
 # Monitors are needed because "reset_cells_after_train=True"
 exp.add_monitor("output_layer", "output_layer_real_state", timesteps=1)
