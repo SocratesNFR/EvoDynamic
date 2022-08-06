@@ -120,7 +120,7 @@ def updatefig(*args):
     if idx_anim % memory_size == 0:
         im_memory = np.zeros((memory_size, width))
 
-
+    print(np.sum(np.abs(exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0]-im_memory_part)))
     im_output = exp.get_group_cells_state("output_layer", "output_layer_real_state")[:,0].reshape((-1,1))
 
     im1.set_array(im_mnist)

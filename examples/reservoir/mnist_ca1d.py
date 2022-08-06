@@ -9,6 +9,7 @@ import evodynamic.connection as connection
 import evodynamic.connection.random as randon_conn
 import evodynamic.cells.activation as act
 import evodynamic.utils as utils
+import time
 
 mnist = tf.keras.datasets.mnist
 
@@ -33,7 +34,7 @@ y_test_one_hot = np.zeros((y_test.max()+1, y_test.size))
 y_test_one_hot[y_test,np.arange(y_test.size)] = 1
 y_test = y_test_one_hot
 
-epochs = 10
+epochs = 1
 batch_size = 100
 num_batches =  int(np.ceil(x_train_num_images / batch_size))
 width = 28*28
@@ -85,12 +86,15 @@ exp.set_training(c_loss,0.03)
 
 exp.initialize_cells()
 
+writer = tf.summary.FileWriter("output_ca1d", exp.session.graph)
+
 for epoch in range(epochs):
   print("Epoch:", epoch)
   shuffled_indices = np.random.permutation(x_train_num_images)
   batch_indices = np.split(shuffled_indices,\
                            np.arange(batch_size,x_train_num_images,batch_size))
   for step, batch_idx in enumerate(batch_indices):
+    start_time = time.time()
     for pixel_idx in range(timesteps):
 
       input_ca_batch = np.expand_dims(x_train[pixel_idx,batch_idx],0)
@@ -102,4 +106,6 @@ for epoch in range(epochs):
 
     prediction_batch = exp.get_group_cells_state("output_layer", "output_layer_real_state")
     accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size
-    utils.progressbar_loss_accu(step+1, num_batches-1, exp.training_loss, accuracy_batch)
+    utils.progressbar_loss_accu_time(step+1, num_batches-1, exp.training_loss, accuracy_batch, time.time()-start_time)
+
+writer.close()

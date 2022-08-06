@@ -18,10 +18,13 @@ import evodynamic.connection.random as conn_random
 import evodynamic.connection as connection
 import evodynamic.cells.activation as act
 import evodynamic.utils as utils
+import time
 
 mnist = tf.keras.datasets.mnist
 
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+# x_train = x_train[:1000]
 
 x_train_num_images = x_train.shape[0]
 x_train_image_shape = x_train.shape[1:3]
@@ -42,7 +45,7 @@ y_test_one_hot = np.zeros((y_test.max()+1, y_test.size))
 y_test_one_hot[y_test,np.arange(y_test.size)] = 1
 y_test = y_test_one_hot
 
-epochs = 10
+epochs = 1
 batch_size = 100
 num_batches =  int(np.ceil(x_train_num_images / batch_size))
 width = 100#1200
@@ -121,10 +124,12 @@ c_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
 exp.set_training(c_loss,0.001)
 
 # Monitors are needed because "reset_cells_after_train=True"
-exp.add_monitor("output_layer", "output_layer_real_state", timesteps=1)
-exp.add_monitor("g_esn", "g_esn_real", timesteps=1)
+# exp.add_monitor("output_layer", "output_layer_real_state", timesteps=1)
+# exp.add_monitor("g_esn", "g_esn_real", timesteps=1)
 
 exp.initialize_cells()
+
+# writer = tf.summary.FileWriter("output_start_2", exp.session.graph)
 
 for epoch in range(epochs):
   print("Epoch:", epoch)
@@ -132,13 +137,23 @@ for epoch in range(epochs):
   batch_indices = np.split(shuffled_indices,\
                            np.arange(batch_size,x_train_num_images,batch_size))
   for step, batch_idx in enumerate(batch_indices):
+    start_time = time.time()
     for i in range(image_size):
       input_esn_batch = x_train[i*input_size:(i+1)*input_size,batch_idx]
       desired_output_batch = y_train[:,batch_idx]
       feed_dict = {input_esn: input_esn_batch, desired_output: desired_output_batch}
       exp.run_step(feed_dict=feed_dict)
 
-      prediction_batch = exp.get_monitor("output_layer", "output_layer_real_state")[0,:,:]
+      prediction_batch = exp.get_group_cells_state("output_layer", "output_layer_real_state")
       accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size
+      # im_ca = exp.get_group_cells_state("g_esn", "g_esn_real")[:,0]
+      # im_memory = exp.memories[g_esn_real].get_state_memory()[:,0].reshape((memory_size, width))[-1]
+      # print(np.sum(np.abs(im_ca-im_memory)))
 
-    utils.progressbar_loss_accu(step+1, num_batches, exp.training_loss, accuracy_batch)
+    utils.progressbar_loss_accu_time(step+1, num_batches, exp.training_loss, accuracy_batch, time.time()-start_time)
+    # print(time.time()-start_time)
+
+# writer_last = tf.summary.FileWriter("output_end_2", exp.session.graph)
+
+# writer.close()
+# writer_last.close()

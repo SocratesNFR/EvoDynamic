@@ -214,6 +214,8 @@ class Experiment(object):
     self.memories[state] = state_memory
     memory_op = state_memory.get_op()
     self.memory_ops.append(memory_op)
+    self.connection_list.insert(0,state_memory)
+    self.update_experiment_output(state_memory)
     return memory_op
 
   def add_connection(self, name, connection):
@@ -291,7 +293,8 @@ class Experiment(object):
     for cell_group_key in self.cell_groups:
       for state_key in self.cell_groups[cell_group_key].states:
         state = self.cell_groups[cell_group_key].states[state_key]
-        self.session.run(tf.assign(state, tf.zeros_like(state)))
+        #self.session.run(tf.assign(state, tf.zeros_like(state)))
+        self.session.run(state.initializer)
 
   def set_training(self, loss, learning_rate, optimizer="adam"):
     """
@@ -429,16 +432,6 @@ class Experiment(object):
     if not feed_dict:
       feed_dict = {}
 
-    experiment_feed_dict = dict(feed_dict)
-    for desired_output_placeholder in self.desired_output_placeholder_list:
-      del experiment_feed_dict[desired_output_placeholder]
-
-    training_feed_dict = dict(feed_dict)
-    for input_placeholder in self.input_placeholder_list:
-      del training_feed_dict[input_placeholder]
-
-    experiment_feed_dict[self.has_input] = False
-
     if self.next_step_after_train and self.reset_cells_after_train:
       self.reset_cell_states()
     if self.next_step_after_train and self.reset_memories_after_train:
@@ -449,17 +442,19 @@ class Experiment(object):
     # self.next_step_after_train
     self.next_step_after_train = False
 
-    if self.is_input_step():
-      experiment_feed_dict[self.has_input] = True
+    feed_dict[self.has_input] = self.is_input_step()
 
     experiment_ops = []
     for experiment_output_key in self.experiment_output:
       experiment_ops.append(self.experiment_output[experiment_output_key].assign_output)
 
-    self.session.run(experiment_ops,feed_dict=experiment_feed_dict)
+    # for memory_key in self.memories:
+    #   experiment_ops.append(self.memories[memory_key].update_state_memory())
 
-    for memory_key in self.memories:
-      self.memories[memory_key].update_state_memory()
+    self.session.run(experiment_ops,feed_dict=feed_dict)
+
+    # for memory_key in self.memories:
+    #   self.memories[memory_key].update_state_memory()
 
     if self.is_training_step():
       training_ops = []
@@ -471,7 +466,7 @@ class Experiment(object):
       else:
         training_ops += self.train_ops + self.training_loss_op
 
-      training_result = self.session.run(training_ops,feed_dict=training_feed_dict)
+      training_result = self.session.run(training_ops,feed_dict=feed_dict)
       self.next_step_after_train = True
 
       if len(training_result) > 0:

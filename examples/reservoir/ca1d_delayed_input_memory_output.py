@@ -13,9 +13,9 @@ width = 100
 height_fig = 200
 input_size = width // 2
 output_layer_size = width
-memory_size = 5
+memory_size = 20
 
-exp = experiment.Experiment(input_start=5,input_delay=14,training_start=6,training_delay=0)
+exp = experiment.Experiment(input_start=5,input_delay=5,training_start=5,training_delay=0)
 
 input_ca = exp.add_input(tf.float64, [input_size], "input_ca")
 desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desired_output")
@@ -92,6 +92,8 @@ def updatefig(*args):
 
     im_memory = exp.memories[g_ca_bin].get_state_memory()[:,0].reshape((memory_size, width))
     im_output = exp.get_group_cells_state("output_layer", "output_layer_real_state")[:,0].reshape((-1,1))
+
+    print(np.sum(np.abs(exp.get_group_cells_state("g_ca", "g_ca_bin")[:,0]-im_memory[-1])))
 
     im1.set_array(im_ca)
     im2.set_array(im_memory)
