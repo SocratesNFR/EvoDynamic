@@ -29,7 +29,6 @@ class Memory(object):
       raise Exception("Error: Memory size must be equal or larger than 1.")
 
     self.experiment = experiment
-    # self.state = state
     self.state_shape = state.get_shape().as_list()
     self.memory_size = memory_size
     self.memory_shape = tuple([self.memory_size*self.state_shape[0]] +
@@ -44,29 +43,25 @@ class Memory(object):
     for exp_conn in self.experiment.connection_list:
       if exp_conn.to_group_state == self.from_group_state:
         self.from_group_state = exp_conn.assign_output
-    self.to_group_state = self.get_op()#self.state_memory
+    self.to_group_state = self.get_op()
     self.assign_output = self.get_op()
 
   def get_op(self):
     """
-    Get the Tensor variable for the memory.
+    Get the Tensor operation for the memory and its update.
+    Update the state memory in the current time step. If memory is full, remove
+    the oldest data and stack the new one.
 
     Returns
     -------
     out : Tensor
-        Tensor variable for the memory.
+        Tensor operation for the memory and its update.
     """
-    # return self.state_memory
-    """
-    Update the state memory in the current time step. If memory is full, remove
-    the oldest data and stack the new one.
-    """
+
     memory_shift_selection_op = tf.gather_nd(self.state_memory,self.selection_indices)
-
     concat_op = tf.concat([memory_shift_selection_op, self.from_group_state], 0)
-
     state_memory_update_op = tf.assign(self.state_memory, concat_op)
-    # self.experiment.session.run(state_memory_update_op)
+
     return state_memory_update_op
 
   def get_state_memory(self):
@@ -84,8 +79,6 @@ class Memory(object):
     """
     Reset the memory.
     """
-    # self.experiment.session.run(tf.assign(self.state_memory,
-    #                                       tf.zeros_like(self.state_memory)))
     self.experiment.session.run(self.state_memory.initializer)
 
   def reset_op(self):
@@ -93,17 +86,3 @@ class Memory(object):
     Returns the TensorFlow operation for resetting the Tensor of the memory.
     """
     return [self.state_memory.initializer]
-
-
-  def update_state_memory(self):
-    """
-    Update the state memory in the current time step. If memory is full, remove
-    the oldest data and stack the new one.
-    """
-    memory_shift_selection_op = tf.gather_nd(self.state_memory,self.selection_indices)
-
-    concat_op = tf.concat([memory_shift_selection_op, self.from_group_state], 0)
-
-    state_memory_update_op = tf.assign(self.state_memory, concat_op)
-    # self.experiment.session.run(state_memory_update_op)
-    return [state_memory_update_op]

@@ -448,13 +448,7 @@ class Experiment(object):
     for experiment_output_key in self.experiment_output:
       experiment_ops.append(self.experiment_output[experiment_output_key].assign_output)
 
-    # for memory_key in self.memories:
-    #   experiment_ops.append(self.memories[memory_key].update_state_memory())
-
     self.session.run(experiment_ops,feed_dict=feed_dict)
-
-    # for memory_key in self.memories:
-    #   self.memories[memory_key].update_state_memory()
 
     if self.is_training_step():
       training_ops = []
