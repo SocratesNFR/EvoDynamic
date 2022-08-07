@@ -120,7 +120,7 @@ def updatefig(*args):
   idx_anim += 1
 
 
-ani = animation.FuncAnimation(fig, updatefig, frames=30, interval=500, blit=False)
+ani = animation.FuncAnimation(fig, updatefig, frames=30, interval=100, blit=False)
 
 plt.show()
 
