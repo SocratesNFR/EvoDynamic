@@ -24,10 +24,10 @@ mnist = tf.keras.datasets.mnist
 
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-# x_train = x_train[:1000]
-
 x_train_num_images = x_train.shape[0]
 x_train_image_shape = x_train.shape[1:3]
+x_test_num_images = x_test.shape[0]
+x_test_image_shape = x_test.shape[1:3]
 
 x_train = ((x_train / 255.0) > 0.5).astype(np.float64)
 x_train = x_train.reshape(x_train.shape[0],-1)
@@ -45,9 +45,10 @@ y_test_one_hot = np.zeros((y_test.max()+1, y_test.size))
 y_test_one_hot[y_test,np.arange(y_test.size)] = 1
 y_test = y_test_one_hot
 
-epochs = 1
+epochs = 2
 batch_size = 100
 num_batches =  int(np.ceil(x_train_num_images / batch_size))
+num_batches_test =  int(np.ceil(x_test_num_images / batch_size))
 width = 100#1200
 image_size = 28
 input_size = image_size
@@ -123,19 +124,14 @@ c_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
 
 exp.set_training(c_loss,0.001)
 
-# Monitors are needed because "reset_cells_after_train=True"
-# exp.add_monitor("output_layer", "output_layer_real_state", timesteps=1)
-# exp.add_monitor("g_esn", "g_esn_real", timesteps=1)
-
 exp.initialize_cells()
-
-# writer = tf.summary.FileWriter("output_start_2", exp.session.graph)
 
 for epoch in range(epochs):
   print("Epoch:", epoch)
   shuffled_indices = np.random.permutation(x_train_num_images)
   batch_indices = np.split(shuffled_indices,\
                            np.arange(batch_size,x_train_num_images,batch_size))
+  accuracy_train = []
   for step, batch_idx in enumerate(batch_indices):
     start_time = time.time()
     for i in range(image_size):
@@ -144,16 +140,29 @@ for epoch in range(epochs):
       feed_dict = {input_esn: input_esn_batch, desired_output: desired_output_batch}
       exp.run_step(feed_dict=feed_dict)
 
-      prediction_batch = exp.get_group_cells_state("output_layer", "output_layer_real_state")
-      accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size
-      # im_ca = exp.get_group_cells_state("g_esn", "g_esn_real")[:,0]
-      # im_memory = exp.memories[g_esn_real].get_state_memory()[:,0].reshape((memory_size, width))[-1]
-      # print(np.sum(np.abs(im_ca-im_memory)))
-
+    prediction_batch = exp.get_group_cells_state("output_layer", "output_layer_real_state")
+    accuracy_batch = np.mean(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0))
+    accuracy_train.append(accuracy_batch)
     utils.progressbar_loss_accu_time(step+1, num_batches, exp.training_loss, accuracy_batch, time.time()-start_time)
-    # print(time.time()-start_time)
+  print("Training average accuracy:", np.mean(accuracy_train))
 
-# writer_last = tf.summary.FileWriter("output_end_2", exp.session.graph)
+  print("Testing...")
+  # Testing!
+  shuffled_indices_test = np.random.permutation(x_test_num_images)
+  batch_indices_test = np.split(shuffled_indices_test,\
+                           np.arange(batch_size,x_test_num_images,batch_size))
+  accuracy_test = []
+  for step_test, batch_idx in enumerate(batch_indices_test):
+    start_time = time.time()
+    for i in range(image_size):
+      input_esn_batch = x_test[i*input_size:(i+1)*input_size,batch_idx]
+      desired_output_batch = y_test[:,batch_idx]
+      feed_dict = {input_esn: input_esn_batch, desired_output: desired_output_batch}
+      exp.run_step(feed_dict=feed_dict, testing=True)
 
-# writer.close()
-# writer_last.close()
+    prediction_batch = exp.get_group_cells_state("output_layer", "output_layer_real_state")
+    accuracy_batch = np.mean(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0))
+    accuracy_test.append(accuracy_batch)
+
+    utils.progressbar_loss_accu_time(step_test+1, num_batches_test, exp.training_loss, accuracy_batch, time.time()-start_time)
+  print("Test average accuracy:", np.mean(accuracy_test))
