@@ -1,6 +1,6 @@
 """
 Testing features and method for
-Liquid State Machine - Reservoir for MNIST digit classification
+Liquid State Machine with Izhikevic - Reservoir for MNIST digit classification
 
 Adapted from:
 Schaetti, Nils, Michel Salomon, and Raphaël Couturier.
@@ -54,13 +54,17 @@ width = 100#1200
 image_size = 28
 input_size = image_size
 memory_size = image_size
-input_scaling = 0.6
+input_scaling = 50
 input_sparsity = 0.9
 lsm_sparsity = 0.1
 output_layer_size = 10
 spectral_radius = 1.3
 threshold = 1.0
 potential_decay = 0.01
+
+a, b, c, d = 0.02, 0.20, -65.0, 8.00
+dt = 0.5
+
 image_num_pixels = x_train_image_shape[0] * x_train_image_shape[1]
 
 exp = experiment.Experiment(input_start=0,input_delay=1,training_start=image_size,
@@ -72,7 +76,8 @@ input_lsm = exp.add_input(tf.float64, [input_size], "input_lsm")
 desired_output = exp.add_desired_output(tf.float64, [output_layer_size], "desired_output")
 
 g_lsm = exp.add_group_cells(name="g_lsm", amount=width)
-g_lsm_mem = g_lsm.add_real_state(state_name='g_lsm_mem')
+g_lsm_mem = g_lsm.add_real_state(state_name='g_lsm_mem', init_full = c)
+g_lsm_rec = g_lsm.add_real_state(state_name='g_lsm_rec', init_full = b*c)
 g_lsm_spike = g_lsm.add_binary_state(state_name='g_lsm_spike', init ='zeros')
 
 g_input_real_conn = conn_random.create_gaussian_connection('g_input_real_conn',
@@ -83,21 +88,22 @@ g_input_real_conn = conn_random.create_gaussian_connection('g_input_real_conn',
 
 exp.add_connection("input_conn",
                    connection.WeightedConnection(input_lsm,
-                                                 g_lsm_spike,act.integrate_and_fire,
+                                                 g_lsm_spike,act.izhikevich,
                                                  g_input_real_conn,
-                                                 fargs_list=[(g_lsm_mem,threshold,potential_decay)]))
+                                                 fargs_list=[(g_lsm_mem,g_lsm_rec,a, b, c, d, dt)]))
 
 g_lsm_real_conn = conn_random.create_gaussian_matrix('g_lsm_real_conn',
                                                       width,
+                                                      scale=input_scaling,
                                                       spectral_radius=spectral_radius,
                                                       sparsity=lsm_sparsity,
                                                       is_sparse=False)
 
 exp.add_connection("g_lsm_conn",
                     connection.WeightedConnection(g_lsm_spike,
-                                                  g_lsm_spike,act.integrate_and_fire,
+                                                  g_lsm_spike,act.izhikevich,
                                                   g_lsm_real_conn,
-                                                  fargs_list=[(g_lsm_mem,threshold,potential_decay)]))
+                                                  fargs_list=[(g_lsm_mem,g_lsm_rec,a, b, c, d, dt)]))
 
 output_layer =  exp.add_group_cells(name="output_layer", amount=output_layer_size)
 output_layer_real_state = output_layer.add_real_state(state_name='output_layer_real_state')
