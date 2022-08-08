@@ -86,8 +86,6 @@ exp.set_training(c_loss,0.03)
 
 exp.initialize_cells()
 
-writer = tf.summary.FileWriter("output_ca1d", exp.session.graph)
-
 for epoch in range(epochs):
   print("Epoch:", epoch)
   shuffled_indices = np.random.permutation(x_train_num_images)
@@ -107,5 +105,3 @@ for epoch in range(epochs):
     prediction_batch = exp.get_group_cells_state("output_layer", "output_layer_real_state")
     accuracy_batch = np.sum(np.argmax(prediction_batch, axis=0) == np.argmax(desired_output_batch, axis=0)) / batch_size
     utils.progressbar_loss_accu_time(step+1, num_batches-1, exp.training_loss, accuracy_batch, time.time()-start_time)
-
-writer.close()
