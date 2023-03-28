@@ -99,6 +99,22 @@ def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255])
         if prob_mutate_gene > np.random.random():
           genome2[i] = (genome2[i] + np.random.randint(-25, 26)) % 255
 
+        # Mutate gene 1
+        gen1_bin = "{0:08b}".format(genome1[i])
+        for gen1_idx in range(len(gen1_bin)):
+          if prob_mutate_gene > np.random.random():
+            new_gene = "0" if gen1_bin[gen1_idx] == "1" else "1"
+            gen1_bin = gen1_bin[:gen1_idx] + new_gene + gen1_bin[(gen1_idx+1):]
+        genome1[i] = int(gen1_bin, 2)
+
+          # Mutate gene 2
+        gen2_bin = "{0:08b}".format(genome2[i])
+        for gen2_idx in range(len(gen2_bin)):
+          if prob_mutate_gene > np.random.random():
+            new_gene = "0" if gen2_bin[gen2_idx] == "1" else "1"
+            gen2_bin = gen2_bin[:gen2_idx] + new_gene + gen2_bin[(gen2_idx+1):]
+        genome2[i] = int(gen2_bin, 2)
+
       # Add gene to genome 1
       if prob_add_gene > np.random.random():
         genome1.append(np.random.randint(gene_range[0], gene_range[1]+1))
@@ -191,7 +207,7 @@ def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8)
 
   prob_crossover = 0.8
   prob_exchange = 0.5
-  prob_mutate_gene = 0.1
+  prob_mutate_gene = 0.15
 
   pop_indices = list(range(pop_size))
   pop_list = [[np.random.rand() for gene in range(prob_size)] for pop in range(pop_size)]
@@ -235,9 +251,12 @@ def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8)
         if prob_mutate_gene > np.random.random():
           genome1[i] = np.clip(genome1[i] + np.random.normal(scale=0.2), 0.,1.)
 
-         # Mutate gene 2
+          # Mutate gene 2
         if prob_mutate_gene > np.random.random():
           genome2[i] = np.clip(genome2[i] + np.random.normal(scale=0.2), 0.,1.)
+
+
+
 
       # Add new genomes for next generation
       new_pop_list.append(genome1)

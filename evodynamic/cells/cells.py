@@ -78,6 +78,17 @@ class Cells(object):
         initial = init.astype(np.float64)
       elif init.shape == tuple(virtual_shape_list):
         initial = init.reshape(-1,self.batch_size).astype(np.float64)
+      # else:
+      # initial = np.zeros(self.amount_with_batch).astype(np.float64)
+      # initial[0,:] = 1.0
+      # initial[1,:] = 1.0
+      # initial[3,:] = 1.0
+      # initial[8,:] = 1.0
+      # initial[11,:] = 1.0
+      # initial[15,:] = 1.0
+      # initial[21,:] = 1.0
+      # initial[28,:] = 1.0
+      # initial[29,:] = 1.0
 
     var = tf.get_variable(state_name, initializer=initial)
     self.states[state_name] = var

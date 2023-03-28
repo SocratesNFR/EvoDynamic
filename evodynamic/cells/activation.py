@@ -591,7 +591,7 @@ def rule_binary_soc_sca_1d_width3_func(pattern, previous_state, prob_list):
                                                ca_conn,
                                                fargs_list=[(prob_list,)])
   """
-  shape_previous_state = tf.shape(previous_state)
+  # shape_previous_state = tf.shape(previous_state)
 
   prob_0 = stochastic_prob(prob_list[0], prob_list[8])
   prob_1 = stochastic_prob(prob_list[1], prob_list[8])
@@ -607,11 +607,11 @@ def rule_binary_soc_sca_1d_width3_func(pattern, previous_state, prob_list):
   update_7_op = rule_binary_sca_1d_width3_func(pattern, previous_state,
                                                new_prob_list)
 
-  #return update_7_op
-  new_state_op =  tf.cast(tf.less_equal(tf.random.uniform(shape_previous_state),\
-                                               0.5), tf.float64)
+  return update_7_op
+  # new_state_op =  tf.cast(tf.less_equal(tf.random.uniform(shape_previous_state),\
+  #                                              0.5), tf.float64)
 
-  return tf.cond(tf.equal(tf.reduce_mean(previous_state), 1.0), lambda: new_state_op, lambda: update_7_op)
+  # return tf.cond(tf.equal(tf.reduce_mean(previous_state), 1.0), lambda: new_state_op, lambda: update_7_op)
 
 def integrate_and_fire(potential_change, spike_in, potential, threshold, potential_decay):
   """
