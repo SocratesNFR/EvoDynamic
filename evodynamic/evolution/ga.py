@@ -91,13 +91,13 @@ def evolve_rules(evaluate_genome, pop_size=10, generation=4, gene_range=[0,255])
             genome1[i] = gene2
             genome2[i] = gene1
 
-        # Mutate gene 1
-        if prob_mutate_gene > np.random.random():
-          genome1[i] = (genome1[i] + np.random.randint(-25, 26)) % 255
+        # # Mutate gene 1
+        # if prob_mutate_gene > np.random.random():
+        #   genome1[i] = (genome1[i] + np.random.randint(-25, 26)) % 255
 
-         # Mutate gene 2
-        if prob_mutate_gene > np.random.random():
-          genome2[i] = (genome2[i] + np.random.randint(-25, 26)) % 255
+        #  # Mutate gene 2
+        # if prob_mutate_gene > np.random.random():
+        #   genome2[i] = (genome2[i] + np.random.randint(-25, 26)) % 255
 
         # Mutate gene 1
         gen1_bin = "{0:08b}".format(genome1[i])
@@ -254,9 +254,6 @@ def evolve_probability(evaluate_genome, pop_size=10, generation=10, prob_size=8)
           # Mutate gene 2
         if prob_mutate_gene > np.random.random():
           genome2[i] = np.clip(genome2[i] + np.random.normal(scale=0.2), 0.,1.)
-
-
-
 
       # Add new genomes for next generation
       new_pop_list.append(genome1)
