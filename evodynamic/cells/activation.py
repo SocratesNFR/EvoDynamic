@@ -168,6 +168,105 @@ def rule_binary_ca_1d_width3_func(pattern, previous_state, rule):
   # Return update_7_op
   return tf.where(pattern_7_op, new_state_pattern_7, update_6_op)
 
+def rule_nstate_ca_1d_width3_func(pattern, previous_state, rule, nstate):
+  """
+  Activation function for 3-neighbor Cellular Automaton with n-state.
+
+  Parameters
+  ----------
+  pattern : Tensor
+      Result of the matrix multiplication that happens in
+      evodynamic.connection.WeightedConnection
+  previous_state : Tensor
+      State of a binary state of a group of cells before being updated.
+  rule: int between 0 and (nstate^nstate^3)-1
+      rule number for the 3-neighbor Cellular Automaton.
+  nstate: int number of states
+      rule number for the 3-neighbor Cellular Automaton.
+
+  Returns
+  -------
+  out : Tensor
+      Tensor containing the operation for changing the binary states of a group
+      of cells as expressed by the chosen rule of the elementary celullar
+      automaton.
+
+  Notes
+  -----
+  The values of the first two parameters come from operations in
+  the Connection object. The activation functions with more the two parameters
+  must have the extra parameters passed through the parameter 'fargs_list' of
+  'evodynamic.connection.WeightedConnection'.
+
+  Examples
+  --------
+  >>> evodynamic.connection.WeightedConnection(ca_n_state,ca_n_state,
+                                               rule_nstate_ca_1d_width3_func,
+                                               ca_conn,
+                                               fargs_list=[(rule,nstate)])
+  """
+
+  nbits = nstate**3
+
+  pattern_op_list = []
+  for i in range(nbits):
+    pattern_op_list.append(tf.equal(pattern, i))
+
+  # pattern_0_op = tf.equal(pattern, 0)
+  # pattern_1_op = tf.equal(pattern, 1)
+  # pattern_2_op = tf.equal(pattern, 2)
+  # pattern_3_op = tf.equal(pattern, 3)
+  # pattern_4_op = tf.equal(pattern, 4)
+  # pattern_5_op = tf.equal(pattern, 5)
+  # pattern_6_op = tf.equal(pattern, 6)
+  # pattern_7_op = tf.equal(pattern, 7)
+
+  new_state_op_list = []
+  for i in range(nbits):
+    new_state_op_list.append(tf.ones(tf.shape(previous_state), dtype=tf.float64)\
+                          if (rule & (1<<i)) != 0 else\
+                          tf.zeros(tf.shape(previous_state), dtype=tf.float64))
+
+  # new_state_pattern_0 = tf.ones(tf.shape(previous_state), dtype=tf.float64)\
+  #                       if (rule & (1<<0)) != 0 else\
+  #                       tf.zeros(tf.shape(previous_state), dtype=tf.float64)
+  # new_state_pattern_1 = tf.ones(tf.shape(previous_state), dtype=tf.float64)\
+  #                       if (rule & (1<<1)) != 0 else\
+  #                       tf.zeros(tf.shape(previous_state), dtype=tf.float64)
+  # new_state_pattern_2 = tf.ones(tf.shape(previous_state), dtype=tf.float64)\
+  #                       if (rule & (1<<2)) != 0 else\
+  #                       tf.zeros(tf.shape(previous_state), dtype=tf.float64)
+  # new_state_pattern_3 = tf.ones(tf.shape(previous_state), dtype=tf.float64)\
+  #                       if (rule & (1<<3)) != 0 else\
+  #                       tf.zeros(tf.shape(previous_state), dtype=tf.float64)
+  # new_state_pattern_4 = tf.ones(tf.shape(previous_state), dtype=tf.float64)\
+  #                       if (rule & (1<<4)) != 0 else\
+  #                       tf.zeros(tf.shape(previous_state), dtype=tf.float64)
+  # new_state_pattern_5 = tf.ones(tf.shape(previous_state), dtype=tf.float64)\
+  #                       if (rule & (1<<5)) != 0 else\
+  #                       tf.zeros(tf.shape(previous_state), dtype=tf.float64)
+  # new_state_pattern_6 = tf.ones(tf.shape(previous_state), dtype=tf.float64)\
+  #                       if (rule & (1<<6)) != 0 else\
+  #                       tf.zeros(tf.shape(previous_state), dtype=tf.float64)
+  # new_state_pattern_7 = tf.ones(tf.shape(previous_state), dtype=tf.float64)\
+  #                       if (rule & (1<<7)) != 0 else\
+  #                       tf.zeros(tf.shape(previous_state), dtype=tf.float64)
+
+  update_op = tf.where(pattern_op_list[0], new_state_op_list[0], previous_state)
+  for i in range(1,nbits):
+    update_op = tf.where(pattern_op_list[i], new_state_op_list[i], update_op)
+
+  # update_0_op = tf.where(pattern_0_op, new_state_pattern_0, previous_state)
+  # update_1_op = tf.where(pattern_1_op, new_state_pattern_1, update_0_op)
+  # update_2_op = tf.where(pattern_2_op, new_state_pattern_2, update_1_op)
+  # update_3_op = tf.where(pattern_3_op, new_state_pattern_3, update_2_op)
+  # update_4_op = tf.where(pattern_4_op, new_state_pattern_4, update_3_op)
+  # update_5_op = tf.where(pattern_5_op, new_state_pattern_5, update_4_op)
+  # update_6_op = tf.where(pattern_6_op, new_state_pattern_6, update_5_op)
+
+  # Return update_7_op
+  return update_op #tf.where(pattern_7_op, new_state_pattern_7, update_6_op)
+
 def rule_binary_sca_1d_width3_func(pattern, previous_state, prob_list):
   """
   Activation function for 3-neighbor Stochastic Elementary Cellular Automaton.

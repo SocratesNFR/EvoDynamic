@@ -41,8 +41,8 @@ for i in range(width):
     pos_dict[i] = (0,i)
 
 pos = nx.spring_layout(G,pos=pos_dict, fixed=pos_dict.keys())
-min_x_val = min([p[0] for p in pos.values()])
-pos_new = {k: (pos[k][0]+min_x_val-1, pos[k][1]) if k<input_size else pos[k] for k in pos.keys()}
+# min_x_val = min([p[0] for p in pos.values()])
+# pos_new = {k: (pos[k][0]+min_x_val-1, pos[k][1]) if k<input_size else pos[k] for k in pos.keys()}
 
 # Animation
 import matplotlib.pyplot as plt
@@ -50,12 +50,12 @@ import matplotlib.animation as animation
 
 fig, ax = plt.subplots()
 
-plt.title('Step: 0')
+# plt.title('Step: 0')
 current_state = exp.get_group_cells_state("g_rbn", "g_rbn_bin")[:,0]
 
 node_color = ["black" if current_state[node]==0 else "gray" for node in G]
 
-nx.draw(G.reverse(), node_color = node_color, pos=pos_new,
+nx.draw(G.reverse(), node_color = node_color, pos=pos,
         connectionstyle="arc3, rad=0.1")
 
 idx_anim = 0
@@ -71,15 +71,18 @@ def updatefig(*args):
 
   node_color = ["black" if current_state[node]==0 else "gray" for node in G]
 
-  nx.draw(G.reverse(), node_color = node_color, pos=pos_new,
+  nx.draw(G.reverse(), node_color = node_color, pos=pos,
           connectionstyle="arc3, rad=0.1")
 
-  plt.title('Step: '+str(idx_anim))
+  # plt.title('Step: '+str(idx_anim))
   idx_anim += 1
 
 
-ani = animation.FuncAnimation(fig, updatefig, frames=30, interval=1000, blit=False)
+writergif = animation.PillowWriter(fps=4)
+ani = animation.FuncAnimation(fig, updatefig, frames=30, interval=100, blit=False)
 
-plt.show()
+# plt.show()
 
-plt.connect('close_event', exp.close())
+ani.save("rbn.gif", writer=writergif)
+
+# plt.connect('close_event', exp.close())
