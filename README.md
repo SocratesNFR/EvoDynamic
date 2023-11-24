@@ -1,7 +1,7 @@
 # EvoDynamic
 EvoDynamic seeks to evolve and develop suitable discrete dynamic models of self-organizing systems based on local interactions.
 
-<img alt="EvoDynamic project plan" src="docs/images/EvoDynamic_single_slide.png"/>
+<img alt="EvoDynamic architecture" src="docs/images/EvoDynamic_summary.png"/>
 
 Installing EvoDynamic:
 ```
