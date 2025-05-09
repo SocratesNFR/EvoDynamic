@@ -53,32 +53,39 @@ class Cells(object):
     out : Tensor
         Tensor of binary states of the group of cells.
     """
-    if init == "random":
+    initial = None
+    if str(init) == "random":
       #np.random.seed(1)
       initial = np.random.randint(2, size=self.amount_with_batch).astype(np.float64)
-    elif init == "central":
+    elif str(init) == "central":
       initial = np.zeros(self.amount_with_batch).astype(np.float64)
       initial[int(self.amount//2),:] = 1
-    elif init == "zeros":
+    elif str(init) == "zeros":
       initial = np.zeros(self.amount_with_batch).astype(np.float64)
-    elif init == "ones":
+    elif str(init) == "ones":
       initial = np.ones(self.amount_with_batch).astype(np.float64)
-    elif init == "reversecentral":
+    elif str(init) == "reversecentral":
       initial = np.ones(self.amount_with_batch).astype(np.float64)
       initial[int(self.amount//2),:] = 0
     else: # Manual initialization with list or numpy array
       init = np.array(init)
+      # print("init.shape", init.shape)
       virtual_shape_list = list(self.virtual_shape)
       virtual_shape_list.insert(1,self.batch_size)
       if init.shape == (self.amount,):
+        # print("1")
         initial = np.hstack(self.batch_size*[init]).astype(np.float64)
       elif init.shape == self.virtual_shape:
+        # print("2")
         initial = np.hstack(self.batch_size*[init.reshape(-1)]).astype(np.float64)
       elif init.shape == self.amount_with_batch:
+        # print("3")
         initial = init.astype(np.float64)
       elif init.shape == tuple(virtual_shape_list):
+        # print("4")
         initial = init.reshape(-1,self.batch_size).astype(np.float64)
-      # else:
+      else:
+        print("add_binary_state received wrong init.")
       # initial = np.zeros(self.amount_with_batch).astype(np.float64)
       # initial[0,:] = 1.0
       # initial[1,:] = 1.0
